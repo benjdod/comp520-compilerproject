@@ -1,16 +1,27 @@
 package syntacticAnalyzer;
 
+import miniJava.ErrorReporter;
 import utility.CharTrie;
 import syntacticAnalyzer.TokenType;
 import syntacticAnalyzer.Token;
+import java.io.Reader;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.StringReader;
 
 public class Scanner {
 	
-	private String _inputstring;
-	private int _inputlen;
+	private Reader _reader;
 	private int _index;
+	private int _line;
+	private int _column;
+	private char _current;
+	private char _next;
+	private boolean _errorstate;
+	private ErrorReporter _reporter;
 	
 	private static CharTrie<TokenType> _keywordtree = null;
+	private static int INDEX_NOT_READY = -2;
 	
 	private static void initKeywordtree() {
 		_keywordtree = new CharTrie<TokenType>();
@@ -33,132 +44,204 @@ public class Scanner {
 		_keywordtree.insert("false", TokenType.False);
 	}
 	
-	public Scanner() {
+	public Scanner(Reader r, ErrorReporter reporter) {
 		if (_keywordtree == null) {
 			initKeywordtree();
 		}
+		this._reporter = reporter;
+		this.load(r);
 	}
 	
-	public Scanner(String s) {
-		this();
-		this.load(s);
+	public Scanner(String s, ErrorReporter reporter) {
+		this(new StringReader(s), reporter);
 	}
 	
-	public void load(String s) {
-		this._inputstring = s;
-		this._index = 0;
-		this._inputlen = this._inputstring.length();
+	public void reset() {
+		this._reader = null;
+		this._current = this._next = '\0';
+		this._index = -2;
+		this._line = 1;
+		this._column = 1;
+		this._errorstate = false;
 	}
 	
-	private void advanceChar() {
-		_index++;
+	// loads and primes the scanner for getting tokens
+	public void load(Reader r) {
+		/* set the Reader r as the Scanner's stream reader.
+		 * Then set the index to -2, and prime it twice to set 
+		 * the _current and _next char fields.  */
+		this.reset();
+		this._reader = r;
+		this._index = -2;
+		this.advance(2);
+		this._errorstate = false;
+	}
+	
+	// probably not necessary
+	public boolean ready() {
+		try {
+			return this._index != INDEX_NOT_READY && this._reader.ready();
+		} catch (IOException e) {
+			System.err.println(e);
+			return false;
+		}
+	}
+
+	// courtesy method over the reporter to add "Scan error: " before the string
+	private void reportError(String s) {
+		_reporter.report("Scan error: " + s);
+	}	
+
+	// take snapshot of the current scanner position
+	private ScannerMark getMark() {
+		return new ScannerMark(this._index, this._line, this._column);
+	}
+
+	// courtesy method to fill in line and column
+	private Token makeToken(TokenType type, ScannerMark mark) {
+		return new Token(type, mark.index, mark.line, mark.column);
+	}
+	
+	private void advance() {
+		advance(1);
+	}
+	
+	private void advance(int times) {
+
+		if (this._errorstate) {
+			_next = _current = '\0';
+			return;
+		}
+
+		while (times-- > 0) {
+			_current = _next;
+			try {
+				
+				int readchar = _reader.read();
+				
+				// if readchar is not in the ASCII range, 
+				// report the error and brickwall the scanner
+				if (readchar > 127) {
+					reportError("bad input encoding.");
+					_current = '\0';
+					_next = '\0';
+					this._errorstate = true;
+				}
+				_next = readchar > -1 ? (char) readchar : '\0';
+			} catch (IOException e) {
+				System.err.println(e);
+				_next = '\0';
+			}
+			_index++;
+			
+			if (_current == '\n' || (_current == '\r' && _next == '\n')) {
+				this._line++;
+				this._column = 1;
+			} else {
+				this._column++;
+			}
+		}
 	}
 	
 	private char currentChar() {
-		if (_index >= _inputlen) {
-			return '\0';
-		} else {
-			return _inputstring.charAt(_index);
-		}
+		return _current;
 	}
 	
 	private char nextChar() {
-		if (_index >= _inputlen - 1) {
-			return '\0';
-		} else {
-			return _inputstring.charAt(_index + 1);
-		}
+		return _next;
 	}
 	
 	public boolean hasNext() {
-		int temp_index = _index;
-		int last_index = _inputstring.length() - 1;
-		while (
-			temp_index <= last_index
-			) {
-			if (Character.isWhitespace(_inputstring.charAt(temp_index))) {
-				temp_index++;
-			} else return true;
-		}
-		return false;
+		return _next != '\0';
 	}
 	
 	public Token next() {
-		
+
 		char current = currentChar();
 		char next = nextChar();
-		int start_index = _index;
+		ScannerMark mark = getMark();
+		int start_index = mark.index;
 		Token out = null;
-
 		
 		while (true) {
 
-			if (currentChar() == ' ' || currentChar() == '\t') {
-				_index++;
+			if (Character.isWhitespace(currentChar())) {
+				advance();
 			} else if (currentChar() == '/') {
 				if (nextChar() == '/') {
-					this._index += 2;
-					while (currentChar() != '\n' && currentChar() != '\r' && currentChar() != '\0') _index++;
+					advance(2);
+					while (currentChar() != '\n' && currentChar() != '\r' && currentChar() != '\0') advance();
+					if (currentChar() == '\n') advance();
+					else if (currentChar() == '\r' && nextChar() == '\n') advance(2);
 				} else if (nextChar() == '*') {
-					this._index += 2;
-					while ((current = currentChar()) != '*' && (next = nextChar()) != '/') { 
+					advance(2);
+					while ((current = currentChar()) != '*' || (next = nextChar()) != '/') { 
 						if (current == '\0') {
 							// if a multiline comment is unterminated before eof, 
 							// it's an error
 							return new Token(TokenType.Error, start_index);
 						}
-						_index++; 
+						advance(); 
 					}
-					_index += 2;
+					advance(2);
+				} else {
+					break;
 				}
 			} else {
 				break;
 			}
 		}
-		
-		if (current == '\0') return new Token(TokenType.Eot, _index);
-				
-			// this accepts \n and \r\n but not \r 
-		if (current == '\n') {
-			out = new Token(TokenType.Eol, _index);
-		} else if (current == '\r' && next == '\n') {
-			out = new Token(TokenType.Eol, _index);
-			_index++;
-		}
-		
-		// have we found the token?
-		if (out != null) {
-			_index++;
-			return out;
-		}
-		
+
 		current = currentChar();
 		next = nextChar();
 		start_index = _index;
 		
-		// one-character tokens
-		switch (current) {
-			case '(': out =  new Token(TokenType.LParen, _index); break;
-			case ')': out =  new Token(TokenType.RParen,  _index); break;
-			case '[': out =  new Token(TokenType.LBracket, _index); break;
-			case ']': out =  new Token(TokenType.RBracket, _index); break;
-			case '{': out =  new Token(TokenType.LBrace, _index); break;
-			case '}': out =  new Token(TokenType.RBrace, _index); break;
-			case '.': out =  new Token(TokenType.Dot, _index); break;
-			case ',': out =  new Token(TokenType.Comma, _index); break;
-			case ';': out =  new Token(TokenType.Semicolon, _index); break;
-			
-			// these might need to be moved if support is added 
-			// for +=, -= and family
-			case '+': out =  new Token(TokenType.Plus, _index); break;
-			case '-': out =  new Token(TokenType.Minus, _index); break;
-			case '*': out =  new Token(TokenType.Star, _index); break;
-			case '/': out =  new Token(TokenType.FSlash, _index); break;
+		if (current == '\0') return makeToken(TokenType.Eot, mark);
+				
+		/*
+			// this accepts \n and \r\n but not \r 
+		if (current == '\n') {
+			out = makeToken(TokenType.Eol, mark);
+		} else if (current == '\r' && next == '\n') {
+			out = makeToken(TokenType.Eol, mark);
+			advance();
 		}
 		
 		// have we found the token?
 		if (out != null) {
-			_index++;
+			advance();
+			return out;
+		}
+		*/
+		
+		current = currentChar();
+		next = nextChar();
+		mark = getMark();
+		start_index = mark.index;
+		
+		// one-character tokens
+		switch (current) {
+			case '(': out =  makeToken(TokenType.LParen, mark); break;
+			case ')': out =  makeToken(TokenType.RParen, mark); break;
+			case '[': out =  makeToken(TokenType.LBracket, mark); break;
+			case ']': out =  makeToken(TokenType.RBracket, mark); break;
+			case '{': out =  makeToken(TokenType.LBrace, mark); break;
+			case '}': out =  makeToken(TokenType.RBrace, mark); break;
+			case '.': out =  makeToken(TokenType.Dot, mark); break;
+			case ',': out =  makeToken(TokenType.Comma, mark); break;
+			case ';': out =  makeToken(TokenType.Semicolon, mark); break;
+			
+			// these might need to be moved if support is added 
+			// for +=, -= and family
+			case '+': out =  makeToken(TokenType.Plus, mark); break;
+			case '-': out =  makeToken(TokenType.Minus, mark); break;
+			case '*': out =  makeToken(TokenType.Star, mark); break;
+			case '/': out =  makeToken(TokenType.FSlash, mark); break;
+		}
+		
+		// have we found the token?
+		if (out != null) {
+			advance();
 			return out;
 		}
 		
@@ -166,89 +249,99 @@ public class Scanner {
 		
 		if (current == '=') {
 			if (next == '=') {
-				out = new Token(TokenType.EqualEqual, start_index);
-				_index++;
+				out = makeToken(TokenType.EqualEqual, mark);
+				advance();
 			} else {
-				out = new Token(TokenType.Equal, start_index);
+				out = makeToken(TokenType.Equal, mark);
 			}
 		} else if (current == '<') {
 			if (next == '=') {	
-				out = new Token(TokenType.LessEqual, _index);
-				_index++;
+				out = makeToken(TokenType.LessEqual, mark);
+				advance();
 			} else {	
-				out = new Token(TokenType.LCaret, _index);
+				out = makeToken(TokenType.LCaret, mark);
 			}
 		} else if (current == '>') {
 			if (next == '=') {
-				out = new Token(TokenType.GreaterEqual, _index);
-				_index++;
+				out = makeToken(TokenType.GreaterEqual, mark);
+				advance();
 			} else {
-				out = new Token(TokenType.RCaret, _index);
+				out = makeToken(TokenType.RCaret, mark);
 			}
 		} else if (current == '!') {
 			if (next == '=') {
-				out = new Token(TokenType.NotEqual, _index);
-				_index++;
+				out = makeToken(TokenType.NotEqual, mark);
+				advance();
 			} else {
-				out = new Token(TokenType.Not, _index);
+				out = makeToken(TokenType.Not, mark);
 			}
 		}
 		
 		// token?
 		if (out != null) {
-			_index++;
+			advance();
 			return out;
 		}
 		
 		// OK, onto the keywords, ident, and num...
 		// first, slice out the token 
 		
+		StringBuilder sb = new StringBuilder();
+		
 		boolean keyword_possible = true;
 		
-		if (Character.isDigit(_inputstring.charAt(_index))) {
+		if (Character.isDigit(currentChar())) {
 			while (Character.isDigit((current = currentChar()))) {
-				_index++;
+				advance();
 			}
 			if (Character.isAlphabetic(current)) {
-				return new Token(TokenType.Error, start_index);
+				return makeToken(TokenType.Error, mark);
 			} else {
-				return new Token(TokenType.Num, start_index);
+				return makeToken(TokenType.Num, mark);
 			}
 		} else if (Character.isAlphabetic(currentChar())) {
 			while (true) {
 				if (Character.isAlphabetic((current = currentChar()))) {
-					advanceChar();
+					sb.append(current);
+					advance();
 				} else if (Character.isDigit(current) || current == '_') {
 					keyword_possible = false;
-					advanceChar();
+					sb.append(current);
+					advance();
 				} else {
 					break;
 				}
 			}
 		}
 
-		if (_index - start_index > _keywordtree.getMaxLength()) {
-			keyword_possible = false;
-		} 
-
-		String slice = _inputstring.substring(start_index, _index);
+		String slice = sb.toString();
 		
 		if (!keyword_possible) {
-			return new Token(TokenType.Ident, start_index);
+			return makeToken(TokenType.Ident, mark);
 		}
 		
-		TokenType kwtype = _keywordtree.get(slice);
+		TokenType keywordtype = _keywordtree.get(slice);
 		
-		if (kwtype != null) {
-			out =  new Token(kwtype, start_index);
+		if (keywordtype != null) {
+			out =  makeToken(keywordtype, mark);
 		} else {
-			out = new Token(TokenType.Ident, start_index);
+			out = makeToken(TokenType.Ident, mark);
 		}
 		
-		//_index += slice.length();
 		return out;
-			
 		// if we've made it here, there's an error
 	}
 	
+}
+
+class ScannerMark {
+	public int line;
+	public int column;
+	public int index;
+
+	public ScannerMark(int index, int line, int column) {
+		this.index = index;
+		this.line = line;
+		this.column = column;
+	}
 }
