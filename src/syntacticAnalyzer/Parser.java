@@ -2,6 +2,7 @@ package syntacticAnalyzer;
 
 import syntacticAnalyzer.SyntaxError;
 import miniJava.ErrorReporter;
+import java.util.function.*;
 public class Parser {
 
 
@@ -32,33 +33,57 @@ public class Parser {
         }
     }
 
-    private boolean isBinaryOp(TokenType type) {
+    private boolean isArithOp(TokenType type) {
         switch (type) {
             case Plus:
-            case Minus:
-            case Star:
-            case FSlash:     
-            case RCaret:   
-            case LCaret:     
-            case LessEqual:    
-            case GreaterEqual:    
-            case EqualEqual:      
-            case NotEqual:     
-            case AmpAmp:     
-            case BarBar:     
+            case Minus:   
+            case Star:  
+            case FSlash:  
                 return true;
-            default: 
+            default:
                 return false;
         }
+    }
+
+    private boolean isComparatorOp(TokenType type) {
+        switch(type) {
+            case RCaret:
+            case LCaret:
+            case LessEqual:
+            case GreaterEqual:
+            case EqualEqual:
+            case NotEqual:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private boolean isLogicOp(TokenType type) {
+        switch(type) {
+            case Not: 
+            case AmpAmp:  
+            case BarBar:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private boolean isBinaryOp(TokenType type) {
+        return isArithOp(type) || isComparatorOp(type) || isLogicOp(type);
     }
 
     public void accept(TokenType type) throws SyntaxError {
         if (_token.type == type) {
             StackTraceElement[] trace_elts = Thread.currentThread().getStackTrace();
-            int idx;
+            int st, end;
+            String s;
             for (StackTraceElement elt : trace_elts) {
-                if ((idx = elt.toString().indexOf("parse")) != -1) {
-                    System.out.println("Parser accepted " + type + " in " + elt.toString().substring(idx));
+                if ((st = elt.toString().indexOf("parse")) != -1) {
+                    end = elt.toString().indexOf('(');
+                    s = elt.toString().substring(st+5, end);
+                    System.out.println("Parser accepted " + type + (s.length() > 0 ? (" in " + s) : ""));
                     break;
                 }
             }
@@ -67,9 +92,12 @@ public class Parser {
             StackTraceElement[] trace_elts = Thread.currentThread().getStackTrace();
             System.out.println("error!");
 
+            int st, end;
+
             for (StackTraceElement elt : trace_elts) {
-                if ((elt.toString().indexOf("parse")) != -1) {
-                    System.out.println(elt.toString());
+                if ((st = elt.toString().indexOf("parse")) != -1) {
+                    end = elt.toString().indexOf('(');
+                    System.out.println("in " + elt.toString().substring(st + 5, end));
                 }
             }
             _reporter.report("Expected " + type + " but saw " + _token.type + " at (" + _token.line + ", " + _token.column + ")");
@@ -93,66 +121,73 @@ public class Parser {
 
     
     private void parseClassDeclaration() throws SyntaxError {
-        accept(TokenType.Class);
-        accept(TokenType.Ident);
-        accept(TokenType.LBrace);
-
-        while (_token.type != TokenType.RBrace) {
-            // fuzzy for field vs method declaration...
-            if (_token.type == TokenType.Public ||
-                _token.type == TokenType.Private) {
-                acceptIt();
-            } else {
-                throw new SyntaxError("Expected access specifier");
-            }
-
-
-            if (_token.type == TokenType.Static) {
-                acceptIt();
-            }
-
-            boolean method_dec = false;
-
-            if (_token.type == TokenType.Void) {
-                method_dec = true;
-                acceptIt();
-            } else if (_token.type == TokenType.Int || _token.type == TokenType.Boolean) {
-                acceptIt();
-            } else {
-                throw new SyntaxError("Expected type specifier");
-            }
-
+        while (_token.type == TokenType.Class) {
+            accept(TokenType.Class);
             accept(TokenType.Ident);
+            accept(TokenType.LBrace);
 
-            if (_token.type == TokenType.LParen) {
-                parseParameterList();
-                parseStatementBlock();
-            } else {
-                if (method_dec) throw new SyntaxError("Expected non-void type specifier");
-                else accept(TokenType.Semicolon);
+            while (_token.type != TokenType.RBrace) {
+                parseClassLevelStatement();
             }
-        }
 
-        accept(TokenType.RBrace);
+            accept(TokenType.RBrace);
+        }
     }
 
-    private void parseParameterList() {
-        accept(TokenType.LParen);
-        
-        // this is debatably unnecessary ninja stuff
-        while (true)  {
-            if (_token.type == TokenType.Int || _token.type == TokenType.Boolean) {
-                acceptIt();
-            } else {throw new SyntaxError("Expected type specifier for parameter, saw " + _token.type + " instead");}
-            accept(TokenType.Ident);
+    private void parseClassLevelMethodTail() throws SyntaxError {
+        parseParameterList();
+        parseStatementBlock();
+    }
 
-            if (_token.type == TokenType.Comma) {
-                acceptIt();
-                continue;
-            } else {
-                break;
-            }
+    private void parseClassLevelStatement() throws SyntaxError {
+        // CLS      ::= vis access CLS'
+        // CLS'     ::= type CLS"? | void CLS"
+        // CLS"     ::= id (params) {statement*}
+
+
+        if (_token.type == TokenType.Public ||
+            _token.type == TokenType.Private) {
+            acceptIt();
         } 
+
+        if (_token.type == TokenType.Static) {
+            acceptIt();
+        }
+
+        if (_token.type == TokenType.Void) {
+            acceptIt();
+            accept(TokenType.Ident);
+            parseClassLevelMethodTail();
+        } else {
+            parseType();
+            accept(TokenType.Ident);
+            if (_token.type == TokenType.Semicolon) {
+                acceptIt();
+            } else {
+                parseClassLevelMethodTail();
+            }
+        }
+    }
+
+    private void parseParameterList() throws SyntaxError {
+        accept(TokenType.LParen);
+
+        if (_token.type != TokenType.RParen)
+            while (true)  {
+
+                parseType();
+
+                accept(TokenType.Ident);
+
+                if (_token.type == TokenType.Comma) {
+                    acceptIt();
+                    continue;
+                } else if (_token.type == TokenType.RParen) {
+                    break;
+                } else {
+                    throw new SyntaxError("Expected comma to continue parameter list");
+                }
+            } 
 
         accept(TokenType.RParen);
     }
@@ -164,18 +199,12 @@ public class Parser {
             parseStatementBlock();
         } else {
             switch (_token.type) {
-                case Int:
-                case Boolean:
-                    parseLocalDeclaration();
-                    accept(TokenType.Semicolon);
-                    break;
-                case Ident:
-                case This:
-                    parseLocalReference();
-                    accept(TokenType.Semicolon);
-                    break;
                 case If:
-
+                    parseIfStatement();
+                    break;
+                case While:
+                    parseWhileStatement();
+                    break;
                 case Return:
                     accept(TokenType.Return);
                     if (_token.type == TokenType.Semicolon)
@@ -187,9 +216,101 @@ public class Parser {
                     break;
                 case RBrace:
                     break;
+                case Int:
+                case Boolean:
+                    parseLocalDeclaration();
+                    accept(TokenType.Semicolon);
+                    break;
+                case Ident:
+                    acceptIt();
+                    if (_token.type == TokenType.LBracket) {
+                        // could be TypeId[] Id = E; or Ref[E] = E;
+                        acceptIt();
+                        if (_token.type == TokenType.RBracket) {
+                            // TypeId[];
+                            acceptIt();
+                            // parse Id = E;
+                            parseLocalDeclarationTail();
+                        } else {
+                            // parse E] = E;
+                            parseExpression();
+                            accept(TokenType.RBracket);
+                            accept(TokenType.Equal);
+                            parseExpression();
+                        }
+                    } else if (_token.type == TokenType.Ident) {
+                        // parse Id = E;
+                        parseLocalDeclarationTail();
+                    } else {
+                        if (_token.type == TokenType.LParen) {
+                            parseMethodCall();
+                        } else {
+                            accept(TokenType.Equal);
+                            parseExpression();
+                        }
+                        
+                    }
+                    accept(TokenType.Semicolon);
+                    break;
+                case This:
+                    parseLocalReference();
+                    accept(TokenType.Semicolon);
+                    break;
                 default:
                     throw new SyntaxError("Invalid token in statement");
             }
+        }
+    }
+
+    private void parseMessyStatement() {
+        if (_token.type == TokenType.Ident) {
+            // this could be one of:
+            // Type id = Expression;
+            // Reference = Expression;
+            // Reference[Expression] = Expression;
+            // Reference(ArgumentList);
+
+            acceptIt();
+            if (_token.type == TokenType.LBracket) {
+
+                // we could be in id[] id = expression (typed initializer)
+                // or reference[expression]
+
+                acceptIt();
+                if (_token.type == TokenType.RBracket) {
+                    // type specifier
+                    acceptIt();
+                    accept(TokenType.Ident);
+                    accept(TokenType.Semicolon);
+                } else {
+                    // indexed assignment to array reference[e] = e;
+                    parseExpression();
+                    accept(TokenType.RBracket);
+                    accept(TokenType.Equal);
+                    parseExpression();
+                    accept(TokenType.Semicolon);
+                }
+            } else if (_token.type == TokenType.Ident) {
+                accept(TokenType.Ident);
+                accept(TokenType.Equal);
+                parseExpression();
+
+            } 
+        }
+    }
+
+    private void parseType() throws SyntaxError {
+        if (_token.type == TokenType.Boolean) 
+            acceptIt();
+        else if( _token.type == TokenType.Int ||
+            _token.type == TokenType.Ident) {
+            acceptIt();
+            if (_token.type == TokenType.LBracket) {
+                acceptIt();
+                accept(TokenType.RBracket);
+            }
+        } else {
+            throw new SyntaxError("Expected valid type specifier, saw " + _token.type + " instead");
         }
     }
 
@@ -206,9 +327,17 @@ public class Parser {
         }
     }
 
+    private void parseWhileStatement() throws SyntaxError {
+        accept(TokenType.While);
+        accept(TokenType.LParen);
+        parseExpression();
+        accept(TokenType.RParen);
+        parseStatement();
+    }
+
     private void parseStatementBlock() throws SyntaxError {
 
-        acceptIt();
+        accept(TokenType.LBrace);
 
         while (true) {
             if (_token.type == TokenType.RBrace) {
@@ -221,7 +350,11 @@ public class Parser {
     }
 
     private void parseLocalDeclaration() throws SyntaxError {
-        acceptIt();
+        parseType();
+        parseLocalDeclarationTail();
+    }
+
+    private void parseLocalDeclarationTail() throws SyntaxError {
         accept(TokenType.Ident);
         accept(TokenType.Equal);
         parseExpression();
@@ -270,7 +403,7 @@ public class Parser {
             case Ident:
             case This:
                 parseReference();
-                if (_token.type == TokenType.LBrace) {
+                if (_token.type == TokenType.LBracket) {
                     parseArrayIndex();
                 } else if (_token.type == TokenType.LParen) {
                     parseMethodCall();

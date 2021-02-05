@@ -1,6 +1,4 @@
 package syntacticAnalyzer;
-
-
 public class SyntaxError extends Error {
     private static final long serialVersionUID = 1L;	
 
@@ -11,7 +9,7 @@ public class SyntaxError extends Error {
     }
 
     public SyntaxError() {
-        ;
+        message = "";
     }
 
     @Override

@@ -74,6 +74,7 @@ public class Scanner {
 		this._reader = r;
 		this._index = -2;
 		this.advance(2);
+		this._column = this._line = 1;
 		this._errorstate = false;
 	}
 	
@@ -128,18 +129,22 @@ public class Scanner {
 					this._errorstate = true;
 				}
 				_next = readchar > -1 ? (char) readchar : '\0';
+
+				// replace \r\n line terminators with \n
+				if ((_current == '\r' && _next == '\n')) {
+					advance();
+				} else if (_current == '\n') {
+					this._line++;
+					this._column = 1;
+				} else {
+					this._column++;
+				}
 			} catch (IOException e) {
 				System.err.println(e);
-				_next = '\0';
+				_current = _next = '\0';
 			}
+
 			_index++;
-			
-			if (_current == '\n' || (_current == '\r' && _next == '\n')) {
-				this._line++;
-				this._column = 1;
-			} else {
-				this._column++;
-			}
 		}
 	}
 	
@@ -191,29 +196,9 @@ public class Scanner {
 				break;
 			}
 		}
-
-		current = currentChar();
-		next = nextChar();
-		start_index = _index;
 		
-		if (current == '\0') return makeToken(TokenType.Eot, mark);
-				
-		/*
-			// this accepts \n and \r\n but not \r 
-		if (current == '\n') {
-			out = makeToken(TokenType.Eol, mark);
-		} else if (current == '\r' && next == '\n') {
-			out = makeToken(TokenType.Eol, mark);
-			advance();
-		}
-		
-		// have we found the token?
-		if (out != null) {
-			advance();
-			return out;
-		}
-		*/
-		
+		if (currentChar() == '\0') return makeToken(TokenType.Eot, getMark());
+					
 		current = currentChar();
 		next = nextChar();
 		mark = getMark();

@@ -1,0 +1,39 @@
+/* this file should be used to help make sure that your parser is 
+ * catching errors that it should. To use, make sure each error is caught 
+ * then either fix or remove it. */ 
+
+public class BadClass1 {               // no visibility specifiers on classes
+
+    private static int x = 90;      // cannot assign in field declaration
+    int 12_y;                       // bad identifier
+    boolean money$;                 // another bad identifier
+
+    public stupid int fail() {      // invalid method declaration
+        return 3;
+    }
+
+    private int dontWork(int a, boolean b, ) {      // bad parameter list
+        return 3; ;         // semicolons alone are not valid statements (they are in real java)
+    }
+}
+
+class BadClass2 {
+
+    public boolean आ;       // no non-ascii characters
+    public int ＢＡＤ;       // no non-ascii characters
+
+    public static int badOperators(int x) {
+        int y = x;
+        x += 3;             // no += or related ops (-=, *=, /=, etc)
+        ++y;                // no inc/dec operators
+        y = y + (x << 3)    // no bitwise operators (<<, >>, &, |, etc)
+        x = x + (y % 3);    // no modulo
+        y = (x + y) > 3 ? x + y : 2;    // no ternary
+        return y;
+    }
+
+    private int this;       // reserved keyword as identifier
+}
+
+
+// comment at end of file
