@@ -1,13 +1,13 @@
 package syntacticAnalyzer;
-public class SyntaxError extends SourceError {
 
+public class ScanError extends SourceError {
     private static final long serialVersionUID = 1L;	
 
-    public SyntaxError(String message, SourceMark location) {
+    public ScanError(String message, SourceMark location) {
         super(message, location);
     }
 
-    public SyntaxError(String message, String hint, SourceMark location) {
+    public ScanError(String message, String hint, SourceMark location) {
         super(message, hint, location);
     }
 

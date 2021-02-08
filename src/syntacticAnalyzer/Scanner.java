@@ -2,8 +2,7 @@ package syntacticAnalyzer;
 
 import miniJava.ErrorReporter;
 import utility.CharTrie;
-import syntacticAnalyzer.TokenType;
-import syntacticAnalyzer.Token;
+import syntacticAnalyzer.ScanError;
 import java.io.Reader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -11,7 +10,7 @@ import java.io.StringReader;
 
 public class Scanner {
 	
-	private Reader _reader;
+	private SourceReader _reader;
 	private int _index;
 	private int _line;
 	private int _column;
@@ -53,7 +52,7 @@ public class Scanner {
 	}
 	
 	public Scanner(String s, ErrorReporter reporter) {
-		this(new StringReader(s), reporter);
+		this(new SourceReader(new StringReader(s)), reporter);
 	}
 	
 	public void reset() {
@@ -71,10 +70,8 @@ public class Scanner {
 		 * Then set the index to -2, and prime it twice to set 
 		 * the _current and _next char fields.  */
 		this.reset();
-		this._reader = r;
-		this._index = -2;
-		this.advance(2);
-		this._column = this._line = 1;
+		this._reader = new SourceReader(r);
+		advance(2);
 		this._errorstate = false;
 	}
 	
@@ -88,19 +85,9 @@ public class Scanner {
 		}
 	}
 
-	// courtesy method over the reporter to add "Scan error: " before the string
-	private void reportError(String s) {
-		_reporter.report("Scan error: " + s);
-	}	
-
-	// take snapshot of the current scanner position
-	private ScannerMark getMark() {
-		return new ScannerMark(this._index, this._line, this._column);
-	}
-
 	// courtesy method to fill in line and column
-	private Token makeToken(TokenType type, ScannerMark mark) {
-		return new Token(type, mark.index, mark.line, mark.column);
+	private Token makeToken(TokenType type, SourceMark mark) {
+		return new Token(type, mark);
 	}
 	
 	private void advance() {
@@ -119,16 +106,8 @@ public class Scanner {
 			try {
 				
 				int readchar = _reader.read();
-				
-				// if readchar is not in the ASCII range, 
-				// report the error and brickwall the scanner
-				if (readchar > 127) {
-					reportError("bad input encoding.");
-					_current = '\0';
-					_next = '\0';
-					this._errorstate = true;
-				}
-				_next = readchar > -1 ? (char) readchar : '\0';
+
+				_next = (char) readchar;
 
 				// replace \r\n line terminators with \n
 				if ((_current == '\r' && _next == '\n')) {
@@ -140,8 +119,10 @@ public class Scanner {
 					this._column++;
 				}
 			} catch (IOException e) {
-				System.err.println(e);
+				_reporter.report(e.toString());
 				_current = _next = '\0';
+			} catch (SourceError e) {
+				_reporter.report(e);
 			}
 
 			_index++;
@@ -164,8 +145,7 @@ public class Scanner {
 
 		char current = currentChar();
 		char next = nextChar();
-		ScannerMark mark = getMark();
-		int start_index = mark.index;
+		SourceMark mark = _reader.getMark();
 		Token out = null;
 		
 		while (true) {
@@ -184,7 +164,7 @@ public class Scanner {
 						if (current == '\0') {
 							// if a multiline comment is unterminated before eof, 
 							// it's an error
-							return new Token(TokenType.Error, start_index);
+							return new Token(TokenType.Error, mark);
 						}
 						advance(); 
 					}
@@ -197,12 +177,11 @@ public class Scanner {
 			}
 		}
 		
-		if (currentChar() == '\0') return makeToken(TokenType.Eot, getMark());
+		if (currentChar() == '\0') return makeToken(TokenType.Eot, _reader.getMark());
 					
 		current = currentChar();
 		next = nextChar();
-		mark = getMark();
-		start_index = mark.index;
+		mark = _reader.getMark();
 		
 		// one-character tokens
 		switch (current) {
@@ -297,6 +276,8 @@ public class Scanner {
 					break;
 				}
 			}
+		} else {
+			_reporter.report(new ScanError("character is not valid", mark));
 		}
 
 		String slice = sb.toString();
@@ -317,16 +298,4 @@ public class Scanner {
 		// if we've made it here, there's an error
 	}
 	
-}
-
-class ScannerMark {
-	public int line;
-	public int column;
-	public int index;
-
-	public ScannerMark(int index, int line, int column) {
-		this.index = index;
-		this.line = line;
-		this.column = column;
-	}
 }

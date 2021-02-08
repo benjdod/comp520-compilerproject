@@ -100,8 +100,7 @@ public class Parser {
                     System.out.println("in " + elt.toString().substring(st + 5, end));
                 }
             }
-            _reporter.report("Expected " + type + " but saw " + _token.type + " at (" + _token.line + ", " + _token.column + ")");
-            throw new SyntaxError();
+            throw new SyntaxError("Expected " + type + " but saw " + _token.type, _token.mark);
         }
     }
 
@@ -131,6 +130,9 @@ public class Parser {
             }
 
             accept(TokenType.RBrace);
+        }
+        if (_token.type != TokenType.Eot) {
+            throw new SyntaxError("invalid class declaration. Expected EOT, saw " + _token.type, _token.mark);
         }
     }
 
@@ -185,7 +187,7 @@ public class Parser {
                 } else if (_token.type == TokenType.RParen) {
                     break;
                 } else {
-                    throw new SyntaxError("Expected comma to continue parameter list");
+                    throw new SyntaxError("Expected comma to continue parameter list", _token.mark);
                 }
             } 
 
@@ -241,6 +243,11 @@ public class Parser {
                     } else if (_token.type == TokenType.Ident) {
                         // parse Id = E;
                         parseLocalDeclarationTail();
+                    } else if (_token.type == TokenType.Dot) {
+                        acceptIt();
+                        parseReference();
+                        parseLocalReferenceTail();
+                        
                     } else {
                         if (_token.type == TokenType.LParen) {
                             parseMethodCall();
@@ -248,7 +255,6 @@ public class Parser {
                             accept(TokenType.Equal);
                             parseExpression();
                         }
-                        
                     }
                     accept(TokenType.Semicolon);
                     break;
@@ -257,45 +263,8 @@ public class Parser {
                     accept(TokenType.Semicolon);
                     break;
                 default:
-                    throw new SyntaxError("Invalid token in statement");
+                    throw new SyntaxError("Invalid token in statement", _token.mark);
             }
-        }
-    }
-
-    private void parseMessyStatement() {
-        if (_token.type == TokenType.Ident) {
-            // this could be one of:
-            // Type id = Expression;
-            // Reference = Expression;
-            // Reference[Expression] = Expression;
-            // Reference(ArgumentList);
-
-            acceptIt();
-            if (_token.type == TokenType.LBracket) {
-
-                // we could be in id[] id = expression (typed initializer)
-                // or reference[expression]
-
-                acceptIt();
-                if (_token.type == TokenType.RBracket) {
-                    // type specifier
-                    acceptIt();
-                    accept(TokenType.Ident);
-                    accept(TokenType.Semicolon);
-                } else {
-                    // indexed assignment to array reference[e] = e;
-                    parseExpression();
-                    accept(TokenType.RBracket);
-                    accept(TokenType.Equal);
-                    parseExpression();
-                    accept(TokenType.Semicolon);
-                }
-            } else if (_token.type == TokenType.Ident) {
-                accept(TokenType.Ident);
-                accept(TokenType.Equal);
-                parseExpression();
-
-            } 
         }
     }
 
@@ -310,7 +279,7 @@ public class Parser {
                 accept(TokenType.RBracket);
             }
         } else {
-            throw new SyntaxError("Expected valid type specifier, saw " + _token.type + " instead");
+            throw new SyntaxError("Expected valid type specifier, saw " + _token.type + " instead", _token.mark);
         }
     }
 
@@ -362,12 +331,18 @@ public class Parser {
 
     private void parseLocalReference() throws SyntaxError {
         acceptIt();
+        parseLocalReferenceTail();
+    }
 
+    private void parseLocalReferenceTail() throws SyntaxError {
         if (_token.type == TokenType.LParen) {
             parseMethodCall();
             return;
         } else {
             if (_token.type == TokenType.LBracket) parseArrayIndex();
+            else if (_token.type == TokenType.Dot) {
+                parseReferenceTail();
+            } 
             accept(TokenType.Equal);
             parseExpression();
         }
@@ -446,12 +421,16 @@ public class Parser {
     private void parseReference() throws SyntaxError {
         if (_token.type == TokenType.Ident || _token.type == TokenType.This) {
             acceptIt();
-            if (_token.type == TokenType.Dot) {
-                acceptIt();
-                parseReference();
-            }
+            parseReferenceTail();
         } else {
-            throw new SyntaxError("Syntax error in reference");
+            throw new SyntaxError("Syntax error in reference", _token.mark);
+        }
+    }
+
+    private void parseReferenceTail() throws SyntaxError {
+        while (_token.type == TokenType.Dot) {
+            accept(TokenType.Dot);
+            accept(TokenType.Ident);
         }
     }
 }

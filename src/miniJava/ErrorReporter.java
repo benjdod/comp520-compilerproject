@@ -7,17 +7,29 @@ public class ErrorReporter {
 
     private boolean _has_errors;
     private int _num_errors;
-    private ArrayList<String> _errors;
+    private ArrayList<Error> _errors;
 
     public ErrorReporter() {
         _num_errors = 0;
-        _errors = new ArrayList<String>();
+        _errors = new ArrayList<Error>();
     }
 
-    public void report(String s) {
-        _errors.add(s);
+    public void report(String message) {
+        _errors.add(new CompilerError(message));
         _num_errors++;
-        _has_errors = true;
+        _has_errors |= true;
+    }
+
+    public void report(String message, String hint) {
+        _errors.add(new CompilerError(message, hint));
+        _num_errors++;
+        _has_errors |= true;
+    }
+
+    public void report(Error e) {
+        _errors.add(e);
+        _num_errors++;
+        _has_errors |= true;
     }
 
     public boolean hasErrors() {
@@ -28,13 +40,13 @@ public class ErrorReporter {
         return _num_errors;
     }
 
-    public Iterator<String> getErrors() {
+    public Iterator<Error> getErrors() {
         return _errors.iterator();
     }
 
     public void print() {
-        for (String s : _errors) {
-            System.err.println(s);
+        for (Error e : _errors) {
+            System.err.println(e.getMessage());
         }
     }
 }
