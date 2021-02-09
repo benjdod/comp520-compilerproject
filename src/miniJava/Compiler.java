@@ -1,19 +1,36 @@
 package miniJava;
 
-import java.io.File;
 import java.io.FileReader;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
-import syntacticAnalyzer.Token;
-import syntacticAnalyzer.Scanner;
-import syntacticAnalyzer.Parser;
-import syntacticAnalyzer.SourceReader;
+import miniJava.syntacticAnalyzer.Parser;
+import miniJava.syntacticAnalyzer.Scanner;
+
 public class Compiler {
 	
 	static final int PARSE_SUCCESS = 0;
+	static final int COMMAND_FAILURE = 1;
 	static final int PARSE_FAILURE = 4;
+	
+	static void exitProgram(int exitcode) {
+		// System.out.println("Exiting with code " + exitcode);
+		System.exit(exitcode);
+	}
 
 	static void runCompiler(String filepath) {
+		
+		int l = filepath.lastIndexOf('.');
+		
+		
+		try {
+			String ext = filepath.substring(l + 1);
+			if ( !(ext.contentEquals("java") || ext.contentEquals("mjava"))) {
+				System.out.println("Incorrect file extension. (saw " + ext + ")");
+				exitProgram(COMMAND_FAILURE);
+			}
+		} catch (Exception e) {;}
+		
 		FileReader f = null;
 		ErrorReporter reporter = new ErrorReporter();
 
@@ -21,10 +38,10 @@ public class Compiler {
 			// this is the most surefire way I know to check for ASCII only outside of a raw byte
 			// stream, which seems spartan. Idk how it'll handle eastern encodings 
 			// (shift-JIS, GB, etc.) though...
-			f = new FileReader(filepath, Charset.forName("utf-8"));	
+			f = new FileReader(filepath, StandardCharsets.UTF_8);	
 		} catch (Exception e) {
 			System.err.println(e);
-			System.exit(PARSE_FAILURE);
+			exitProgram(COMMAND_FAILURE);
 		}
 
 		Scanner s = new Scanner(f, reporter);
@@ -33,11 +50,11 @@ public class Compiler {
 		p.parse();
 
 		if (reporter.hasErrors()) {
-			System.out.println("### Parse failed - check below for errors ###");
-			reporter.print();
-			System.exit(PARSE_FAILURE);
+			System.out.println("### Parse failed ###");
+			reporter.printFirst();
+			exitProgram(PARSE_FAILURE);
 		} else {
-			System.out.println("Parse successful");
+			exitProgram(PARSE_SUCCESS);
 		}
 
 		try {
@@ -45,7 +62,7 @@ public class Compiler {
 				f.close();
 		} catch (Exception e) {
 			System.err.println(e);
-			System.exit(PARSE_FAILURE);
+			System.exit(COMMAND_FAILURE);
 		}
 		
 		System.exit(PARSE_SUCCESS);
@@ -53,23 +70,12 @@ public class Compiler {
 	
 	public static void main(String[] args) {
 		
-		/*
-		ErrorReporter r = new ErrorReporter();
-		SourceReader s = new SourceReader("class Test {}\nclass Thing");
+		if (args.length != 1) {
+			System.out.println("Error: please enter a single path to a valid miniJava source file");
+			exitProgram(COMMAND_FAILURE);
+		}
 		
-		int c; 
-
-		try {
-			while ((c = s.read()) != '\0') {
-				System.out.println(String.format("%d\t%c", c,c));
-			}
-		} catch (Exception e) { ; }
-
-		System.out.println("print complete!");
-		*/
-
-		runCompiler("../minijava_tests/parsing/test3.mjava");
-		
+		runCompiler(args[0]);
 	}
 
 }

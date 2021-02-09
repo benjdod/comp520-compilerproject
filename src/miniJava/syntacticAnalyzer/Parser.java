@@ -1,7 +1,8 @@
-package syntacticAnalyzer;
+package miniJava.syntacticAnalyzer;
 
-import syntacticAnalyzer.SyntaxError;
 import miniJava.ErrorReporter;
+import miniJava.syntacticAnalyzer.SyntaxError;
+
 import java.util.function.*;
 public class Parser {
 
@@ -112,9 +113,9 @@ public class Parser {
         _token = _scanner.next();   // prime the scanner
         try {
             parseClassDeclaration();
-            accept(TokenType.Eot);
+            accept(TokenType.Eot);            
         } catch (SyntaxError e) {
-            _reporter.report(e.getMessage());
+            _reporter.report(e);
         }
     }
 
@@ -409,13 +410,14 @@ public class Parser {
                     }
                 }
                 break;
+            default:
+            	break;
         }
 
         if (isBinaryOp(_token.type)) {
             acceptIt();
             parseExpression();
-        }
-
+        }         
     }
 
     private void parseReference() throws SyntaxError {
@@ -428,8 +430,16 @@ public class Parser {
     }
 
     private void parseReferenceTail() throws SyntaxError {
-        while (_token.type == TokenType.Dot) {
+        while (_token.type == TokenType.Dot && ! _scanner.spaceBefore()) {
+        	
             accept(TokenType.Dot);
+            
+            if (_scanner.spaceBefore()) {
+            	throw new SyntaxError(
+            			"unterminated reference", 
+            			"dotted references cannot be whitespace separated", 
+            			_token.mark);
+            }
             accept(TokenType.Ident);
         }
     }

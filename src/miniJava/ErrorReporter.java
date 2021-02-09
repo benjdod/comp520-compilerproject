@@ -49,4 +49,10 @@ public class ErrorReporter {
             System.err.println(e.getMessage());
         }
     }
+    
+    public void printFirst() {
+    	try {
+            System.err.println(_errors.get(0).getMessage());
+    	} catch (Exception e) {;}
+    }
 }

@@ -1,7 +1,7 @@
-package syntacticAnalyzer;
+package miniJava.syntacticAnalyzer;
 
-import syntacticAnalyzer.TokenType;
-import syntacticAnalyzer.SourceMark;
+import miniJava.syntacticAnalyzer.SourceMark;
+import miniJava.syntacticAnalyzer.TokenType;
 
 public class Token {
 	

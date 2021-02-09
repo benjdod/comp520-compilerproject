@@ -1,4 +1,4 @@
-package syntacticAnalyzer;
+package miniJava.syntacticAnalyzer;
 public class SyntaxError extends SourceError {
 
     private static final long serialVersionUID = 1L;	

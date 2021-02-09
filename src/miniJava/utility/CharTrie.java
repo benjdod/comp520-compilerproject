@@ -1,4 +1,4 @@
-package utility;
+package miniJava.utility;
 
 import java.util.ArrayList;
 

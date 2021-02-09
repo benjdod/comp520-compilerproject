@@ -1,4 +1,4 @@
-package syntacticAnalyzer;
+package miniJava.syntacticAnalyzer;
 
 public enum TokenType {
 	

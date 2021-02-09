@@ -4,6 +4,7 @@
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
+
         {
             "type": "java",
             "name": "Launch Current File",
@@ -15,7 +16,8 @@
             "name": "Launch Compiler",
             "request": "launch",
             "mainClass": "miniJava.Compiler",
-            "projectName": "COMP520_PA1"
+            "projectName": "COMP520_PA1",
+            "args": "../minijava_tests/parsing/test5.mjava"
         }
     ]
 }

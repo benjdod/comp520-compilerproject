@@ -1,4 +1,4 @@
-package syntacticAnalyzer;
+package miniJava.syntacticAnalyzer;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -41,6 +41,16 @@ public class SourceReader extends Reader {
             return _buffer.charAt(_index + 1);
         } catch (IndexOutOfBoundsException e) {return '\0';}
     }
+    
+    private void clearBufferFirstLine() {
+    	int i = 0;
+    	
+    	while (_buffer.charAt(i++) != '\n') { ; }
+		_buffer.delete(0, i);
+		
+		_index -= i;
+
+    }
 
     private void readLineIntoBuffer() throws IOException, SourceError {
         int c = _reader.read();
@@ -48,9 +58,9 @@ public class SourceReader extends Reader {
             if (c > 127) {
                 throw new SourceError(String.format("Bad encoding on character %c", c), 
                     "Note that ASCII is the only valid encoding for a MiniJava source file.",
-                    new SourceMark(0,0,_index));
-            }
-            _buffer.append((char) c);
+                    new SourceMark(0,0));
+            } else if (c == -1) ; 
+            else _buffer.append((char) c);
         } while ((c = _reader.read()) != '\n' && c != '\0'  && c != -1);
 
         if (c == '\n') _buffer.append('\n');
@@ -58,21 +68,9 @@ public class SourceReader extends Reader {
         _lines_stored++;
 
         if (_lines_stored > LINES_TO_STORE) {
-            int i = 0;
-
-            while(_buffer.charAt(i) != '\n') {
-                i++;
-            }
-
-            if (i > 0) {
-                _buffer.delete(0, i);
-            }
-
-            _index -= i;
-            
+            clearBufferFirstLine();
             _lines_stored--;
-        }
-        
+        }        
     }
 
     public int read() throws IOException {
@@ -85,6 +83,7 @@ public class SourceReader extends Reader {
         if (currentChar() == '\n') {
             readLineIntoBuffer();
             _line++;
+            _column = 1;
         } else if (currentChar() == '\0') {
             return '\0';
         } else {
@@ -96,7 +95,7 @@ public class SourceReader extends Reader {
     }   
 
     public SourceMark getMark() {
-        return new SourceMark(_line, _column, _index);
+        return new SourceMark(_line, _column);
     }
 
     public int read(char[] buf, int off, int len) throws IOException {
@@ -106,6 +105,10 @@ public class SourceReader extends Reader {
 
     public void close() throws IOException {
         _reader.close();
+    }
+    
+    public String getBufferLines() {
+    	return _buffer.toString();
     }
     
 }

@@ -1,8 +1,9 @@
-package syntacticAnalyzer;
+package miniJava.syntacticAnalyzer;
 
 import miniJava.ErrorReporter;
-import utility.CharTrie;
-import syntacticAnalyzer.ScanError;
+import miniJava.syntacticAnalyzer.ScanError;
+import miniJava.utility.CharTrie;
+
 import java.io.Reader;
 import java.io.FileReader;
 import java.io.IOException;
@@ -16,6 +17,7 @@ public class Scanner {
 	private int _column;
 	private char _current;
 	private char _next;
+	private boolean _spacebefore;
 	private boolean _errorstate;
 	private ErrorReporter _reporter;
 	
@@ -62,6 +64,7 @@ public class Scanner {
 		this._line = 1;
 		this._column = 1;
 		this._errorstate = false;
+		this._spacebefore = false;
 	}
 	
 	// loads and primes the scanner for getting tokens
@@ -148,11 +151,15 @@ public class Scanner {
 		SourceMark mark = _reader.getMark();
 		Token out = null;
 		
+		_spacebefore = false;
+		
 		while (true) {
 
 			if (Character.isWhitespace(currentChar())) {
 				advance();
+				this._spacebefore = true;
 			} else if (currentChar() == '/') {
+				SourceMark comment_start = _reader.getMark();
 				if (nextChar() == '/') {
 					advance(2);
 					while (currentChar() != '\n' && currentChar() != '\r' && currentChar() != '\0') advance();
@@ -164,6 +171,9 @@ public class Scanner {
 						if (current == '\0') {
 							// if a multiline comment is unterminated before eof, 
 							// it's an error
+							_reporter.report(new ScanError("Unterminated multi-line comment starting at "
+									+ comment_start.toString(), 
+									mark));
 							return new Token(TokenType.Error, mark);
 						}
 						advance(); 
@@ -277,7 +287,7 @@ public class Scanner {
 				}
 			}
 		} else {
-			_reporter.report(new ScanError("character is not valid", mark));
+			_reporter.report(new ScanError(String.format("character '%c' is not valid", current), mark));
 		}
 
 		String slice = sb.toString();
@@ -296,6 +306,14 @@ public class Scanner {
 		
 		return out;
 		// if we've made it here, there's an error
+	}
+	
+	public boolean spaceBefore() {
+		return this._spacebefore;
+	}
+	
+	public String getBufferLines() {
+		return _reader.getBufferLines();
 	}
 	
 }

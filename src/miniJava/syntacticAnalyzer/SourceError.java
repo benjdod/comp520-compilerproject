@@ -1,4 +1,4 @@
-package syntacticAnalyzer;
+package miniJava.syntacticAnalyzer;
 
 import miniJava.CompilerError;
 
