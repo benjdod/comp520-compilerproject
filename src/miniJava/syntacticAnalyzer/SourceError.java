@@ -1,19 +1,19 @@
-package miniJava.syntacticAnalyzer;
+package miniJava.SyntacticAnalyzer;
 
 import miniJava.CompilerError;
 
 public class SourceError extends CompilerError {
 
-    SourceMark _location;
+    SourcePosition _location;
 
     private static final long serialVersionUID = 1L;	
     
-    public SourceError(String message, SourceMark location) {
+    public SourceError(String message, SourcePosition location) {
         super(message);
         _location = location;
     }
 
-    public SourceError(String message, String hint, SourceMark location) {
+    public SourceError(String message, String hint, SourcePosition location) {
         super(message, hint);
         _location = location;
     }

@@ -1,7 +1,7 @@
-package miniJava.syntacticAnalyzer;
+package miniJava.SyntacticAnalyzer;
 
 import miniJava.ErrorReporter;
-import miniJava.syntacticAnalyzer.ScanError;
+import miniJava.SyntacticAnalyzer.ScanError;
 import miniJava.utility.CharTrie;
 
 import java.io.Reader;
@@ -89,7 +89,7 @@ public class Scanner {
 	}
 
 	// courtesy method to fill in line and column
-	private Token makeToken(TokenType type, SourceMark mark) {
+	private Token makeToken(TokenType type, SourcePosition mark) {
 		return new Token(type, mark);
 	}
 	
@@ -148,7 +148,7 @@ public class Scanner {
 
 		char current = currentChar();
 		char next = nextChar();
-		SourceMark mark = _reader.getMark();
+		SourcePosition mark = _reader.getMark();
 		Token out = null;
 		
 		_spacebefore = false;
@@ -159,7 +159,7 @@ public class Scanner {
 				advance();
 				this._spacebefore = true;
 			} else if (currentChar() == '/') {
-				SourceMark comment_start = _reader.getMark();
+				SourcePosition comment_start = _reader.getMark();
 				if (nextChar() == '/') {
 					advance(2);
 					while (currentChar() != '\n' && currentChar() != '\r' && currentChar() != '\0') advance();
@@ -293,7 +293,9 @@ public class Scanner {
 		String slice = sb.toString();
 		
 		if (!keyword_possible) {
-			return makeToken(TokenType.Ident, mark);
+			out = makeToken(TokenType.Ident, mark);
+			out.spelling = sb.toString();
+			return out;
 		}
 		
 		TokenType keywordtype = _keywordtree.get(slice);
@@ -302,6 +304,7 @@ public class Scanner {
 			out =  makeToken(keywordtype, mark);
 		} else {
 			out = makeToken(TokenType.Ident, mark);
+			out.spelling = sb.toString();
 		}
 		
 		return out;

@@ -1,4 +1,4 @@
-package miniJava.syntacticAnalyzer;
+package miniJava.SyntacticAnalyzer;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -58,7 +58,7 @@ public class SourceReader extends Reader {
             if (c > 127) {
                 throw new SourceError(String.format("Bad encoding on character %c", c), 
                     "Note that ASCII is the only valid encoding for a MiniJava source file.",
-                    new SourceMark(0,0));
+                    new SourcePosition(0,0));
             } else if (c == -1) ; 
             else _buffer.append((char) c);
         } while ((c = _reader.read()) != '\n' && c != '\0'  && c != -1);
@@ -94,8 +94,8 @@ public class SourceReader extends Reader {
         return out;
     }   
 
-    public SourceMark getMark() {
-        return new SourceMark(_line, _column);
+    public SourcePosition getMark() {
+        return new SourcePosition(_line, _column);
     }
 
     public int read(char[] buf, int off, int len) throws IOException {

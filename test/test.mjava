@@ -1,0 +1,15 @@
+class hello {
+    public static int x;
+
+    public int retr() {
+        int z = 1;
+        return z;
+    }
+
+    // this returns an error too...
+    public int retr2() {
+        int z;
+        z = 1;
+        return z;
+    }
+}

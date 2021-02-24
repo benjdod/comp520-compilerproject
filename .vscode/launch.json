@@ -17,7 +17,7 @@
             "request": "launch",
             "mainClass": "miniJava.Compiler",
             "projectName": "COMP520_PA1",
-            "args": "../minijava_tests/parsing/test5.mjava"
+            "args": "./test/test.mjava"
         }
     ]
 }

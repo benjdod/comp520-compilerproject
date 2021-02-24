@@ -1,11 +1,11 @@
 package miniJava;
 
 import java.io.FileReader;
-import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 
-import miniJava.syntacticAnalyzer.Parser;
-import miniJava.syntacticAnalyzer.Scanner;
+import miniJava.SyntacticAnalyzer.Parser;
+import miniJava.SyntacticAnalyzer.Scanner;
+import miniJava.AbstractSyntaxTrees.*;
 
 public class Compiler {
 	
@@ -47,7 +47,10 @@ public class Compiler {
 		Scanner s = new Scanner(f, reporter);
 		Parser p = new Parser(s, reporter);
 
-		p.parse();
+		AST tree = p.parse();
+
+		ASTDisplay ad = new ASTDisplay();
+		ad.showTree(tree);
 
 		if (reporter.hasErrors()) {
 			System.out.println("### Parse failed ###");
