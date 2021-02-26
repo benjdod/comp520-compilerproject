@@ -49,16 +49,14 @@ public class Compiler {
 
 		AST tree = p.parse();
 
-		ASTDisplay ad = new ASTDisplay();
-		ad.showTree(tree);
-
 		if (reporter.hasErrors()) {
 			System.out.println("### Parse failed ###");
 			reporter.printFirst();
 			exitProgram(PARSE_FAILURE);
-		} else {
-			exitProgram(PARSE_SUCCESS);
-		}
+		} 
+
+		ASTDisplay ad = new ASTDisplay();
+		ad.showTree(tree);
 
 		try {
 			if (f != null)

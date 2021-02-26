@@ -1,15 +1,18 @@
 class hello {
-    public static int x;
 
-    public int retr() {
-        int z = 1;
-        return z;
+    int retr() {
+
+        if (true && true) {
+            int x = 1;
+        }
+
+        int z = 1 / 2 * 8;
     }
 
     // this returns an error too...
     public int retr2() {
-        int z;
-        z = 1;
-        return z;
+        int[] z = new int[4];
+        z[0] = 9;
+        return this;
     }
 }

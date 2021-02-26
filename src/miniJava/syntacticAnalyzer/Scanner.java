@@ -249,6 +249,20 @@ public class Scanner {
 			} else {
 				out = makeToken(TokenType.Not, mark);
 			}
+		} else if (current == '|') {
+			if (next == '|') {
+				out = makeToken(TokenType.BarBar, mark);
+				advance();
+			} else {
+				throw new ScanError("expected a second '|' but saw " + next, mark);
+			}
+		} else if (current == '&') {
+			if (next == '&') {
+				out = makeToken(TokenType.AmpAmp, mark);
+				advance();
+			} else {
+				throw new ScanError("expected a second '|' but saw " + next, mark);
+			}
 		}
 		
 		// token?
@@ -266,12 +280,15 @@ public class Scanner {
 		
 		if (Character.isDigit(currentChar())) {
 			while (Character.isDigit((current = currentChar()))) {
+				sb.append(current);
 				advance();
 			}
 			if (Character.isAlphabetic(current)) {
 				return makeToken(TokenType.Error, mark);
 			} else {
-				return makeToken(TokenType.Num, mark);
+				out = makeToken(TokenType.Num, mark);
+				out.spelling = sb.toString();
+				return out;
 			}
 		} else if (Character.isAlphabetic(currentChar())) {
 			while (true) {

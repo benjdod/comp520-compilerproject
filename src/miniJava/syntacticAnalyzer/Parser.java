@@ -615,7 +615,7 @@ public class Parser {
         Operator o = null;
 
         while (
-            _token.type == TokenType.BarBar
+            _token.type == TokenType.AmpAmp
         ) {
             le = out;   // left associative shift
             o = new Operator(_token);
@@ -732,6 +732,8 @@ public class Parser {
 
     private Expression parseExpression() throws SyntaxError {
     	Expression e = null;
+        SourcePosition head = _token.mark.makeCopy();
+
         switch (_token.type) {
             case Num:
             	e = new LiteralExpr(new IntLiteral(_token), _token.mark);
@@ -751,7 +753,7 @@ public class Parser {
                 } else if (_token.type == TokenType.LParen) {
                     e = parseMethodCallExpr(r);
                 } else {
-                    throw new SyntaxError("improper reference to 'this'", _token.mark);
+                    e = new RefExpr(r, r.posn);
                 }
                 break;
             case Minus:
@@ -768,7 +770,7 @@ public class Parser {
                 if (_token.type == TokenType.Int) {
                     acceptIt();
                     Expression idx_expr = parseArrayIndex();
-                    return new NewArrayExpr(new BaseType(TypeKind.INT, _token.mark), idx_expr, _token.mark)
+                    return new NewArrayExpr(new BaseType(TypeKind.INT, _token.mark), idx_expr, _token.mark);
                 } else {
                     Identifier target_ident = new Identifier(_token);
                     accept(TokenType.Ident);
@@ -777,21 +779,25 @@ public class Parser {
                         accept(TokenType.RParen);
                     } else if (_token.type == TokenType.LBracket) {
                         Expression idx_expr = parseArrayIndex();
-                        return new NewArrayExpr(new ClassType(target_ident, target_ident.posn), idx_expr, target_ident.posn)
+                        return new NewArrayExpr(new ClassType(target_ident, target_ident.posn), idx_expr, target_ident.posn);
                     }
                 }
                 break;
             default:
-                throw new SyntaxError("bad expression!", _token.mark);
+                throw new SyntaxError("bad expression!", head);
         }
 
-
+        System.out.println("expression op type: " + isBinaryOp(_token.type));
 
         if (isBinaryOp(_token.type)) {
-            parseDisjuncExpr();
+            e = parseDisjuncExpr(e);
         } 
+
+        if (e == null) {
+            throw new SyntaxError("Bad expression, idk why...", head);
+        }
         
-        return null;
+        return e;
     }
 
     private Reference parseReference() throws SyntaxError {
