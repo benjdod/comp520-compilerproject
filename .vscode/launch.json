@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch Hello",
+            "request": "launch",
+            "mainClass": "hello.Hello",
+            "projectName": "COMP520_PA1"
+        },
+        {
+            "type": "java",
             "name": "Launch Checkpoint1",
             "request": "launch",
             "mainClass": "Checkpoint1",
