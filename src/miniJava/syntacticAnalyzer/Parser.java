@@ -67,7 +67,6 @@ public class Parser {
 
     private boolean isLogicOp(TokenType type) {
         switch(type) {
-            case Not: 
             case AmpAmp:  
             case BarBar:
                 return true;
@@ -524,6 +523,10 @@ public class Parser {
     }
 
     private Statement parseLocalReferenceTail(Reference r) throws SyntaxError {
+        if (_token.type == TokenType.Dot) {
+            r = parseReferenceTail(r);
+        }
+        
         if (_token.type == TokenType.LParen) {
             return parseMethodCallStatement(r);
         } else {
@@ -734,6 +737,7 @@ public class Parser {
     	Expression e = null;
         SourcePosition head = _token.mark.makeCopy();
 
+    	boolean take = true;
         switch (_token.type) {
             case Num:
             	e = new LiteralExpr(new IntLiteral(_token), _token.mark);
@@ -784,6 +788,7 @@ public class Parser {
                 }
                 break;
             default:
+                take = false;
                 throw new SyntaxError("bad expression!", head);
         }
 
@@ -841,22 +846,5 @@ public class Parser {
     	}
 
     	return qr;
-    	
-    	/*
-    	
-        while (_token.type == TokenType.Dot && ! _scanner.spaceBefore()) {
-        	
-            accept(TokenType.Dot);
-            
-            if (_scanner.spaceBefore()) {
-            	throw new SyntaxError(
-            			"unterminated reference", 	// error
-            			"dotted references cannot be whitespace separated", // hint
-            			_token.mark);
-            }
-            accept(TokenType.Ident);
-        }
-        
-        */
     }
 }

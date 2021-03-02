@@ -71,12 +71,21 @@ public class Compiler {
 	
 	public static void main(String[] args) {
 		
+		/*
 		if (args.length != 1) {
 			System.out.println("Error: please enter a single path to a valid miniJava source file");
 			exitProgram(COMMAND_FAILURE);
+		} */
+		
+		String target;
+		
+		if (args.length < 1) {
+			target = "../tests/pa1_tests/pass162.java";
+		} else {
+			target = args[0];
 		}
 		
-		runCompiler(args[0]);
+		runCompiler(target);
 	}
 
 }
