@@ -62,7 +62,6 @@ public class Parser {
 
     private boolean isLogicOp(TokenType type) {
         switch(type) {
-            case Not: 
             case AmpAmp:  
             case BarBar:
                 return true;
@@ -245,8 +244,7 @@ public class Parser {
                         // parse Id = E;
                         parseLocalDeclarationTail();
                     } else if (_token.type == TokenType.Dot) {
-                        acceptIt();
-                        parseReference();
+                        parseReferenceTail();
                         parseLocalReferenceTail();
                         
                     } else {
@@ -336,6 +334,11 @@ public class Parser {
     }
 
     private void parseLocalReferenceTail() throws SyntaxError {
+        System.out.println("token type at entrance of localreftail is " + _token.type);
+        if (_token.type == TokenType.Dot) {
+            parseReferenceTail();
+        }
+        
         if (_token.type == TokenType.LParen) {
             parseMethodCall();
             return;
@@ -370,6 +373,7 @@ public class Parser {
     }
 
     private void parseExpression() throws SyntaxError {
+    	boolean take = true;
         switch (_token.type) {
             case Num:
             case True:
@@ -411,13 +415,18 @@ public class Parser {
                 }
                 break;
             default:
+            	take = false;
             	break;
         }
 
-        if (isBinaryOp(_token.type)) {
-            acceptIt();
-            parseExpression();
-        }         
+        if (take) {
+            if (isBinaryOp(_token.type)) {
+                acceptIt();
+                parseExpression();
+            }   
+        } else {
+	    	throw new SyntaxError("no expression on left side of operator!", _token.mark);
+	    }
     }
 
     private void parseReference() throws SyntaxError {

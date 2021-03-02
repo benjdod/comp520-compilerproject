@@ -249,7 +249,24 @@ public class Scanner {
 			} else {
 				out = makeToken(TokenType.Not, mark);
 			}
-		}
+		} else if (current == '|') {
+			if (next == '|') {
+				out = makeToken(TokenType.BarBar, mark);
+				advance();
+			} else {
+				_reporter.report(new ScanError("Bitwise '|' operator is not supported", mark));
+				return new Token(TokenType.Error, mark);
+			}
+			
+		} else if (current == '&') {
+			if (next == '&') {
+				out = makeToken(TokenType.AmpAmp, mark);
+				advance();
+			} else {
+				_reporter.report(new ScanError("Bitwise '&' operator is not supported", mark));
+				return new Token(TokenType.Error, mark);
+			}
+		} 
 		
 		// token?
 		if (out != null) {
