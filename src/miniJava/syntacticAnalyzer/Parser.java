@@ -122,7 +122,7 @@ public class Parser {
         
         AST out = null;
         try {
-            out = parseClassDeclaration();
+            out = parsePackage();
             accept(TokenType.Eot);   
         } catch (SyntaxError e) {
             _reporter.report(e);
@@ -151,7 +151,7 @@ public class Parser {
         accept(TokenType.Class);
         
     	String classname = _token.spelling;
-        // System.out.println("!!!!!!!!" + _token.type);
+        System.out.println(classname == null);
     	SourcePosition mark = _token.mark;
     	ClassDecl cd = new ClassDecl(classname, new FieldDeclList(), new MethodDeclList(), mark);
     	
@@ -324,7 +324,17 @@ public class Parser {
                     out = parseLocalDeclaration();
                     accept(TokenType.Semicolon);
                     return out;
+                case This:
                 case Ident:
+                    BaseRef r;
+
+                    // establish type in case it's a type initializer
+                    if (_token.type == TokenType.Ident) {
+                        r = new IdRef(new Identifier(_token), _token.mark);
+                    } else {
+                        r = new ThisRef(_token.mark);
+                    }
+
                 	Identifier base_id = new Identifier(_token);
                     acceptIt();
                     if (_token.type == TokenType.LBracket) {
@@ -356,21 +366,14 @@ public class Parser {
                     } else if (_token.type == TokenType.Dot) {
                         QualRef l_ref = parseReferenceTail(new IdRef(base_id, base_id.posn));
                         out = parseLocalReferenceTail(l_ref);
-                        
                     } else if (_token.type == TokenType.LParen) {
                         out = parseMethodCallStatement(new IdRef(base_id, base_id.posn));
                     } else {
                         accept(TokenType.Equal);
-                        Reference r = new IdRef(base_id, base_id.posn);
+                        //Reference r = new IdRef(base_id, base_id.posn);
                         Expression assign_expr = parseExpression();
                         out = new AssignStmt(r, assign_expr, r.posn);
                     }
-                    accept(TokenType.Semicolon);
-                    return out;
-                case This:
-                    Reference r = new ThisRef(_token.mark);
-                    r = parseReferenceTail(r);
-                    out = parseLocalReferenceTail(r);
                     accept(TokenType.Semicolon);
                     return out;
                 default:
@@ -461,7 +464,7 @@ public class Parser {
             e = parseStatement();
         }
         
-        return new IfStmt(expr, e, t, expr.posn);
+        return new IfStmt(expr, t, e, expr.posn);
     }
 
     private WhileStmt parseWhileStatement() throws SyntaxError {
@@ -530,7 +533,6 @@ public class Parser {
         if (_token.type == TokenType.LParen) {
             return parseMethodCallStatement(r);
         } else {
-        	
         	if (_token.type == TokenType.Dot) {
                 r = parseReferenceTail(r);
             } 
@@ -593,7 +595,7 @@ public class Parser {
     }
 
     private Expression parseDisjuncExpr(Expression left_expr) throws SyntaxError {
-        Expression out = left_expr != null ? left_expr : parseConjuncExpr(null);
+        Expression out = parseConjuncExpr(left_expr);
         Expression le = null;
         Expression re = null;
         Operator o = null;
@@ -612,7 +614,7 @@ public class Parser {
     }
 
     private Expression parseConjuncExpr(Expression left_expr) throws SyntaxError {
-        Expression out = left_expr != null ? left_expr : parseRelationalExpr(null);
+        Expression out = parseRelationalExpr(left_expr);
         Expression le = null;
         Expression re = null;
         Operator o = null;
@@ -632,7 +634,7 @@ public class Parser {
 
     private Expression parseRelationalExpr(Expression left_expr) throws SyntaxError {
 
-        Expression out = left_expr != null ? left_expr : parseAddSubExpr(null);
+        Expression out = parseAddSubExpr(left_expr);
         
         Expression le = null;
         Expression re = null;
@@ -642,7 +644,9 @@ public class Parser {
             _token.type == TokenType.LessEqual      || 
             _token.type == TokenType.GreaterEqual   ||
             _token.type == TokenType.NotEqual       ||
-            _token.type == TokenType.EqualEqual
+            _token.type == TokenType.EqualEqual     ||
+            _token.type == TokenType.RCaret         ||
+            _token.type == TokenType.LCaret
         ) {
             le = out;   // left associative shift
             o = new Operator(_token);
@@ -656,7 +660,7 @@ public class Parser {
 
     private Expression parseAddSubExpr(Expression left_expr) throws SyntaxError {
 
-        Expression out = left_expr != null ? left_expr : parseMultDivExpr(null);
+        Expression out = parseMultDivExpr(left_expr);
 
         Expression le = null;
         Expression re = null;
@@ -700,17 +704,15 @@ public class Parser {
 
     private Expression parseUnaryExpr() throws SyntaxError {
 
-        Operator o = null;
-        Expression e = null;
-
-        if (_token.type == TokenType.Minus || _token.type == TokenType.Not) {
+        if (isUnaryOp(_token.type)) {
+            Operator o = new Operator(_token);
             acceptIt();
+            return new UnaryExpr(o, parseUnaryExpr(), o.posn);
+        } else if (_token.type == TokenType.LParen) {
+            return parseParenthetical();
+        } else {
+            return parseRefLitExpr();
         }
-
-        if (_token.type == TokenType.LParen) e = parseParenthetical();
-        else e = parseLiteralExpr();
-
-        return (o != null) ? new UnaryExpr(o, e, o.posn) : e; 
     }
 
     private Expression parseLiteralExpr() throws SyntaxError {
@@ -733,21 +735,47 @@ public class Parser {
         return e;
     }
 
-    private Expression parseExpression() throws SyntaxError {
-    	Expression e = null;
+    private Expression parseNewExpr() {
+        accept(TokenType.New);
+        if (_token.type == TokenType.Int) {
+            acceptIt();
+            Expression idx_expr = parseArrayIndex();
+            return new NewArrayExpr(new BaseType(TypeKind.INT, _token.mark), idx_expr, _token.mark);
+        } else if (_token.type == TokenType.Ident) {
+            Identifier target_ident = new Identifier(_token);
+            ClassType ct = new ClassType(target_ident, target_ident.posn);
+            accept(TokenType.Ident);
+            if (_token.type == TokenType.LParen) {
+                accept(TokenType.LParen);
+                accept(TokenType.RParen);
+                return new NewObjectExpr(ct, target_ident.posn);
+            } else if (_token.type == TokenType.LBracket) {
+                Expression idx_expr = parseArrayIndex();
+                return new NewArrayExpr(ct, idx_expr, target_ident.posn);
+            } 
+        } 
+        
+        throw new SyntaxError("error in new expression", _token.mark);
+    
+    }
+
+    private Expression parseRefLitExpr() {
         SourcePosition head = _token.mark.makeCopy();
 
-    	boolean take = true;
+        Expression e = null;
+
         switch (_token.type) {
+            case New:
+                return parseNewExpr();
             case Num:
-            	e = new LiteralExpr(new IntLiteral(_token), _token.mark);
+                e = new LiteralExpr(new IntLiteral(_token), _token.mark);
                 acceptIt();
-                break;
+                return e;
             case True:
             case False:
-            	e = new LiteralExpr(new BooleanLiteral(_token), _token.mark);
+                e = new LiteralExpr(new BooleanLiteral(_token), _token.mark);
                 acceptIt();
-                break;
+                return e;
             case Ident:
             case This:
                 Reference r = parseReference();
@@ -759,43 +787,27 @@ public class Parser {
                 } else {
                     e = new RefExpr(r, r.posn);
                 }
-                break;
-            case Minus:
-            case Not:
-                e = parseUnaryExpr();
-                break;
-            case LParen:  
-                acceptIt();
-                e = parseExpression();
-                accept(TokenType.RParen);
-                break;
-            case New:
-                acceptIt();
-                if (_token.type == TokenType.Int) {
-                    acceptIt();
-                    Expression idx_expr = parseArrayIndex();
-                    return new NewArrayExpr(new BaseType(TypeKind.INT, _token.mark), idx_expr, _token.mark);
-                } else {
-                    Identifier target_ident = new Identifier(_token);
-                    accept(TokenType.Ident);
-                    if (_token.type == TokenType.LParen) {
-                        accept(TokenType.LParen);
-                        accept(TokenType.RParen);
-                    } else if (_token.type == TokenType.LBracket) {
-                        Expression idx_expr = parseArrayIndex();
-                        return new NewArrayExpr(new ClassType(target_ident, target_ident.posn), idx_expr, target_ident.posn);
-                    }
-                }
-                break;
+                return e;
+
             default:
-                take = false;
                 throw new SyntaxError("bad expression!", head);
         }
+        
+    }
 
-        System.out.println("expression op type: " + isBinaryOp(_token.type));
+    private Expression parseExpression() throws SyntaxError {
+    	Expression e = null;
+        SourcePosition head = _token.mark.makeCopy();
+
+        /*
+        if (_token.type == TokenType.New) {
+            return parseNewExpr();
+        } */
+
+    	e = parseUnaryExpr();
 
         if (isBinaryOp(_token.type)) {
-            e = parseDisjuncExpr(e);
+            e = parseDisjuncExpr(e);    // coding 
         } 
 
         if (e == null) {

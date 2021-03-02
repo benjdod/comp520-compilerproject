@@ -89,8 +89,8 @@ public class Scanner {
 	}
 
 	// courtesy method to fill in line and column
-	private Token makeToken(TokenType type, SourcePosition mark) {
-		return new Token(type, mark);
+	private Token makeToken(TokenType type, String spelling, SourcePosition mark) {
+		return new Token(type, mark, spelling);
 	}
 	
 	private void advance() {
@@ -187,7 +187,7 @@ public class Scanner {
 			}
 		}
 		
-		if (currentChar() == '\0') return makeToken(TokenType.Eot, _reader.getMark());
+		if (currentChar() == '\0') return makeToken(TokenType.Eot, "\0", _reader.getMark());
 					
 		current = currentChar();
 		next = nextChar();
@@ -195,22 +195,22 @@ public class Scanner {
 		
 		// one-character tokens
 		switch (current) {
-			case '(': out =  makeToken(TokenType.LParen, mark); break;
-			case ')': out =  makeToken(TokenType.RParen, mark); break;
-			case '[': out =  makeToken(TokenType.LBracket, mark); break;
-			case ']': out =  makeToken(TokenType.RBracket, mark); break;
-			case '{': out =  makeToken(TokenType.LBrace, mark); break;
-			case '}': out =  makeToken(TokenType.RBrace, mark); break;
-			case '.': out =  makeToken(TokenType.Dot, mark); break;
-			case ',': out =  makeToken(TokenType.Comma, mark); break;
-			case ';': out =  makeToken(TokenType.Semicolon, mark); break;
+			case '(': out =  makeToken(TokenType.LParen, "(", mark); break;
+			case ')': out =  makeToken(TokenType.RParen, ")", mark); break;
+			case '[': out =  makeToken(TokenType.LBracket, "[", mark); break;
+			case ']': out =  makeToken(TokenType.RBracket, "]", mark); break;
+			case '{': out =  makeToken(TokenType.LBrace, "{", mark); break;
+			case '}': out =  makeToken(TokenType.RBrace, "}", mark); break;
+			case '.': out =  makeToken(TokenType.Dot, ".", mark); break;
+			case ',': out =  makeToken(TokenType.Comma, ",", mark); break;
+			case ';': out =  makeToken(TokenType.Semicolon, ";", mark); break;
 			
 			// these might need to be moved if support is added 
 			// for +=, -= and family
-			case '+': out =  makeToken(TokenType.Plus, mark); break;
-			case '-': out =  makeToken(TokenType.Minus, mark); break;
-			case '*': out =  makeToken(TokenType.Star, mark); break;
-			case '/': out =  makeToken(TokenType.FSlash, mark); break;
+			case '+': out =  makeToken(TokenType.Plus, "+", mark); break;
+			case '-': out =  makeToken(TokenType.Minus, "-", mark); break;
+			case '*': out =  makeToken(TokenType.Star, "*", mark); break;
+			case '/': out =  makeToken(TokenType.FSlash, "/", mark); break;
 		}
 		
 		// have we found the token?
@@ -223,35 +223,35 @@ public class Scanner {
 		
 		if (current == '=') {
 			if (next == '=') {
-				out = makeToken(TokenType.EqualEqual, mark);
+				out = makeToken(TokenType.EqualEqual, "==", mark);
 				advance();
 			} else {
-				out = makeToken(TokenType.Equal, mark);
+				out = makeToken(TokenType.Equal, "=", mark);
 			}
 		} else if (current == '<') {
 			if (next == '=') {	
-				out = makeToken(TokenType.LessEqual, mark);
+				out = makeToken(TokenType.LessEqual, "<=", mark);
 				advance();
 			} else {	
-				out = makeToken(TokenType.LCaret, mark);
+				out = makeToken(TokenType.LCaret, "=", mark);
 			}
 		} else if (current == '>') {
 			if (next == '=') {
-				out = makeToken(TokenType.GreaterEqual, mark);
+				out = makeToken(TokenType.GreaterEqual, ">=", mark);
 				advance();
 			} else {
-				out = makeToken(TokenType.RCaret, mark);
+				out = makeToken(TokenType.RCaret, ">", mark);
 			}
 		} else if (current == '!') {
 			if (next == '=') {
-				out = makeToken(TokenType.NotEqual, mark);
+				out = makeToken(TokenType.NotEqual, "!=", mark);
 				advance();
 			} else {
-				out = makeToken(TokenType.Not, mark);
+				out = makeToken(TokenType.Not, "!", mark);
 			}
 		} else if (current == '|') {
 			if (next == '|') {
-				out = makeToken(TokenType.BarBar, mark);
+				out = makeToken(TokenType.BarBar, "||", mark);
 				advance();
 			} else {
 				_reporter.report(new ScanError("Bitwise '|' operator is not supported", mark));
@@ -260,7 +260,7 @@ public class Scanner {
 			
 		} else if (current == '&') {
 			if (next == '&') {
-				out = makeToken(TokenType.AmpAmp, mark);
+				out = makeToken(TokenType.AmpAmp, "&&", mark);
 				advance();
 			} else {
 				_reporter.report(new ScanError("Bitwise '&' operator is not supported", mark));
@@ -287,10 +287,9 @@ public class Scanner {
 				advance();
 			}
 			if (Character.isAlphabetic(current)) {
-				return makeToken(TokenType.Error, mark);
+				return makeToken(TokenType.Error, "", mark);
 			} else {
-				out = makeToken(TokenType.Num, mark);
-				out.spelling = sb.toString();
+				out = makeToken(TokenType.Num, sb.toString(), mark);
 				return out;
 			}
 		} else if (Character.isAlphabetic(currentChar())) {
@@ -313,18 +312,16 @@ public class Scanner {
 		String slice = sb.toString();
 		
 		if (!keyword_possible) {
-			out = makeToken(TokenType.Ident, mark);
-			out.spelling = sb.toString();
+			out = makeToken(TokenType.Ident, sb.toString(), mark);
 			return out;
 		}
 		
 		TokenType keywordtype = _keywordtree.get(slice);
 		
 		if (keywordtype != null) {
-			out =  makeToken(keywordtype, mark);
+			out =  makeToken(keywordtype, sb.toString(), mark);
 		} else {
-			out = makeToken(TokenType.Ident, mark);
-			out.spelling = sb.toString();
+			out = makeToken(TokenType.Ident, sb.toString(), mark);
 		}
 		
 		return out;

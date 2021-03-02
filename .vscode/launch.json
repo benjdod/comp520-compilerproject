@@ -6,7 +6,13 @@
     "configurations": [
         {
             "type": "java",
-<<<<<<< HEAD
+            "name": "Launch Checkpoint1",
+            "request": "launch",
+            "mainClass": "tester.Checkpoint1",
+            "projectName": "COMP520_PA1"
+        },
+        {
+            "type": "java",
             "name": "Launch Hello",
             "request": "launch",
             "mainClass": "hello.Hello",
@@ -17,11 +23,6 @@
             "name": "Launch Checkpoint1",
             "request": "launch",
             "mainClass": "Checkpoint1",
-=======
-            "name": "Launch Checkpoint1",
-            "request": "launch",
-            "mainClass": "tester.Checkpoint1",
->>>>>>> pa1_corrections
             "projectName": "COMP520_PA1"
         },
         {
@@ -35,11 +36,7 @@
             "name": "Launch Compiler",
             "request": "launch",
             "mainClass": "miniJava.Compiler",
-            "projectName": "COMP520_PA1",
-<<<<<<< HEAD
-            "args": "./test/test.mjava"
-=======
->>>>>>> pa1_corrections
+            "projectName": "COMP520_PA1"
         }
     ]
 }

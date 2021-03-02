@@ -80,7 +80,7 @@ public class Compiler {
 		String target;
 		
 		if (args.length < 1) {
-			target = "../tests/pa1_tests/pass162.java";
+			target = "../tests/pa1_tests/pass161.java";
 		} else {
 			target = args[0];
 		}
