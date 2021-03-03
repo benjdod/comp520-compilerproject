@@ -306,7 +306,7 @@ public class Scanner {
 				}
 			}
 		} else {
-			_reporter.report(new ScanError(String.format("character '%c' is not valid", current), mark));
+			_reporter.report(new ScanError(String.format("character %c is not valid", current), mark));
 		}
 
 		String slice = sb.toString();

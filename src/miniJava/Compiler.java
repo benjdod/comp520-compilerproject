@@ -10,7 +10,7 @@ import miniJava.AbstractSyntaxTrees.*;
 public class Compiler {
 	
 	static final int PARSE_SUCCESS = 0;
-	static final int COMMAND_FAILURE = 1;
+	static final int COMMAND_FAILURE = 3;
 	static final int PARSE_FAILURE = 4;
 	
 	static void exitProgram(int exitcode) {
@@ -81,6 +81,7 @@ public class Compiler {
 		
 		if (args.length < 1) {
 			target = "../tests/pa1_tests/pass161.java";
+			target = "./test/test1.java";
 		} else {
 			target = args[0];
 		}

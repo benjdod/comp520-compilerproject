@@ -151,7 +151,6 @@ public class Parser {
         accept(TokenType.Class);
         
     	String classname = _token.spelling;
-        System.out.println(classname == null);
     	SourcePosition mark = _token.mark;
     	ClassDecl cd = new ClassDecl(classname, new FieldDeclList(), new MethodDeclList(), mark);
     	
@@ -355,7 +354,7 @@ public class Parser {
                             Expression val_expr = parseExpression();
                             
                             out = new IxAssignStmt(
-                            		new IdRef(base_id, base_id.posn), 
+                            		r, 
                             		index_expr, 
                             		val_expr, 
                             		base_id.posn);
@@ -364,10 +363,10 @@ public class Parser {
                         // parse Id = E;
                         out = parseLocalDeclarationTail(new ClassType(base_id, base_id.posn));
                     } else if (_token.type == TokenType.Dot) {
-                        QualRef l_ref = parseReferenceTail(new IdRef(base_id, base_id.posn));
+                        QualRef l_ref = parseReferenceTail(r);
                         out = parseLocalReferenceTail(l_ref);
                     } else if (_token.type == TokenType.LParen) {
-                        out = parseMethodCallStatement(new IdRef(base_id, base_id.posn));
+                        out = parseMethodCallStatement(r);
                     } else {
                         accept(TokenType.Equal);
                         //Reference r = new IdRef(base_id, base_id.posn);
@@ -378,7 +377,6 @@ public class Parser {
                     return out;
                 default:
                     throw new SyntaxError("Invalid token in statement", _token.mark);
-        
             }
             return out;
         }
@@ -398,6 +396,7 @@ public class Parser {
         		
         		// check to see if the identifier is a valid class.
         		
+                /*
         		Iterator<ClassDecl> class_decls = _package.classDeclList.iterator();
         		ClassDecl cd;
         		boolean is_valid = false;
@@ -412,9 +411,12 @@ public class Parser {
         		}
         		
         		if (is_valid)
+                */
         			td = new ClassType(new Identifier(_token), _token.mark);
+                /*
         		else
         			td = new BaseType(TypeKind.UNSUPPORTED, _token.mark);
+                */
         	}
         	
             acceptIt();
@@ -533,11 +535,12 @@ public class Parser {
         if (_token.type == TokenType.LParen) {
             return parseMethodCallStatement(r);
         } else {
-        	if (_token.type == TokenType.Dot) {
+        
+            if (_token.type == TokenType.Dot) {
                 r = parseReferenceTail(r);
             } 
-        	
-        	Expression ix_expr = (_token.type == TokenType.LBracket) ? parseArrayIndex() : null;
+
+            Expression ix_expr = (_token.type == TokenType.LBracket) ? parseArrayIndex() : null;
             
             accept(TokenType.Equal);
             Expression val_expr = parseExpression();
@@ -790,7 +793,7 @@ public class Parser {
                 return e;
 
             default:
-                throw new SyntaxError("bad expression!", head);
+                throw new SyntaxError("bad expression (saw " + _token.type + ")", head);
         }
         
     }
@@ -850,7 +853,7 @@ public class Parser {
     	if (! _scanner.spaceBefore()) {
     		id = new Identifier(_token);
     		accept(TokenType.Ident);
-    		qr.id = new Identifier(_token);
+    		qr.id = id;
     	}
     	
     	if (isRefContinuer()) {

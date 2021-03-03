@@ -1,5 +1,9 @@
-class test1 {
+class PA2sample {
 
-    public static int glbl_x;
+    public boolean c;
+
+    public static void main(String[] args){
+        return grandma["cookies"];
+    }
     
 }
