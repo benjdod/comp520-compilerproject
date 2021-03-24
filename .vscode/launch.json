@@ -6,6 +6,13 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch Checkpoint2",
+            "request": "launch",
+            "mainClass": "tester.Checkpoint2",
+            "projectName": "COMP520_PA1"
+        },
+        {
+            "type": "java",
             "name": "Launch Checkpoint1",
             "request": "launch",
             "mainClass": "tester.Checkpoint1",

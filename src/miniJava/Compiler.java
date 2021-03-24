@@ -22,7 +22,6 @@ public class Compiler {
 		
 		int l = filepath.lastIndexOf('.');
 		
-		
 		try {
 			String ext = filepath.substring(l + 1);
 			if ( !(ext.contentEquals("java") || ext.contentEquals("mjava"))) {
@@ -80,8 +79,8 @@ public class Compiler {
 		String target;
 		
 		if (args.length < 1) {
-			target = "../tests/pa1_tests/pass161.java";
-			target = "./test/test1.java";
+			target = "../tests/pa2_tests/pass290.java";
+			//target = "./test/test1.java";
 		} else {
 			target = args[0];
 		}

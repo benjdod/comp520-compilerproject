@@ -233,7 +233,7 @@ public class Scanner {
 				out = makeToken(TokenType.LessEqual, "<=", mark);
 				advance();
 			} else {	
-				out = makeToken(TokenType.LCaret, "=", mark);
+				out = makeToken(TokenType.LCaret, "<", mark);
 			}
 		} else if (current == '>') {
 			if (next == '=') {

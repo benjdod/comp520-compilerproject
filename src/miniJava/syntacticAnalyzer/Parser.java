@@ -617,7 +617,7 @@ public class Parser {
     }
 
     private Expression parseConjuncExpr(Expression left_expr) throws SyntaxError {
-        Expression out = parseRelationalExpr(left_expr);
+        Expression out = parseEqualityExpr(left_expr);
         Expression le = null;
         Expression re = null;
         Operator o = null;
@@ -628,11 +628,34 @@ public class Parser {
             le = out;   // left associative shift
             o = new Operator(_token);
             acceptIt();
+            re = parseEqualityExpr(null);
+            out = new BinaryExpr(o, le, re, le.posn);
+        }
+
+        return out;
+    }
+
+    private Expression parseEqualityExpr(Expression left_expr) throws SyntaxError {
+
+        Expression out = parseRelationalExpr(left_expr);
+        
+        Expression le = null;
+        Expression re = null;
+        Operator o = null;
+
+        while (
+            _token.type == TokenType.NotEqual       ||
+            _token.type == TokenType.EqualEqual    
+        ) {
+            le = out;   // left associative shift
+            o = new Operator(_token);
+            acceptIt();
             re = parseRelationalExpr(null);
             out = new BinaryExpr(o, le, re, le.posn);
         }
 
         return out;
+        
     }
 
     private Expression parseRelationalExpr(Expression left_expr) throws SyntaxError {
@@ -646,8 +669,6 @@ public class Parser {
         while (
             _token.type == TokenType.LessEqual      || 
             _token.type == TokenType.GreaterEqual   ||
-            _token.type == TokenType.NotEqual       ||
-            _token.type == TokenType.EqualEqual     ||
             _token.type == TokenType.RCaret         ||
             _token.type == TokenType.LCaret
         ) {
