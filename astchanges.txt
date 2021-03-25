@@ -1,0 +1,6 @@
+PA3:
+added class 'NullLiteral' for the null keyword (and made changes to related methods in Scanner Parser, AST visitor)
+
+    - This is parsed by parseExpression, which returns it as the only component of the parseExpression
+
+added public field 'Decl' of type Declaration to the Identifier class.

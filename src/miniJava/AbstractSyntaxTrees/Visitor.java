@@ -20,7 +20,7 @@ public interface Visitor<ArgType,ResultType> {
     public ResultType visitMethodDecl(MethodDecl md, ArgType arg);
     public ResultType visitParameterDecl(ParameterDecl pd, ArgType arg);
     public ResultType visitVarDecl(VarDecl decl, ArgType arg);
- 
+    
   // Types
     public ResultType visitBaseType(BaseType type, ArgType arg);
     public ResultType visitClassType(ClassType type, ArgType arg);
@@ -56,4 +56,5 @@ public interface Visitor<ArgType,ResultType> {
     public ResultType visitOperator(Operator op, ArgType arg);
     public ResultType visitIntLiteral(IntLiteral num, ArgType arg);
     public ResultType visitBooleanLiteral(BooleanLiteral bool, ArgType arg);
+    public ResultType visitNullLiteral(NullLiteral expr, ArgType arg);
 }

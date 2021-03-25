@@ -185,7 +185,7 @@ public class ASTDisplay implements Visitor<String,Object> {
         show(arg,"  StatementList [" + sl.size() + "]");
         String pfx = arg + "  . ";
         for (Statement s: sl) {
-        	s.visit(this, pfx);
+            s.visit(this, pfx);
         }
         return null;
     }
@@ -312,7 +312,6 @@ public class ASTDisplay implements Visitor<String,Object> {
         expr.classtype.visit(this, indent(arg));
         return null;
     }
-    
 
 	///////////////////////////////////////////////////////////////////////////////
 	//
@@ -362,6 +361,11 @@ public class ASTDisplay implements Visitor<String,Object> {
     
     public Object visitBooleanLiteral(BooleanLiteral bool, String arg){
         show(arg, quote(bool.spelling) + " " + bool.toString());
+        return null;
+    }
+
+    public Object visitNullLiteral(NullLiteral expr, String arg){
+        show(arg, expr);
         return null;
     }
 }

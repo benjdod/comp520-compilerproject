@@ -85,6 +85,7 @@ public class Parser {
 
     public void accept(TokenType type) throws SyntaxError {
         if (_token.type == type) {
+            /*
             StackTraceElement[] trace_elts = Thread.currentThread().getStackTrace();
             int st, end;
             String s;
@@ -96,19 +97,22 @@ public class Parser {
                     break;
                 }
             }
+            */
             _token = _scanner.next();
         } else {
+            /*
             StackTraceElement[] trace_elts = Thread.currentThread().getStackTrace();
-            System.out.println("error!");
+            System.err.println("error!");
 
             int st, end;
 
             for (StackTraceElement elt : trace_elts) {
                 if ((st = elt.toString().indexOf("parse")) != -1) {
                     end = elt.toString().indexOf('(');
-                    System.out.println("in " + elt.toString().substring(st + 5, end));
+                    System.err.println("in " + elt.toString().substring(st + 5, end));
                 }
             }
+            */
             throw new SyntaxError("Expected " + type + " but saw " + _token.type, _token.mark);
         }
     }
@@ -117,10 +121,10 @@ public class Parser {
         accept(_token.type);
     }
 
-    public AST parse() {
+    public Package parse() {
         _token = _scanner.next();   // prime the scanner
         
-        AST out = null;
+        Package out = null;
         try {
             out = parsePackage();
             accept(TokenType.Eot);   
@@ -514,8 +518,8 @@ public class Parser {
         accept(TokenType.Ident);
         accept(TokenType.Equal);
         Expression expr = parseExpression();
-        VarDecl vd = new VarDecl(td, name, name_mark);
-        return new VarDeclStmt(vd, expr, name_mark);
+        VarDecl vd = new VarDecl(td, name, td.posn);
+        return new VarDeclStmt(vd, expr, td.posn);
     }
 
     private void parseLocalReference() throws SyntaxError {
@@ -827,6 +831,12 @@ public class Parser {
         if (_token.type == TokenType.New) {
             return parseNewExpr();
         } */
+
+        if (_token.type == TokenType.Null) {
+            NullLiteral out = new NullLiteral(_token);
+            acceptIt();
+            return new LiteralExpr(out, out.posn);
+        }
 
     	e = parseUnaryExpr();
 

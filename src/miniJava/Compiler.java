@@ -3,19 +3,32 @@ package miniJava;
 import java.io.FileReader;
 import java.nio.charset.StandardCharsets;
 
+import miniJava.ContextualAnalysis.Identification;
 import miniJava.SyntacticAnalyzer.Parser;
 import miniJava.SyntacticAnalyzer.Scanner;
 import miniJava.AbstractSyntaxTrees.*;
+import miniJava.AbstractSyntaxTrees.Package;
 
 public class Compiler {
 	
 	static final int PARSE_SUCCESS = 0;
 	static final int COMMAND_FAILURE = 3;
 	static final int PARSE_FAILURE = 4;
+
+	static ErrorReporter _reporter = new ErrorReporter();
 	
 	static void exitProgram(int exitcode) {
 		// System.out.println("Exiting with code " + exitcode);
 		System.exit(exitcode);
+	}
+
+	static void checkForErrors() {
+		if (_reporter.hasErrors()) {
+			System.out.println("\u001B[0;91m----- Compilation failed! -----\u001B[0m");
+			_reporter.printFirst();
+			System.out.print("\u001B[0;31m          ----------\u001B[0m");
+			exitProgram(PARSE_FAILURE);
+		}
 	}
 
 	static void runCompiler(String filepath) {
@@ -31,7 +44,6 @@ public class Compiler {
 		} catch (Exception e) {;}
 		
 		FileReader f = null;
-		ErrorReporter reporter = new ErrorReporter();
 
 		try {
 			// this is the most surefire way I know to check for ASCII only outside of a raw byte
@@ -43,19 +55,23 @@ public class Compiler {
 			exitProgram(COMMAND_FAILURE);
 		}
 
-		Scanner s = new Scanner(f, reporter);
-		Parser p = new Parser(s, reporter);
+		Scanner s = new Scanner(f, _reporter);
+		Parser p = new Parser(s, _reporter);
 
-		AST tree = p.parse();
+		Package tree = p.parse();
 
-		if (reporter.hasErrors()) {
-			System.out.println("### Parse failed ###");
-			reporter.printFirst();
-			exitProgram(PARSE_FAILURE);
-		} 
+		checkForErrors();
 
-		ASTDisplay ad = new ASTDisplay();
-		ad.showTree(tree);
+		Identification idn = new Identification(_reporter);
+		idn.validate(tree);
+
+		checkForErrors();
+
+		System.out.println("\u001B[0;32mCompilation successful.\u001B[0m");
+
+		/*
+		ASTDisplay adt = new ASTDisplay();
+		adt.showTree(tree); */
 
 		try {
 			if (f != null)
@@ -80,7 +96,7 @@ public class Compiler {
 		
 		if (args.length < 1) {
 			target = "../tests/pa2_tests/pass290.java";
-			//target = "./test/test1.java";
+			target = "./test/test1.java";
 		} else {
 			target = args[0];
 		}

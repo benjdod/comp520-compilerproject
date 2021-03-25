@@ -33,6 +33,7 @@ public enum TokenType {
 	
 	This,
 	New,
+	Null,
 	
 	/* operator type things */
 	

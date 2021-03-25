@@ -43,6 +43,7 @@ public class Scanner {
 		_keywordtree.insert("new", TokenType.New);
 		_keywordtree.insert("true", TokenType.True);
 		_keywordtree.insert("false", TokenType.False);
+		_keywordtree.insert("null", TokenType.Null);
 	}
 	
 	public Scanner(Reader r, ErrorReporter reporter) {
