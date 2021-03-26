@@ -3,5 +3,8 @@ added class 'NullLiteral' for the null keyword (and made changes to related meth
 
     - This is parsed by parseExpression, which returns it as the only component of the parseExpression
 
-added public field 'decl' of type Declaration to the Identifier class. This field is not initialized by the class's constructor
-added public field 'decl' of type Declaration to the Reference class. This field is not initialized by the class's constructor
+added public field 'decl' of type Declaration to the Identifier class. This field is not initialized by the class constructor
+added public field 'decl' of type Declaration to the Reference class. This field is not initialized by the class constructor
+added public field 'type' of type TypeDenoter to the Expression class. This feld is not initialized by the class constructor
+
+added public method 'equals' of type boolean to the TypeDenoter class (used to perform type equivalence with another TypeDenoter)

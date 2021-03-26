@@ -13,4 +13,5 @@ public abstract class Expression extends AST {
     super (posn);
   }
   
+  public TypeDenoter type;
 }

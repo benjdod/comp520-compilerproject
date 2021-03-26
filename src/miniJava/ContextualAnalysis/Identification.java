@@ -4,8 +4,9 @@ import miniJava.ErrorReporter;
 import miniJava.AbstractSyntaxTrees.*;
 import miniJava.AbstractSyntaxTrees.Package;
 import miniJava.SyntacticAnalyzer.SourcePosition;
+import miniJava.SyntacticAnalyzer.Token;
+import miniJava.SyntacticAnalyzer.TokenType;
 
-import java.lang.reflect.Member;
 import java.util.ArrayList;
 
 public class Identification implements Visitor<Object, Object> {
@@ -86,8 +87,6 @@ public class Identification implements Visitor<Object, Object> {
     public Object visitMethodDecl(MethodDecl md, Object arg) throws IdError {
         _md = md;
         md.type.visit(this, null);
-
-        System.out.println("visiting method decl " + md.name);
 
         Declaration d;
 
@@ -351,6 +350,19 @@ public class Identification implements Visitor<Object, Object> {
         return null;
     }
 
+
+
+    /* 
+     *
+     * 
+     *  OTHER STUFF
+     * 
+     * 
+     * */
+
+
+
+
     public void unfoldQualRef(QualRef qr) throws IdError {
 
         //System.out.println("unfolding qual ref");
@@ -415,7 +427,7 @@ public class Identification implements Visitor<Object, Object> {
             decl = getClassDeclFromMember(md);
 
             //System.out.println("-- " + id_arr.get(i).spelling);
-            md = resolveClassField(decl, id_arr.get(i), isStatic);
+            md = resolveClassField(decl, id_arr.get(i), false);
             //System.out.println("found member decl " + md.name);
         }
 
@@ -447,7 +459,7 @@ public class Identification implements Visitor<Object, Object> {
                 if (fd.isPrivate && cd != currentclass) {
                     throw new IdError("Cannot access private field in class '" + cd.name + "'", id.posn);
                 } else if (staticOnly && (!fd.isStatic)) {
-                    throw new IdError("Cannot access non-static field using a static reference in class", id.posn);
+                    throw new IdError("Cannot access non-static field '" + fd.name + "' in class '" + cd.name +"' using a static reference" , id.posn);
                 } else {
                     return fd;
                 }
@@ -458,7 +470,7 @@ public class Identification implements Visitor<Object, Object> {
                 if (md.isPrivate && cd != currentclass) {
                     throw new IdError("Cannot access private method in class", id.posn);
                 } else if (staticOnly && (!md.isStatic)) {
-                    throw new IdError("Cannot access non-static method using a static reference in class", id.posn);
+                    throw new IdError("Cannot access non-static method '" + md.name + "' in class '" + cd.name +"' using a static reference" , id.posn);
                 } else {
                     return md;
                 }

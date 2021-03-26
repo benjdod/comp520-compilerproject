@@ -10,7 +10,7 @@ public class SourcePosition {
     }
     
     public String toString() {
-    	return String.format("(%d, %d)", this.line, this.column);
+    	return "(" + (this.line > 0 ? this.line : "_") + ", " + (this.column > 0 ? this.column : "_") + ")";
     }
     
     public SourcePosition makeCopy() {

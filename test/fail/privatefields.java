@@ -7,5 +7,5 @@ class Test {
 }
 
 class PrivateFields {
-    static int x;
+    private static int x;
 }

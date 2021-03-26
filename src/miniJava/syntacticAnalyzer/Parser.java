@@ -138,6 +138,8 @@ public class Parser {
     	// the first "real" top level parse method
     	
     	Package out = new Package(new ClassDeclList(), new SourcePosition(1,1));
+
+        loadPredefinedClasses(out);
     	        
         while (_token.type == TokenType.Class) {
             out.classDeclList.add(parseClassDeclaration());
@@ -148,6 +150,43 @@ public class Parser {
         }
     	
     	return out;
+    }
+
+    private static void loadPredefinedClasses(Package p) {
+        if ( p == null) return;
+
+        /* Add predefined classes:
+         * class System { public static _PrintStream out; }
+         * class _PrintStream { public void println(int n){}; }
+         * class String { }
+         * */
+
+        SourcePosition oos = new SourcePosition(0, 0);
+        ClassDeclList cdl = p.classDeclList;
+
+        // class String { }
+        ClassDecl string_decl = new ClassDecl("String", new FieldDeclList(), new MethodDeclList(), oos);
+
+        // class _PrintStream { public void println(int n){} }
+        ClassDecl pstream_decl = new ClassDecl("_PrintStream", new FieldDeclList(), new MethodDeclList(), oos);
+        MethodDecl pstream_println = new MethodDecl(
+            new FieldDecl(false, false, new BaseType(TypeKind.VOID, oos), "println", oos), 
+            new ParameterDeclList(), 
+            new StatementList(), 
+            oos);
+        pstream_decl.methodDeclList.add(pstream_println);
+
+        ClassDecl system_decl = new ClassDecl("System", new FieldDeclList(), new MethodDeclList(), oos);
+        FieldDecl out_decl = new FieldDecl(false, true, new ClassType(new Identifier(new Token(TokenType.Ident, oos, "_PrintStream")), oos), "out", oos);
+        system_decl.fieldDeclList.add(out_decl);
+
+        cdl.add(system_decl);
+        cdl.add(pstream_decl);
+        cdl.add(string_decl);
+
+        for (ClassDecl cd : cdl) {
+            System.out.println("class decl: " + cd.name);
+        }
     }
 
     
