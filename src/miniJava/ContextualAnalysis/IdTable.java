@@ -7,15 +7,16 @@ import java.util.Iterator;
 import miniJava.ErrorReporter;
 import miniJava.AbstractSyntaxTrees.Declaration;
 import miniJava.AbstractSyntaxTrees.Identifier;
+import miniJava.AbstractSyntaxTrees.QualRef;
 import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public class IdTable {
 
     /* this is not the ideal way of doing it, but we forge on */
-    public static final int CLASS_LEVEL = 0;
-    public static final int MEMBER_LEVEL = 1;
-    public static final int PARAM_LEVEL = 2;
-    public static final int LOCAL_LEVEL = 3;
+    public static final int CLASS_LEVEL = 1;
+    public static final int MEMBER_LEVEL = 2;
+    public static final int PARAM_LEVEL = 3;
+    public static final int LOCAL_LEVEL = 4;
 
     private ArrayDeque<HashMap<String, Declaration>> _stack;
     private int _level;
@@ -30,9 +31,9 @@ public class IdTable {
         //_stack.push(new HashMap<String, Declaration>());
 
 
-        // start at level -1 so the Identification traversal can climb 
-        // into 0 with visitPackage
-        _level = -1;
+        // start at level 0 so the Identification traversal can climb 
+        // into 1 with visitPackage
+        _level = 0;
     }
 
     public int getLevel() {
@@ -99,6 +100,44 @@ public class IdTable {
         }
     }
 
+    public Declaration getAtLevel(String s, int level) throws IdError {
+        int lvl = 1;
+
+        Iterator<HashMap<String, Declaration>> i = _stack.iterator();
+
+        HashMap<String, Declaration> map;
+
+        while (i.hasNext()) {
+            map = i.next();
+
+            if (lvl == level) {
+                if (map.containsKey(s)) {
+                    return map.get(s);
+                }
+            } 
+        }
+
+        throw new IdError("No declaration at level " + level + "!", new SourcePosition(1, 1));
+    }
+
+    public boolean contains(String s) {
+        try {
+            Declaration d = get(s);
+            return true;
+        } catch (IdError e) {
+            return false;
+        }
+    }
+
+    public boolean containsAtLevel(String s, int level) {
+        try {
+            Declaration d = getAtLevel(s, level);
+            return true;
+        } catch (IdError e) {
+            return false;
+        }
+    }
+    
     private void validate(Declaration decl) throws IdError {
 
         String s = decl.name;
@@ -107,7 +146,7 @@ public class IdTable {
         Iterator<HashMap<String, Declaration>> i = _stack.descendingIterator();
 
         HashMap<String, Declaration> map;
-        int lvl = 0;
+        int lvl = 1;
 
         while (i.hasNext()) {
             map = i.next();
@@ -118,7 +157,9 @@ public class IdTable {
             if (lvl == IdTable.PARAM_LEVEL && map.containsKey(s)) {
                 throw new IdError("Invalid declaration", "Variables declared in parameter declarations cannot be hidden", decl.posn);
             } else if (lvl >= IdTable.LOCAL_LEVEL && map.containsKey(s)) {
-                throw new IdError("Duplicate declaration in local scope", "nested inner local scopes cannot override outer declarations (previous declaration is at " + map.get(s).posn.toString() + ")", decl.posn);
+                throw new IdError("Duplicate declaration in local scope", "nested inner local scopes cannot override outer declarations (previous declaration  at " + map.get(s).posn.toString() + ")", decl.posn);
+            } else if (lvl == _level && map.containsKey(s)) {
+                throw new IdError("Duplicate declaration in scope", "only one unique declaration is allowed per scope (previous declaration was at " + map.get(s).posn.toString() + ")", decl.posn);
             }
 
             lvl++;

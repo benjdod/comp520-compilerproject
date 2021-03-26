@@ -1,19 +1,28 @@
-class PA2sample {
+class System {
 
-    static int x;
+    public static int x;
+    public int y;
 
-    int haha(int single) {
-        int x = 3;
-
-        if (this.x == x) {
-            int y = 2;
-            y = y + 2;
-        }
-
-        return x * single;
+    public void zing() {
+        A hello = new C();
+        int h = A.b;
     }
 
-    void Stink() {
-        return;
-    }    
+    public static void zang() {
+        int i = x + y;
+    }
+
+    
+}
+
+class A {
+    public static B b;
+}
+
+class B {
+    public static C c;
+}
+
+class C {
+    public static int z;
 }

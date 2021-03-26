@@ -3,15 +3,28 @@ package miniJava.ContextualAnalysis;
 import miniJava.ErrorReporter;
 import miniJava.AbstractSyntaxTrees.*;
 import miniJava.AbstractSyntaxTrees.Package;
+import miniJava.SyntacticAnalyzer.SourcePosition;
+
+import java.lang.reflect.Member;
+import java.util.ArrayList;
 
 public class Identification implements Visitor<Object, Object> {
 
-    public IdTable _idtable;
+    private IdTable _idtable;
+    private Package _tree;
     private ErrorReporter _reporter;
+    private ArrayList<Identifier> _qualrefs;
 
-    public Identification(ErrorReporter reporter) {
+    /* some current state variables */
+    private ClassDecl _cd;
+    private MethodDecl _md;
+
+    public Identification(Package tree, ErrorReporter reporter) {
         _reporter = reporter;
         _idtable = new IdTable(reporter);
+        _tree = tree;
+        _qualrefs = new ArrayList<Identifier>();
+        validate(_tree);
     }
 
     /* Traverses an AST to match all Identifier nodes with a single corresponding Declaration node.
@@ -45,6 +58,7 @@ public class Identification implements Visitor<Object, Object> {
     public Object visitClassDecl(ClassDecl cd, Object arg) throws IdError {
 
         _idtable.openScope();
+        _cd = cd;
 
         for (FieldDecl f : cd.fieldDeclList) {
             _idtable.insert(f);
@@ -70,7 +84,17 @@ public class Identification implements Visitor<Object, Object> {
 
     @Override
     public Object visitMethodDecl(MethodDecl md, Object arg) throws IdError {
+        _md = md;
         md.type.visit(this, null);
+
+        System.out.println("visiting method decl " + md.name);
+
+        Declaration d;
+
+        /*
+        if ((_idtable.contains(md.name))) {
+            throw new IdError("There is already a declaration '" + _idtable.get(md.name).name + "'", md.posn);
+        }*/
 
         _idtable.openScope();
         for (ParameterDecl pd : md.parameterDeclList) {
@@ -108,8 +132,14 @@ public class Identification implements Visitor<Object, Object> {
 
     @Override
     public Object visitClassType(ClassType type, Object arg) throws IdError {
-        type.className.visit(this, null);
-        return null;
+        for (ClassDecl cd : _tree.classDeclList) {
+            if (type.className.spelling.contentEquals(cd.name)) {
+                type.className.visit(this, null);
+                return null;
+            }
+        }
+        
+        throw new IdError("Invalid constructor", "No class '" + type.className.spelling + "' is present", type.posn);
     }
 
     @Override
@@ -143,6 +173,7 @@ public class Identification implements Visitor<Object, Object> {
 
         _idtable.insert(stmt.varDecl);
         stmt.varDecl.visit(this, null);
+        stmt.initExp.visit(this, null);
 
         return null;
     }
@@ -254,19 +285,36 @@ public class Identification implements Visitor<Object, Object> {
 
     @Override
     public Object visitThisRef(ThisRef ref, Object arg) throws IdError {
+        System.out.println("this ref");
+        ref.decl = _cd;
         return null;
     }
 
     @Override
     public Object visitIdRef(IdRef ref, Object arg) throws IdError {
+        System.out.println("id ref");
         ref.id.visit(this,null);
+        ref.decl = ref.id.decl;
+
+        if (ref.decl instanceof MemberDecl) {
+            MemberDecl md = (MemberDecl) ref.decl;
+
+            if (_md.isStatic) {
+                if (! md.isStatic) {
+                    throw new IdError("Cannot reference non-static field '" + ref.decl.name + "' in static method '" + _md.name + "'", ref.posn);
+                }
+            }
+        }
+
         return null;
     }
 
     @Override
     public Object visitQRef(QualRef ref, Object arg) throws IdError {
-        ref.ref.visit(this,null);
-        ref.id.visit(this,null);
+        unfoldQualRef(ref);
+        //ref.ref.visit(this,null);
+        //ref.id.visit(this,null);
+        //System.out.println(_idtable.toString());
         return null;
     }
 
@@ -278,7 +326,6 @@ public class Identification implements Visitor<Object, Object> {
 
     @Override
     public Object visitIdentifier(Identifier id, Object arg) throws IdError {
-        System.out.println("visiting Identifier '" + id.spelling + "'");
         id.decl = _idtable.get(id);
         //System.out.println(_idtable.toString());
         return null;
@@ -302,5 +349,160 @@ public class Identification implements Visitor<Object, Object> {
     @Override
     public Object visitNullLiteral(NullLiteral expr, Object arg) throws IdError {
         return null;
+    }
+
+    public void unfoldQualRef(QualRef qr) throws IdError {
+
+        //System.out.println("unfolding qual ref");
+
+        QualRef current = qr;
+
+        Reference base = qr;
+
+        ArrayList<Identifier> id_arr = new ArrayList<Identifier>();
+
+        id_arr.add(0, qr.id);
+
+        while (current.ref instanceof QualRef) {
+            current = (QualRef) current.ref;
+            id_arr.add(0, current.id);
+        }
+
+        base = current.ref;
+        boolean isStatic = false;
+
+        // if the start is a 'this', set the base.decl to the current class
+        if (base instanceof ThisRef) {
+            //System.out.println("THIS REF + " + id_arr.toString());
+            base.decl = _cd;
+            if (_md.isStatic) {
+                //System.out.println("method " + _md.name + " is static");
+                isStatic = true;
+            }
+        } else if (base instanceof IdRef) {
+
+            IdRef base_idref = (IdRef) base;
+
+            Declaration d = _idtable.get(base_idref.id);
+
+            base.decl = d;
+
+            if (d instanceof ClassDecl) {
+
+                // if the qual ref is referencing a field starting in the class level,
+                // the field is necessarily static.
+                isStatic = true;
+                //System.out.println("resolving static field in class " + d.name);
+                
+            } else {
+                //System.out.println("Ident " + base.decl.name + " is not static");
+                ;
+            }
+            //System.out.println("IDENT REF + " + id_arr.toString());
+        }
+
+        int i;
+        MemberDecl md;
+        Declaration decl = base.decl;
+
+        md = resolveClassField(decl, id_arr.get(0), isStatic);
+        id_arr.remove(0);
+
+        // loop over the rest of the fields, which are necessarily
+        // non-static
+        for (i = 0; i < id_arr.size(); i++) {
+
+            decl = getClassDeclFromMember(md);
+
+            //System.out.println("-- " + id_arr.get(i).spelling);
+            md = resolveClassField(decl, id_arr.get(i), isStatic);
+            //System.out.println("found member decl " + md.name);
+        }
+
+    }
+
+    private MemberDecl resolveClassField(Declaration d, Identifier id, boolean staticOnly) throws IdError {
+        return resolveClassField(d, id, _cd, staticOnly);
+    }
+
+    private MemberDecl resolveClassField(Declaration d, Identifier id, ClassDecl currentclass, boolean staticOnly) throws IdError {
+
+        // resolve Class declaration from the name of the provided declaration
+        ClassDecl cd;
+
+        if (d instanceof MemberDecl) {
+            cd = getClassDeclFromMember((MemberDecl) d);
+        } else {
+            cd = getClassDecl(d);
+        }
+
+        System.out.println(currentclass == cd);
+
+        //System.out.println("resolve got class " + cd.name);
+
+        for (FieldDecl fd : cd.fieldDeclList) {
+            //System.out.println("checking field decl " + fd.name);
+            if (fd.name.contentEquals(id.spelling)) {
+                //System.out.println(id.spelling + " = " + fd.name);
+                if (fd.isPrivate && cd != currentclass) {
+                    throw new IdError("Cannot access private field in class '" + cd.name + "'", id.posn);
+                } else if (staticOnly && (!fd.isStatic)) {
+                    throw new IdError("Cannot access non-static field using a static reference in class", id.posn);
+                } else {
+                    return fd;
+                }
+            }
+        }
+        for (MethodDecl md : cd.methodDeclList) {
+            if (md.name.contentEquals(id.spelling)) {
+                if (md.isPrivate && cd != currentclass) {
+                    throw new IdError("Cannot access private method in class", id.posn);
+                } else if (staticOnly && (!md.isStatic)) {
+                    throw new IdError("Cannot access non-static method using a static reference in class", id.posn);
+                } else {
+                    return md;
+                }
+            }
+        }
+
+        throw new IdError("No member '" + id.spelling + "' exists in class '" + cd.name + "'", id.posn);
+    }
+
+    private ClassDecl getClassDecl(TypeDenoter td) throws IdError {
+        if (td instanceof ClassType) {
+            ClassType ct = (ClassType) td;
+
+            return getClassDecl(ct.className);
+        } else {
+            throw new IdError("Not a class type, no related class", td.posn);
+        }
+    }
+
+    private ClassDecl getClassDeclFromMember(MemberDecl md) throws IdError {
+        if (md.type.typeKind == TypeKind.CLASS) {
+            ClassType ct = (ClassType) md.type;
+            
+            return getClassDecl(ct.className);
+        } else {
+            throw new IdError("No fields for member " + md.name, md.name + " is not a class", md.posn);
+        }
+    }
+
+    private ClassDecl getClassDecl(Declaration d) throws IdError { 
+        return getClassDecl(d.name, d.posn);
+    }
+
+    private ClassDecl getClassDecl(Identifier id) throws IdError {
+        return getClassDecl(id.spelling, id.posn);
+    }
+
+    private ClassDecl getClassDecl(String s, SourcePosition posn) throws IdError {
+        for (ClassDecl cd : _tree.classDeclList) {
+            // sketchy
+            if (s.contentEquals(cd.name)) {
+                return cd;
+            }
+        }
+        throw new IdError("no class '" + s + "' in program", posn);
     }
 }

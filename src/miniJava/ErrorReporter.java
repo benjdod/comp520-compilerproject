@@ -44,6 +44,14 @@ public class ErrorReporter {
         return _errors.iterator();
     }
 
+    public Error getFirst() {
+        try {
+            return _errors.get(0);
+        } catch (IndexOutOfBoundsException e) {
+            return null;
+        }
+    }
+
     public void print() {
         for (Error e : _errors) {
             System.err.println(e.getMessage());

@@ -3,4 +3,5 @@ added class 'NullLiteral' for the null keyword (and made changes to related meth
 
     - This is parsed by parseExpression, which returns it as the only component of the parseExpression
 
-added public field 'Decl' of type Declaration to the Identifier class.
+added public field 'decl' of type Declaration to the Identifier class. This field is not initialized by the class's constructor
+added public field 'decl' of type Declaration to the Reference class. This field is not initialized by the class's constructor

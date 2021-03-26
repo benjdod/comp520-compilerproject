@@ -20,6 +20,6 @@ public class SourceError extends CompilerError {
 
     @Override
     public String getMessage() {
-        return this.getClass().getSimpleName() + " at (" + _location.line + ", " + _location.column + "):\n" + _errormessage + (_hint.length() > 0 ? ("\nHint: " + _hint) : "");
+        return this.getClass().getSimpleName() + " at (" + _location.line + ", " + _location.column + "):\n" + _errormessage + (_hint.length() > 0 ? ("\n" + _hint) : "");
     }
 }

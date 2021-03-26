@@ -62,8 +62,10 @@ public class Compiler {
 
 		checkForErrors();
 
-		Identification idn = new Identification(_reporter);
-		idn.validate(tree);
+		ASTDisplay adt = new ASTDisplay();
+		adt.showTree(tree);
+
+		Identification idn = new Identification(tree, _reporter);
 
 		checkForErrors();
 
@@ -96,7 +98,7 @@ public class Compiler {
 		
 		if (args.length < 1) {
 			target = "../tests/pa2_tests/pass290.java";
-			target = "./test/test1.java";
+			target = "./test/fail/samenamefieldmethod.java";
 		} else {
 			target = args[0];
 		}
