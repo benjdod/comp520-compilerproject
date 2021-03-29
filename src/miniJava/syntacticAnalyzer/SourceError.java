@@ -4,7 +4,7 @@ import miniJava.CompilerError;
 
 public class SourceError extends CompilerError {
 
-    SourcePosition _location;
+    public SourcePosition _location;
 
     private static final long serialVersionUID = 1L;	
     

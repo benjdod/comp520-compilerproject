@@ -123,7 +123,7 @@ public class Scanner {
 					this._column++;
 				}
 			} catch (IOException e) {
-				_reporter.report(e.toString());
+				_reporter.report(new ScanError("IO Error", e.toString(), new SourcePosition(_line, _column)));
 				_current = _next = '\0';
 			} catch (SourceError e) {
 				_reporter.report(e);

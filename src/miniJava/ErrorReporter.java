@@ -3,17 +3,20 @@ package miniJava;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import miniJava.SyntacticAnalyzer.SourceError;
+
 public class ErrorReporter {
 
     private boolean _has_errors;
     private int _num_errors;
-    private ArrayList<Error> _errors;
+    private ArrayList<SourceError> _errors;
 
     public ErrorReporter() {
         _num_errors = 0;
-        _errors = new ArrayList<Error>();
+        _errors = new ArrayList<SourceError>();
     }
 
+    /*
     public void report(String message) {
         _errors.add(new CompilerError(message));
         _num_errors++;
@@ -25,8 +28,9 @@ public class ErrorReporter {
         _num_errors++;
         _has_errors |= true;
     }
+    */
 
-    public void report(Error e) {
+    public void report(SourceError e) {
         _errors.add(e);
         _num_errors++;
         _has_errors |= true;
@@ -40,7 +44,7 @@ public class ErrorReporter {
         return _num_errors;
     }
 
-    public Iterator<Error> getErrors() {
+    public Iterator<SourceError> getErrors() {
         return _errors.iterator();
     }
 
@@ -62,5 +66,11 @@ public class ErrorReporter {
         try {
             System.out.println(_errors.get(0).getMessage());
         } catch (Exception e) {;}
+    }
+
+    public void prinsOutput() {
+        for (SourceError se : _errors) {
+            System.out.println("*** line " + se._location.line + ": " + se._errormessage + (se._hint.length() > 0 ? " (" + se._hint + ")" : ""));
+        }
     }
 }

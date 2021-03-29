@@ -6,10 +6,11 @@ class Test {
     public Bollocks bloviate() {
         int x = 2;
 
-        if (x > 3) {
+        t = new String();
+
+        if (x == b) {
             return b;
-        } else {
-        }
+        } 
     }
 }
 

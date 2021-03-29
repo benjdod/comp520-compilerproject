@@ -13,6 +13,7 @@ import miniJava.AbstractSyntaxTrees.Package;
 public class Compiler {
 	
 	static final int PARSE_SUCCESS = 0;
+	static final int FILE_FAILURE = 1;
 	static final int COMMAND_FAILURE = 3;
 	static final int PARSE_FAILURE = 4;
 
@@ -25,9 +26,9 @@ public class Compiler {
 
 	static void checkForErrors() {
 		if (_reporter.hasErrors()) {
-			System.out.println("\u001B[0;91m----- Compilation failed! -----\u001B[0m");
-			_reporter.printFirst();
-			System.out.print("\u001B[0;31m          ----------\u001B[0m");
+			//System.out.println("\u001B[0;91m----- Compilation failed! -----\u001B[0m");
+			_reporter.prinsOutput();
+			//System.out.print("\u001B[0;31m          ----------\u001B[0m");
 			exitProgram(PARSE_FAILURE);
 		}
 	}
@@ -63,8 +64,10 @@ public class Compiler {
 
 		checkForErrors();
 
+		/*
 		ASTDisplay adt = new ASTDisplay();
 		adt.showTree(tree);
+		*/
 
 		Identification idn = new Identification(tree, _reporter);
 

@@ -30,7 +30,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     }
 
     @Override
-    public TypeDenoter visitPackage(Package prog, Object arg) throws TypeError {
+    public TypeDenoter visitPackage(Package prog, Object arg)  {
         for (ClassDecl cd : prog.classDeclList) {
             cd.visit(this, null);
         }
@@ -38,7 +38,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     }
 
     @Override
-    public TypeDenoter visitClassDecl(ClassDecl cd, Object arg) throws TypeError {
+    public TypeDenoter visitClassDecl(ClassDecl cd, Object arg)  {
         for (FieldDecl fd : cd.fieldDeclList) {
             fd.visit(this, null);
         }
@@ -51,13 +51,13 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     }
 
     @Override
-    public TypeDenoter visitFieldDecl(FieldDecl fd, Object arg) throws TypeError {
+    public TypeDenoter visitFieldDecl(FieldDecl fd, Object arg)  {
         fd.type = fd.type.visit(this, null);
         return fd.type;
     }
 
     @Override
-    public TypeDenoter visitMethodDecl(MethodDecl md, Object arg) throws TypeError {
+    public TypeDenoter visitMethodDecl(MethodDecl md, Object arg)  {
 
         for (ParameterDecl pd : md.parameterDeclList) {
             pd.visit(this, null);
@@ -76,25 +76,25 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     }
 
     @Override
-    public TypeDenoter visitParameterDecl(ParameterDecl pd, Object arg) throws TypeError {
+    public TypeDenoter visitParameterDecl(ParameterDecl pd, Object arg)  {
         TypeDenoter t = pd.type.visit(this, null);
         return t;
     }
 
     @Override
-    public TypeDenoter visitVarDecl(VarDecl decl, Object arg) throws TypeError {
+    public TypeDenoter visitVarDecl(VarDecl decl, Object arg)  {
         decl.type = decl.type.visit(this, null);
         return decl.type;
     }
 
     @Override
-    public TypeDenoter visitBaseType(BaseType type, Object arg) throws TypeError {
+    public TypeDenoter visitBaseType(BaseType type, Object arg)  {
         // mirror type back
         return type;
     }
 
     @Override
-    public TypeDenoter visitClassType(ClassType type, Object arg) throws TypeError {
+    public TypeDenoter visitClassType(ClassType type, Object arg)  {
         // weed out unsupported String class. otherwise, mirror back type
         if (type.className.spelling.contentEquals("String")) {
             return new BaseType(TypeKind.UNSUPPORTED, type.posn);
@@ -103,13 +103,13 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     }
 
     @Override
-    public TypeDenoter visitArrayType(ArrayType type, Object arg) throws TypeError {
+    public TypeDenoter visitArrayType(ArrayType type, Object arg)  {
         // mirror type back
         return type;
     }
 
     @Override
-    public TypeDenoter visitBlockStmt(BlockStmt stmt, Object arg) throws TypeError {
+    public TypeDenoter visitBlockStmt(BlockStmt stmt, Object arg)  {
         for (Statement s : stmt.sl) {
             s.visit(this, null);
         }
@@ -117,23 +117,25 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     }
 
     @Override
-    public TypeDenoter visitVardeclStmt(VarDeclStmt stmt, Object arg) throws TypeError {
+    public TypeDenoter visitVardeclStmt(VarDeclStmt stmt, Object arg)  {
         TypeDenoter vdt = stmt.varDecl.visit(this, null);
         TypeDenoter expt = stmt.initExp.visit(this, null);
 
         if (! vdt.equals(expt)) {
-            throw new TypeError("Cannot assign an expression of type " + expt.typeKind + " to a declaration of type " + vdt.typeKind, stmt.posn);
+            _reporter.report(new TypeError("Cannot assign an expression of type " + expt.typeKind + " to a declaration of type " + vdt.typeKind, stmt.posn));
+            return new BaseType(TypeKind.ERROR, stmt.posn);
         }
 
         return vdt;
     }
 
     @Override
-    public TypeDenoter visitAssignStmt(AssignStmt stmt, Object arg) throws TypeError {
+    public TypeDenoter visitAssignStmt(AssignStmt stmt, Object arg)  {
         TypeDenoter vt = stmt.val.visit(this, null);
         TypeDenoter rt = stmt.ref.visit(this, null);
         if (! vt.equals(rt)) {
-            throw new TypeError("Cannot assign expression of type " + vt.typeKind + " to reference of type " + rt.typeKind, stmt.posn);
+            _reporter.report(new TypeError("Cannot assign expression of type " + vt.typeKind + " to reference of type " + rt.typeKind, stmt.posn));
+            return new BaseType(TypeKind.ERROR, stmt.posn);
         }
         return vt;
     }
@@ -143,11 +145,11 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
         TypeDenoter idx_expr = stmt.ix.visit(this, null);
         stmt.exp.visit(this, null);
         if (idx_expr.typeKind != TypeKind.INT) {
-            throw new TypeError("Invalid index type! (requires Int)", stmt.posn);
+            _reporter.report(new TypeError("Invalid index type! (requires Int)", stmt.posn));
         }
         TypeDenoter array_elttype = ((ArrayType) stmt.ix.type).eltType;
         if (! TypeDenoter.equals(array_elttype, stmt.exp.type)) {
-            throw new TypeError("Cannot assign " + stmt.exp.type.typeKind + " to array of " + array_elttype.typeKind, stmt.posn);
+            _reporter.report(new TypeError("Cannot assign " + stmt.exp.type.typeKind + " to array of " + array_elttype.typeKind, stmt.posn));
         }
         return null;
     }
@@ -160,7 +162,8 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
         }
 
         if (! (stmt.methodRef.decl instanceof MethodDecl)) {
-            throw new TypeError("Reference to " + stmt.methodRef.decl.name + " is not a method", stmt.posn);
+            _reporter.report(new TypeError("Reference to " + stmt.methodRef.decl.name + " is not a method", stmt.posn));
+            return new BaseType(TypeKind.ERROR, stmt.posn);
         }
         MethodDecl md = (MethodDecl) stmt.methodRef.decl;
         checkArgs(stmt.argList,  md.parameterDeclList, md);
@@ -183,34 +186,36 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             stmt.elseStmt.visit(this, null);
         }
         if (! stmt.cond.type.equals(new BaseType(TypeKind.BOOLEAN, stmt.posn))) {
-            throw new TypeError("If condition must be boolean type (saw "+ stmt.cond.type.typeKind +")", stmt.cond.posn);
+            _reporter.report(new TypeError("If loop condition must be boolean type (saw "+ stmt.cond.type.typeKind +")", stmt.cond.posn));
+            return new BaseType(TypeKind.ERROR, stmt.posn);
         }
         return null;
     }
 
     @Override
-    public TypeDenoter visitWhileStmt(WhileStmt stmt, Object arg) throws TypeError {
+    public TypeDenoter visitWhileStmt(WhileStmt stmt, Object arg)  {
         stmt.cond.visit(this, null);
         stmt.body.visit(this, null);
 
-        System.out.println(stmt.cond.type);
+        //System.out.println(stmt.cond.type);
 
         if (! stmt.cond.type.equals(new BaseType(TypeKind.BOOLEAN, stmt.posn))) {
-            throw new TypeError("While loop condition must be boolean type (saw "+ stmt.cond.type.typeKind +")", stmt.cond.posn);
+            _reporter.report(new TypeError("While loop condition must be boolean type (saw "+ stmt.cond.type.typeKind +")", stmt.cond.posn));
+            return new BaseType(TypeKind.ERROR, stmt.posn);
         }
 
         return null;
     }
 
     @Override
-    public TypeDenoter visitUnaryExpr(UnaryExpr expr, Object arg) throws TypeError {
+    public TypeDenoter visitUnaryExpr(UnaryExpr expr, Object arg)  {
         expr.expr.visit(this, null);
         expr.type = checkUnaryExpr(expr);
         return expr.type;
     }
 
     @Override
-    public TypeDenoter visitBinaryExpr(BinaryExpr expr, Object arg) throws TypeError {
+    public TypeDenoter visitBinaryExpr(BinaryExpr expr, Object arg)  {
         TypeDenoter lefttype = expr.left.visit(this, null);
         TypeDenoter righttype = expr.right.visit(this, null);
         //System.out.println(expr.left.type + "\t" + expr.right.type);
@@ -225,10 +230,11 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     }
 
     @Override
-    public TypeDenoter visitIxExpr(IxExpr expr, Object arg) throws TypeError {
+    public TypeDenoter visitIxExpr(IxExpr expr, Object arg) {
         expr.ixExpr.visit(this, null);
         if (expr.ixExpr.type.typeKind != TypeKind.INT) {
-            throw new TypeError("Array index is not an integer expression", expr.posn);
+            _reporter.report(new TypeError("Array index is not an integer expression", expr.posn));
+            return new BaseType(TypeKind.ERROR, expr.posn);
         }
         return ((ArrayType) expr.ref.decl.type).eltType;
     }
@@ -241,7 +247,8 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
         }
 
         if (! (expr.functionRef.decl instanceof MethodDecl)) {
-            throw new TypeError("reference " + expr.functionRef.decl.name + " is not a method", expr.posn);
+            _reporter.report(new TypeError("reference " + expr.functionRef.decl.name + " is not a method", expr.posn));
+            return new BaseType(TypeKind.ERROR, expr.posn);
         }
         MethodDecl call_md = (MethodDecl) expr.functionRef.decl;
 
@@ -252,31 +259,30 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     }
 
     @Override
-    public TypeDenoter visitLiteralExpr(LiteralExpr expr, Object arg) throws TypeError {
+    public TypeDenoter visitLiteralExpr(LiteralExpr expr, Object arg)  {
         expr.type = expr.lit.visit(this, null);
         return expr.type;
     }
 
     @Override
-    public TypeDenoter visitNewObjectExpr(NewObjectExpr expr, Object arg) throws TypeError {
+    public TypeDenoter visitNewObjectExpr(NewObjectExpr expr, Object arg)  {
         expr.type = expr.classtype.visit(this, null);
         return expr.type;
     }
 
     @Override
-    public TypeDenoter visitNewArrayExpr(NewArrayExpr expr, Object arg) throws TypeError {
+    public TypeDenoter visitNewArrayExpr(NewArrayExpr expr, Object arg)  {
         expr.type = new ArrayType(expr.eltType, expr.posn);
         return expr.type;
     }
 
     @Override
-    public TypeDenoter visitThisRef(ThisRef ref, Object arg) throws TypeError {
+    public TypeDenoter visitThisRef(ThisRef ref, Object arg)  {
         return ref.decl.type;
     }
 
     @Override
     public TypeDenoter visitIdRef(IdRef ref, Object arg) {
-        System.out.println("zap " + ref.id.decl.type.typeKind);
         if (ref.id.decl.type.typeKind == TypeKind.UNSUPPORTED) {
 
             return new BaseType(TypeKind.UNSUPPORTED, ref.posn);
@@ -293,7 +299,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     }
 
     @Override
-    public TypeDenoter visitIdentifier(Identifier id, Object arg) throws TypeError {
+    public TypeDenoter visitIdentifier(Identifier id, Object arg)  {
         if (id.decl.type instanceof BaseType) {
             //System.out.println("id visit: " + ((BaseType) id.decl.type).typeKind);
         }
@@ -323,24 +329,29 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     }
 
     /*
-    private TypeDenoter getTypeFromDecl(Declaration d) throws TypeError {
+    private TypeDenoter getTypeFromDecl(Declaration d)  {
         if (d.type == null) {
             throw new TypeError("declaration" + d.name + " is a class declaration", d.posn);
         } else return d.type;
     }
     */
 
-    private TypeDenoter checkBinExpr(BinaryExpr expr) throws TypeError {
+    private TypeDenoter checkBinExpr(BinaryExpr expr) {
 
-        System.out.println(expr.left.type);
+        //System.out.println(expr.left.type);
         switch (expr.operator.type) {
             case EqualEqual:
             case NotEqual:
 
+                /*
                 TypeDenoter lt = expr.left.type;
-                TypeDenoter rt = expr.right.type;
+                TypeDenoter rt = expr.right.type; 
+                System.out.println(expr.left + "\t" + expr.right);
+                */
+                
                 if (! TypeDenoter.equals(expr.left.type, expr.right.type)) {
-                    throw new TypeError("Both sides of a equivalence binary expression must be the same type", expr.posn);
+                    _reporter.report(new TypeError("Both sides of a equivalence binary expression must be the same type", expr.posn)); 
+                    return new BaseType(TypeKind.ERROR, expr.posn);
                 }
 
                 return new BaseType(TypeKind.BOOLEAN, expr.posn);
@@ -348,8 +359,14 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             case GreaterEqual:
             case LCaret:
             case RCaret:
-                if ( expr.left.type.typeKind != TypeKind.INT || expr.right.type.typeKind != TypeKind.INT) {
-                    throw new TypeError("Both sides of an relational binary expression must be type Int", expr.posn);
+                if ( 
+                    (expr.left.type.typeKind != TypeKind.INT && expr.right.type.typeKind != TypeKind.INT)
+                ) {
+                    _reporter.report(new TypeError("Both sides of an relational binary expression must be integers", expr.posn));
+                    return new BaseType(TypeKind.ERROR, expr.posn);
+                } else if (TypeDenoter.equals(expr.left.type, expr.right.type)) {
+                    _reporter.report(new TypeError("Both sides of an relational binary expression must be integers", expr.posn));
+                    return new BaseType(TypeKind.ERROR, expr.posn);
                 }
                 return new BaseType(TypeKind.BOOLEAN, expr.posn);
             case Star:
@@ -357,75 +374,82 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             case Minus:
             case FSlash:
                 if ( expr.left.type.typeKind != TypeKind.INT || expr.right.type.typeKind != TypeKind.INT) {
-                    throw new TypeError("Both sides of an arithmetic binary expression must be type Int", expr.posn);
+                    _reporter.report(new TypeError("Both sides of an arithmetic binary expression must be type Int", expr.posn));
+                    return new BaseType(TypeKind.ERROR, expr.posn);
                 } else {
                     return new BaseType(TypeKind.INT, expr.posn);
                 }
             case AmpAmp:
             case BarBar:
                 if ( expr.left.type.typeKind != TypeKind.BOOLEAN || expr.right.type.typeKind != TypeKind.BOOLEAN) {
-                    throw new TypeError("Both sides of an arithmetic binary expression must be type Int", expr.posn);
+                    _reporter.report(new TypeError("Both sides of an arithmetic binary expression must be type Int", expr.posn));
+                    return new BaseType(TypeKind.ERROR, expr.posn);
                 }
                 return new BaseType(TypeKind.BOOLEAN, expr.posn);
             default:
-                throw new TypeError("unsupported operator type in expression", expr.posn);
+                _reporter.report(new TypeError("unsupported operator type in expression", expr.posn));
+                return new BaseType(TypeKind.ERROR, expr.posn);
         }
     }  
 
-    private TypeDenoter checkUnaryExpr(UnaryExpr expr) throws TypeError {
+    private TypeDenoter checkUnaryExpr(UnaryExpr expr)  {
         switch (expr.operator.type) {
             case Minus:
                 if (expr.expr.type.equals(new BaseType(TypeKind.INT, expr.posn))) {
                     return expr.expr.type;
                 } else {
-                    throw new TypeError("Unary operand must be an integer", expr.posn);
+                    _reporter.report( new TypeError("Unary operand must be an integer", expr.posn));
+                    return new BaseType(TypeKind.ERROR, expr.posn);
                 }
             case Not:
                 if (expr.expr.type.equals(new BaseType(TypeKind.BOOLEAN, expr.posn))) {
                     return expr.expr.type;
                 } else {
-                    throw new TypeError("Unary ! operand must be a boolean", expr.posn);
+                    _reporter.report(new TypeError("Unary ! operand must be a boolean", expr.posn));
+                    return new BaseType(TypeKind.ERROR, expr.posn);
                 }
             default:
-                throw new TypeError("Bad unary operator, cannot validate type", expr.posn);
+                _reporter.report(new TypeError("Bad unary operator, cannot validate type", expr.posn));
+                return new BaseType(TypeKind.ERROR, expr.posn);
+
         }
     }
 
-    private void checkArgs(ExprList el, ParameterDeclList pdl, Declaration method_decl) throws TypeError {
+    private void checkArgs(ExprList el, ParameterDeclList pdl, Declaration method_decl)  {
         if (el.size() != pdl.size()) {
-            throw new TypeError("bad arguments for method " + method_decl.name, "expected " + pdl.size() + " args, saw " + el.size(), method_decl.posn);
+            _reporter.report(new TypeError("bad arguments for method " + method_decl.name, "expected " + pdl.size() + " args, saw " + el.size(), method_decl.posn));
         }
 
         int i = 0;
         int size = el.size();
 
         while (i < size) {
-            Expression e_arg = el.get(i);
-            System.out.println(e_arg.type);
+            //Expression e_arg = el.get(i);
+            //System.out.println(e_arg.type);
             TypeDenoter expr_arg = el.get(i).type;
             TypeDenoter decl_arg = pdl.get(i).type;
             //System.out.println(expr_arg + "\t" + decl_arg);
             boolean match = TypeDenoter.equals(expr_arg, decl_arg);
 
             if (! match) {
-                throw new TypeError("mismatched arguments for method " + method_decl.name, method_decl.posn);
+                _reporter.report(new TypeError("mismatched arguments for method " + method_decl.name, method_decl.posn));
             }
 
             i += 1;
         }
     }
 
-    private void checkReturnType(MethodDecl md) throws TypeError {
+    private void checkReturnType(MethodDecl md)  {
         checkReturnType(md.statementList, md.type);
     }
 
-    private void checkReturnType(StatementList sl, TypeDenoter expected) throws TypeError {
+    private void checkReturnType(StatementList sl, TypeDenoter expected)  {
         for (Statement s : sl) {
             checkReturnType(s, expected);
         }
     }
 
-    private void checkReturnType(Statement s, TypeDenoter expected) throws TypeError {
+    private void checkReturnType(Statement s, TypeDenoter expected)  {
         if (s instanceof BlockStmt) {
             checkReturnType(((BlockStmt) s).sl, expected);
         } else if (s instanceof IfStmt) {
@@ -440,12 +464,12 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             ReturnStmt rs = (ReturnStmt) s;
             TypeDenoter actual_rettype = rs.returnExpr != null ? rs.returnExpr.type : new BaseType(TypeKind.VOID, s.posn);
             if (! actual_rettype.equals(expected)) {
-                throw new TypeError("Invalid return type for method", s.posn);
+                _reporter.report(new TypeError("Invalid return type for method", s.posn));
             }
         }
     }
 
-    private void checkReturnPath(MethodDecl md) throws TypeError {
+    private void checkReturnPath(MethodDecl md)  {
 
         checkReturnPath(md.statementList, md.type, md.posn);
     }
@@ -453,17 +477,17 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     private void checkReturnPath(StatementList sl, TypeDenoter expected, SourcePosition posn) {
 
         Statement last = sl.getLast();
-        System.out.println("method last st: " + last);
+        //System.out.println("method last st: " + last);
         if (last != null)
-            checkReturnPath(last, expected);
+            checkReturnPath(last, expected, posn);
         else {
             if (expected.typeKind != TypeKind.VOID) {
-                throw new TypeError("non-void method returned nothing", posn);
+                _reporter.report(new TypeError("non-void method returned nothing", posn));
             }
         }
     }
 
-    private void checkReturnPath(Statement s, TypeDenoter expected) throws TypeError {
+    private void checkReturnPath(Statement s, TypeDenoter expected, SourcePosition posn)  {
         if (s instanceof ReturnStmt) return;
         else if (s instanceof BlockStmt) {
             checkReturnPath(((BlockStmt) s).sl, expected, s.posn);
@@ -472,15 +496,15 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             IfStmt s_if = (IfStmt) s;
 
             if (s_if.elseStmt != null) {
-                checkReturnPath(s_if.thenStmt, expected);
-                checkReturnPath(s_if.elseStmt, expected);
+                checkReturnPath(s_if.thenStmt, expected, posn);
+                checkReturnPath(s_if.elseStmt, expected, posn);
                 return;
             } else {
-                throw new TypeError("method does not return a value", "no else statement returns a value", s.posn);
+                _reporter.report(new TypeError("method does not return a value", "no else statement returns a value", posn));
 
             }
         }
-        throw new TypeError("method does not return a value", s.posn);
+        _reporter.report(new TypeError("method does not return a value", posn));
     }
 
     private TypeDenoter makeClassType(ClassDecl cd) {
