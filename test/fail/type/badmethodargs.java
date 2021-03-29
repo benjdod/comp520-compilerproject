@@ -1,18 +1,7 @@
 class Test {
     A a;
     public void sing(int x, int y) {
-        A.doNothing(x,y);
-        a = new A();
-        A[] arr = new A[10];
-        A z = arr[5+4];
-
-        if (arr != null) {
-            System.out.println(x);
-            String s = new String();
-            if (s != null) {
-                System.out.println(x);
-            }
-        }
+        y = A.doNothing(x);
 
         int g = 4;
     }    
@@ -24,6 +13,14 @@ class A {
             if (x > 3) {
                 return x;
             }
+
+            if (t > 0) {
+                x = x + t;
+            } else {
+                x = x - (t - 4);
+            }
         }
+
+        return 0;
     }
 }

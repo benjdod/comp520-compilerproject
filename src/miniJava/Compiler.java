@@ -106,7 +106,7 @@ public class Compiler {
 		
 		if (args.length < 1) {
 			target = "../tests/pa2_tests/pass290.java";
-			target = "./test/test.java";
+			target = "./test/pass/type.java";
 		} else {
 			target = args[0];
 		}

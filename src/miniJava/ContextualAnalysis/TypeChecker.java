@@ -70,7 +70,9 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
         md.type = md.type.visit(this, null);
 
         checkReturnType(md);
-        checkReturnPath(md);
+        if (md.type.typeKind != TypeKind.VOID) {
+            checkReturnPath(md);
+        }
         
         return md.type;
     }
@@ -104,7 +106,6 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
 
     @Override
     public TypeDenoter visitArrayType(ArrayType type, Object arg)  {
-        // mirror type back
         return type;
     }
 
@@ -143,11 +144,12 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     @Override
     public TypeDenoter visitIxAssignStmt(IxAssignStmt stmt, Object arg) {
         TypeDenoter idx_expr = stmt.ix.visit(this, null);
+        stmt.ref.visit(this, null);
         stmt.exp.visit(this, null);
         if (idx_expr.typeKind != TypeKind.INT) {
             _reporter.report(new TypeError("Invalid index type! (requires Int)", stmt.posn));
         }
-        TypeDenoter array_elttype = ((ArrayType) stmt.ix.type).eltType;
+        TypeDenoter array_elttype = ((ArrayType) stmt.ref.decl.type).eltType;
         if (! TypeDenoter.equals(array_elttype, stmt.exp.type)) {
             _reporter.report(new TypeError("Cannot assign " + stmt.exp.type.typeKind + " to array of " + array_elttype.typeKind, stmt.posn));
         }
@@ -166,7 +168,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             return new BaseType(TypeKind.ERROR, stmt.posn);
         }
         MethodDecl md = (MethodDecl) stmt.methodRef.decl;
-        checkArgs(stmt.argList,  md.parameterDeclList, md);
+        checkArgs(stmt, md);
         return null;
     }
 
@@ -252,7 +254,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
         }
         MethodDecl call_md = (MethodDecl) expr.functionRef.decl;
 
-        checkArgs(expr.argList, call_md.parameterDeclList, call_md);
+        checkArgs(expr.argList, call_md, expr.posn);
 
         expr.type = expr.functionRef.decl.type;
         return expr.type;
@@ -364,7 +366,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
                 ) {
                     _reporter.report(new TypeError("Both sides of an relational binary expression must be integers", expr.posn));
                     return new BaseType(TypeKind.ERROR, expr.posn);
-                } else if (TypeDenoter.equals(expr.left.type, expr.right.type)) {
+                } else if (! TypeDenoter.equals(expr.left.type, expr.right.type)) {
                     _reporter.report(new TypeError("Both sides of an relational binary expression must be integers", expr.posn));
                     return new BaseType(TypeKind.ERROR, expr.posn);
                 }
@@ -373,19 +375,29 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             case Plus:
             case Minus:
             case FSlash:
-                if ( expr.left.type.typeKind != TypeKind.INT || expr.right.type.typeKind != TypeKind.INT) {
-                    _reporter.report(new TypeError("Both sides of an arithmetic binary expression must be type Int", expr.posn));
+                if ( 
+                    (expr.left.type.typeKind != TypeKind.INT && expr.right.type.typeKind != TypeKind.INT)
+                ) {
+                    _reporter.report(new TypeError("Both sides of an arithetmical binary expression must be integers", expr.posn));
                     return new BaseType(TypeKind.ERROR, expr.posn);
-                } else {
-                    return new BaseType(TypeKind.INT, expr.posn);
+                } else if (! TypeDenoter.equals(expr.left.type, expr.right.type)) {
+                    _reporter.report(new TypeError("Both sides of an arithmetical binary expression must be integers", expr.posn));
+                    return new BaseType(TypeKind.ERROR, expr.posn);
                 }
+                return new BaseType(TypeKind.INT, expr.posn);
+
             case AmpAmp:
             case BarBar:
-                if ( expr.left.type.typeKind != TypeKind.BOOLEAN || expr.right.type.typeKind != TypeKind.BOOLEAN) {
-                    _reporter.report(new TypeError("Both sides of an arithmetic binary expression must be type Int", expr.posn));
-                    return new BaseType(TypeKind.ERROR, expr.posn);
-                }
-                return new BaseType(TypeKind.BOOLEAN, expr.posn);
+            if ( 
+                (expr.left.type.typeKind != TypeKind.BOOLEAN && expr.right.type.typeKind != TypeKind.BOOLEAN)
+            ) {
+                _reporter.report(new TypeError("Both sides of a boolean binary expression must be integers", expr.posn));
+                return new BaseType(TypeKind.ERROR, expr.posn);
+            } else if (! TypeDenoter.equals(expr.left.type, expr.right.type)) {
+                _reporter.report(new TypeError("Both sides of a boolean binary expression must be integers", expr.posn));
+                return new BaseType(TypeKind.ERROR, expr.posn);
+            }
+            return new BaseType(TypeKind.INT, expr.posn);
             default:
                 _reporter.report(new TypeError("unsupported operator type in expression", expr.posn));
                 return new BaseType(TypeKind.ERROR, expr.posn);
@@ -415,9 +427,11 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
         }
     }
 
-    private void checkArgs(ExprList el, ParameterDeclList pdl, Declaration method_decl)  {
+    private void checkArgs(CallStmt stmt, MethodDecl md)  {
+        ExprList el = stmt.argList;
+        ParameterDeclList pdl = md.parameterDeclList;
         if (el.size() != pdl.size()) {
-            _reporter.report(new TypeError("bad arguments for method " + method_decl.name, "expected " + pdl.size() + " args, saw " + el.size(), method_decl.posn));
+            _reporter.report(new TypeError("bad arguments for method " + md.name, "expected " + pdl.size() + " args, saw " + el.size(), stmt.posn));
         }
 
         int i = 0;
@@ -432,7 +446,32 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             boolean match = TypeDenoter.equals(expr_arg, decl_arg);
 
             if (! match) {
-                _reporter.report(new TypeError("mismatched arguments for method " + method_decl.name, method_decl.posn));
+                _reporter.report(new TypeError("mismatched arguments for method " + md.name, stmt.posn));
+            }
+
+            i += 1;
+        }
+    }
+
+    private void checkArgs(ExprList el, MethodDecl md, SourcePosition listpos) {
+        ParameterDeclList pdl = md.parameterDeclList;
+        if (el.size() != pdl.size()) {
+            _reporter.report(new TypeError("bad arguments for method " + md.name, "expected " + pdl.size() + " args, saw " + el.size(), listpos));
+        }
+
+        int i = 0;
+        int size = el.size();
+
+        while (i < size) {
+            //Expression e_arg = el.get(i);
+            //System.out.println(e_arg.type);
+            TypeDenoter expr_arg = el.get(i).type;
+            TypeDenoter decl_arg = pdl.get(i).type;
+            //System.out.println(expr_arg + "\t" + decl_arg);
+            boolean match = TypeDenoter.equals(expr_arg, decl_arg);
+
+            if (! match) {
+                _reporter.report(new TypeError("mismatched arguments for method " + md.name, listpos));
             }
 
             i += 1;
@@ -482,7 +521,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             checkReturnPath(last, expected, posn);
         else {
             if (expected.typeKind != TypeKind.VOID) {
-                _reporter.report(new TypeError("non-void method returned nothing", posn));
+                _reporter.report(new TypeError("block in non-void method returned nothing", posn));
             }
         }
     }
@@ -500,11 +539,13 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
                 checkReturnPath(s_if.elseStmt, expected, posn);
                 return;
             } else {
-                _reporter.report(new TypeError("method does not return a value", "no else statement returns a value", posn));
+                checkReturnPath(s_if.thenStmt, expected, posn);
+                _reporter.report(new TypeError("method does not return a value", "no else statement contains a valid return", posn));
 
             }
+        } else {
+            _reporter.report(new TypeError("method does not return a value", posn));
         }
-        _reporter.report(new TypeError("method does not return a value", posn));
     }
 
     private TypeDenoter makeClassType(ClassDecl cd) {

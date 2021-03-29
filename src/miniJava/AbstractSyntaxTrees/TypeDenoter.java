@@ -61,7 +61,7 @@ abstract public class TypeDenoter extends AST {
 
         return false;
     }
-    
+
 }
 
         

@@ -1,5 +1,6 @@
 class Test {
     Bollocks b;
+    Bollocks c;
     String s;
     String t;
 

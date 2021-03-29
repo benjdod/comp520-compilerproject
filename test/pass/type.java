@@ -1,12 +1,14 @@
 class Test {
 
     Hello h;
+    Hello[] h_array;
 
     void sing() {
 
         int x = 2;
         int y = 1;
         while (h.isFriendly(h.z)) {
+            h_array[x+y] = new Hello();
         }
 
         if (x == 5) {

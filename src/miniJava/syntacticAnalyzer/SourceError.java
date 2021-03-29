@@ -22,4 +22,8 @@ public class SourceError extends CompilerError {
     public String getMessage() {
         return this.getClass().getSimpleName() + " at " + _location.toString() + ":\n" + _errormessage + (_hint.length() > 0 ? ("\n" + _hint) : "");
     }
+
+    public String getErrorType() {
+        return this.getClass().getSimpleName();
+    }
 }
