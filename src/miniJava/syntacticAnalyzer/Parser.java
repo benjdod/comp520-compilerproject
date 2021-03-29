@@ -174,6 +174,9 @@ public class Parser {
             new ParameterDeclList(), 
             new StatementList(), 
             oos);
+        pstream_println.parameterDeclList.add(
+            new ParameterDecl(new BaseType(TypeKind.INT, oos), "x", oos));
+
         pstream_decl.methodDeclList.add(pstream_println);
 
         ClassDecl system_decl = new ClassDecl("System", new FieldDeclList(), new MethodDeclList(), oos);
@@ -183,10 +186,6 @@ public class Parser {
         cdl.add(system_decl);
         cdl.add(pstream_decl);
         cdl.add(string_decl);
-
-        for (ClassDecl cd : cdl) {
-            System.out.println("class decl: " + cd.name);
-        }
     }
 
     
@@ -841,6 +840,10 @@ public class Parser {
             case True:
             case False:
                 e = new LiteralExpr(new BooleanLiteral(_token), _token.mark);
+                acceptIt();
+                return e;
+            case Null:
+                e = new LiteralExpr(new NullLiteral(_token), _token.mark);
                 acceptIt();
                 return e;
             case Ident:

@@ -24,6 +24,10 @@ public class StatementList implements Iterable<Statement>
     public int size() {
         return slist.size();
     }
+
+    public Statement getLast() {
+        return slist.get(slist.size() - 1);
+    }
     
     public Iterator<Statement> iterator() {
     	return slist.iterator();

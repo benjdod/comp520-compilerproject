@@ -59,8 +59,8 @@ public class ErrorReporter {
     }
     
     public void printFirst() {
-    	try {
-            System.err.println(_errors.get(0).getMessage());
-    	} catch (Exception e) {;}
+        try {
+            System.out.println(_errors.get(0).getMessage());
+        } catch (Exception e) {;}
     }
 }

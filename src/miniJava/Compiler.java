@@ -4,6 +4,7 @@ import java.io.FileReader;
 import java.nio.charset.StandardCharsets;
 
 import miniJava.ContextualAnalysis.Identification;
+import miniJava.ContextualAnalysis.TypeChecker;
 import miniJava.SyntacticAnalyzer.Parser;
 import miniJava.SyntacticAnalyzer.Scanner;
 import miniJava.AbstractSyntaxTrees.*;
@@ -69,6 +70,10 @@ public class Compiler {
 
 		checkForErrors();
 
+		TypeChecker tc = new TypeChecker(tree, _reporter);
+
+		checkForErrors();
+
 		System.out.println("\u001B[0;32mCompilation successful.\u001B[0m");
 
 		/*
@@ -98,7 +103,7 @@ public class Compiler {
 		
 		if (args.length < 1) {
 			target = "../tests/pa2_tests/pass290.java";
-			target = "./test/pass/longqualref.java";
+			target = "./test/fail/type/badmethodargs.java";
 		} else {
 			target = args[0];
 		}

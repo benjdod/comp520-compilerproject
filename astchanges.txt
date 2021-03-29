@@ -1,5 +1,6 @@
 PA3:
 added class 'NullLiteral' for the null keyword (and made changes to related methods in Scanner Parser, AST visitor)
+added Enum 'NULL' to TypeKind to serve as a comparator for reference types (array, class)
 
     - This is parsed by parseExpression, which returns it as the only component of the parseExpression
 
@@ -7,4 +8,6 @@ added public field 'decl' of type Declaration to the Identifier class. This fiel
 added public field 'decl' of type Declaration to the Reference class. This field is not initialized by the class constructor
 added public field 'type' of type TypeDenoter to the Expression class. This feld is not initialized by the class constructor
 
-added public method 'equals' of type boolean to the TypeDenoter class (used to perform type equivalence with another TypeDenoter)
+added public static method 'equals' of type boolean to the TypeDenoter class (takes two TypeDenoters as arguments and compares them for equivalence)
+added public method 'equals' of type boolean to the TypeDenoter class (used to compare the value of the current TypeDenoter instance with another instance)
+added public method 'getLast' of type Statement to the StatementList class (used for return statement checking)

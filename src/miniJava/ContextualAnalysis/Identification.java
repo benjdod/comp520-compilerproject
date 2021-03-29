@@ -244,6 +244,7 @@ public class Identification implements Visitor<Object, Object> {
     @Override
     public Object visitRefExpr(RefExpr expr, Object arg) throws IdError {
         expr.ref.visit(this, null);
+        expr.type = expr.ref.decl.type;
         return null;
     }
 
@@ -266,6 +267,12 @@ public class Identification implements Visitor<Object, Object> {
     @Override
     public Object visitLiteralExpr(LiteralExpr expr, Object arg) throws IdError {
         expr.lit.visit(this, null);
+        /*
+        if (expr.lit.type == TokenType.True || expr.lit.type == TokenType.False) {
+            expr.type = new BaseType(TypeKind.BOOLEAN, expr.posn);
+        } else if (expr.lit.type == TokenType.Num) {
+            expr.type = new BaseType(TypeKind.INT, expr.posn);
+        }*/
         return null;
     }
 
@@ -284,14 +291,14 @@ public class Identification implements Visitor<Object, Object> {
 
     @Override
     public Object visitThisRef(ThisRef ref, Object arg) throws IdError {
-        System.out.println("this ref");
+        //System.out.println("this ref");
         ref.decl = _cd;
         return null;
     }
 
     @Override
     public Object visitIdRef(IdRef ref, Object arg) throws IdError {
-        System.out.println("id ref");
+        //System.out.println("id ref");
         ref.id.visit(this,null);
         ref.decl = ref.id.decl;
 
@@ -310,6 +317,7 @@ public class Identification implements Visitor<Object, Object> {
 
     @Override
     public Object visitQRef(QualRef ref, Object arg) throws IdError {
+        //System.out.println("identification qual ref:\t" + ref.id.hashCode());
         unfoldQualRef(ref);
         //ref.ref.visit(this,null);
         //ref.id.visit(this,null);
@@ -372,11 +380,13 @@ public class Identification implements Visitor<Object, Object> {
         Reference base = qr;
 
         ArrayList<Identifier> id_arr = new ArrayList<Identifier>();
+        ArrayList<QualRef> ref_arr = new ArrayList<QualRef>();
 
         id_arr.add(0, qr.id);
 
         while (current.ref instanceof QualRef) {
             current = (QualRef) current.ref;
+            ref_arr.add(0, current);
             id_arr.add(0, current.id);
         }
 
@@ -416,8 +426,11 @@ public class Identification implements Visitor<Object, Object> {
         int i;
         MemberDecl md;
         Declaration decl = base.decl;
+        Identifier id = id_arr.get(0);
+
 
         md = resolveClassField(decl, id_arr.get(0), isStatic);
+        id.decl = md;
         id_arr.remove(0);
 
         // loop over the rest of the fields, which are necessarily
@@ -426,11 +439,18 @@ public class Identification implements Visitor<Object, Object> {
 
             decl = getClassDeclFromMember(md);
 
+            id = id_arr.get(i);
+
             //System.out.println("-- " + id_arr.get(i).spelling);
-            md = resolveClassField(decl, id_arr.get(i), false);
+            md = resolveClassField(decl, id, false);
+            id.decl = md;
+            if (i < ref_arr.size()) {
+                ref_arr.get(i).decl = md;
+            }
             //System.out.println("found member decl " + md.name);
         }
 
+        qr.decl = qr.id.decl;
     }
 
     private MemberDecl resolveClassField(Declaration d, Identifier id, boolean staticOnly) throws IdError {
@@ -442,15 +462,21 @@ public class Identification implements Visitor<Object, Object> {
         // resolve Class declaration from the name of the provided declaration
         ClassDecl cd;
 
+        /*
         if (d instanceof MemberDecl) {
-            cd = getClassDeclFromMember((MemberDecl) d);
+            cd = getClassDeclFromInst(d);
         } else {
+            System.out.println("agh");
+
             cd = getClassDecl(d);
+        }*/
+        if (d instanceof ClassDecl) {
+            cd = getClassDecl(d);
+        } else {
+            cd = getClassDeclFromInst(d);
         }
 
-        System.out.println(currentclass == cd);
-
-        //System.out.println("resolve got class " + cd.name);
+        //System.out.println(currentclass == cd);
 
         for (FieldDecl fd : cd.fieldDeclList) {
             //System.out.println("checking field decl " + fd.name);
@@ -497,6 +523,16 @@ public class Identification implements Visitor<Object, Object> {
             return getClassDecl(ct.className);
         } else {
             throw new IdError("No fields for member " + md.name, md.name + " is not a class", md.posn);
+        }
+    }
+
+    private ClassDecl getClassDeclFromInst(Declaration inst) throws TypeError {
+        if (inst.type.typeKind == TypeKind.CLASS) {
+            ClassType ct = (ClassType) inst.type;
+            
+            return getClassDecl(ct.className);
+        } else {
+            throw new IdError("No fields for instance " + inst.name, inst.name + " is not a class", inst.posn);
         }
     }
 
