@@ -8,6 +8,10 @@ class Test {
 
         if (arr != null) {
             System.out.println(x);
+            String s = new String();
+            if (s != null) {
+                System.out.println(x);
+            }
         }
 
         int g = 4;

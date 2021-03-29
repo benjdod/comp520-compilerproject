@@ -1,11 +1,11 @@
 package miniJava.ContextualAnalysis;
 
-import java.lang.ProcessBuilder.Redirect.Type;
-import java.lang.reflect.Field;
-
 import miniJava.ErrorReporter;
 import miniJava.AbstractSyntaxTrees.*;
 import miniJava.AbstractSyntaxTrees.Package;
+import miniJava.SyntacticAnalyzer.SourcePosition;
+import miniJava.SyntacticAnalyzer.Token;
+import miniJava.SyntacticAnalyzer.TokenType;
 
 public class TypeChecker implements Visitor<Object, TypeDenoter> {
 
@@ -45,11 +45,14 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
         for (MethodDecl md : cd.methodDeclList) {
             md.visit(this, null);
         }
+
+        cd.type = makeClassType(cd);
         return null;
     }
 
     @Override
     public TypeDenoter visitFieldDecl(FieldDecl fd, Object arg) throws TypeError {
+        fd.type = fd.type.visit(this, null);
         return fd.type;
     }
 
@@ -64,39 +67,45 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             s.visit(this, null);
         }
 
-        checkReturnType(md);
+        md.type = md.type.visit(this, null);
 
-        // need return checking!
+        checkReturnType(md);
+        checkReturnPath(md);
         
         return md.type;
     }
 
     @Override
     public TypeDenoter visitParameterDecl(ParameterDecl pd, Object arg) throws TypeError {
-        return pd.type;
+        TypeDenoter t = pd.type.visit(this, null);
+        return t;
     }
 
     @Override
     public TypeDenoter visitVarDecl(VarDecl decl, Object arg) throws TypeError {
+        decl.type = decl.type.visit(this, null);
         return decl.type;
     }
 
     @Override
     public TypeDenoter visitBaseType(BaseType type, Object arg) throws TypeError {
-        // TODO Auto-generated method stub
-        return null;
+        // mirror type back
+        return type;
     }
 
     @Override
     public TypeDenoter visitClassType(ClassType type, Object arg) throws TypeError {
-        // TODO Auto-generated method stub
-        return null;
+        // weed out unsupported String class. otherwise, mirror back type
+        if (type.className.spelling.contentEquals("String")) {
+            return new BaseType(TypeKind.UNSUPPORTED, type.posn);
+        }
+        return type;
     }
 
     @Override
     public TypeDenoter visitArrayType(ArrayType type, Object arg) throws TypeError {
-        // TODO Auto-generated method stub
-        return null;
+        // mirror type back
+        return type;
     }
 
     @Override
@@ -204,7 +213,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     public TypeDenoter visitBinaryExpr(BinaryExpr expr, Object arg) throws TypeError {
         TypeDenoter lefttype = expr.left.visit(this, null);
         TypeDenoter righttype = expr.right.visit(this, null);
-        System.out.println(expr.left.type + "\t" + expr.right.type);
+        //System.out.println(expr.left.type + "\t" + expr.right.type);
         expr.type = checkBinExpr(expr);
         return expr.type;
     }
@@ -243,30 +252,36 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     }
 
     @Override
-    public TypeDenoter visitLiteralExpr(LiteralExpr expr, Object arg) {
+    public TypeDenoter visitLiteralExpr(LiteralExpr expr, Object arg) throws TypeError {
         expr.type = expr.lit.visit(this, null);
         return expr.type;
     }
 
     @Override
-    public TypeDenoter visitNewObjectExpr(NewObjectExpr expr, Object arg) {
-        expr.type = expr.classtype;
+    public TypeDenoter visitNewObjectExpr(NewObjectExpr expr, Object arg) throws TypeError {
+        expr.type = expr.classtype.visit(this, null);
         return expr.type;
     }
 
     @Override
-    public TypeDenoter visitNewArrayExpr(NewArrayExpr expr, Object arg) {
+    public TypeDenoter visitNewArrayExpr(NewArrayExpr expr, Object arg) throws TypeError {
         expr.type = new ArrayType(expr.eltType, expr.posn);
         return expr.type;
     }
 
     @Override
-    public TypeDenoter visitThisRef(ThisRef ref, Object arg) {
+    public TypeDenoter visitThisRef(ThisRef ref, Object arg) throws TypeError {
         return ref.decl.type;
     }
 
     @Override
     public TypeDenoter visitIdRef(IdRef ref, Object arg) {
+        System.out.println("zap " + ref.id.decl.type.typeKind);
+        if (ref.id.decl.type.typeKind == TypeKind.UNSUPPORTED) {
+
+            return new BaseType(TypeKind.UNSUPPORTED, ref.posn);
+        }
+        ref.id.visit(this, null);
         return ref.decl.type;
     }
 
@@ -278,7 +293,10 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     }
 
     @Override
-    public TypeDenoter visitIdentifier(Identifier id, Object arg) {
+    public TypeDenoter visitIdentifier(Identifier id, Object arg) throws TypeError {
+        if (id.decl.type instanceof BaseType) {
+            //System.out.println("id visit: " + ((BaseType) id.decl.type).typeKind);
+        }
         return id.decl.type;
     }
 
@@ -386,7 +404,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             System.out.println(e_arg.type);
             TypeDenoter expr_arg = el.get(i).type;
             TypeDenoter decl_arg = pdl.get(i).type;
-            System.out.println(expr_arg + "\t" + decl_arg);
+            //System.out.println(expr_arg + "\t" + decl_arg);
             boolean match = TypeDenoter.equals(expr_arg, decl_arg);
 
             if (! match) {
@@ -427,16 +445,51 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
         }
     }
 
-    private void checkReturnPath(StatementList sl) throws TypeError {
+    private void checkReturnPath(MethodDecl md) throws TypeError {
+
+        checkReturnPath(md.statementList, md.type, md.posn);
+    }
+
+    private void checkReturnPath(StatementList sl, TypeDenoter expected, SourcePosition posn) {
+
         Statement last = sl.getLast();
+        System.out.println("method last st: " + last);
+        if (last != null)
+            checkReturnPath(last, expected);
+        else {
+            if (expected.typeKind != TypeKind.VOID) {
+                throw new TypeError("non-void method returned nothing", posn);
+            }
+        }
+    }
 
-        if (last instanceof ReturnStmt) return;
-        else if (last instanceof IfStmt) {
-            IfStmt last_if = (IfStmt) last;
+    private void checkReturnPath(Statement s, TypeDenoter expected) throws TypeError {
+        if (s instanceof ReturnStmt) return;
+        else if (s instanceof BlockStmt) {
+            checkReturnPath(((BlockStmt) s).sl, expected, s.posn);
+            return;
+        } else if (s instanceof IfStmt) {
+            IfStmt s_if = (IfStmt) s;
 
-            if (last_if.elseStmt == null) {
+            if (s_if.elseStmt != null) {
+                checkReturnPath(s_if.thenStmt, expected);
+                checkReturnPath(s_if.elseStmt, expected);
+                return;
+            } else {
+                throw new TypeError("method does not return a value", "no else statement returns a value", s.posn);
 
             }
         }
+        throw new TypeError("method does not return a value", s.posn);
+    }
+
+    private TypeDenoter makeClassType(ClassDecl cd) {
+
+        // crude way of checking for unsupported String class
+        if (cd.name == "String") {
+            return new BaseType(TypeKind.UNSUPPORTED, cd.posn);
+        }
+
+        return new ClassType(new Identifier(new Token(TokenType.Ident, cd.posn, cd.name)), cd.posn);
     }
 }

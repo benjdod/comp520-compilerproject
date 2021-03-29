@@ -26,7 +26,12 @@ public class StatementList implements Iterable<Statement>
     }
 
     public Statement getLast() {
-        return slist.get(slist.size() - 1);
+        int last_idx = 0;
+
+        if ((slist.size() - 1) > 0) {
+            last_idx = slist.size()  - 1;
+        }
+        return slist.size() > 0 ? slist.get(last_idx) : null;
     }
     
     public Iterator<Statement> iterator() {
