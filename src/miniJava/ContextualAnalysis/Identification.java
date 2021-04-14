@@ -98,6 +98,7 @@ public class Identification implements Visitor<Object, Object> {
         _idtable.openScope();
         for (ParameterDecl pd : md.parameterDeclList) {
             _idtable.insert(pd);
+            pd.visit(this, null);
         }
 
         _idtable.openScope();
@@ -126,12 +127,17 @@ public class Identification implements Visitor<Object, Object> {
     @Override
     public Object visitBaseType(BaseType type, Object arg) throws IdError {
         // no visiting to do here.
+        System.out.println("visited base type: " + type.typeKind + " @ " + type.posn);
         return null;
     }
 
     @Override
     public Object visitClassType(ClassType type, Object arg) throws IdError {
+
+        System.out.println("visited class type: '" + type.className.spelling +"' @ " + type.posn);
+
         for (ClassDecl cd : _tree.classDeclList) {
+
             if (type.className.spelling.contentEquals(cd.name)) {
                 type.className.visit(this, null);
                 return null;
@@ -212,8 +218,14 @@ public class Identification implements Visitor<Object, Object> {
     @Override
     public Object visitIfStmt(IfStmt stmt, Object arg) throws IdError {
         stmt.cond.visit(this, null);
+        if (stmt.thenStmt instanceof VarDeclStmt) {
+            throw new IdError("variable declaration cannot be the only statement in an if statement", stmt.thenStmt.posn);
+        }
         stmt.thenStmt.visit(this, null);
         if (stmt.elseStmt != null) {
+            if (stmt.elseStmt instanceof VarDeclStmt) {
+                throw new IdError("variable declaration cannot be the only statement in an else statement", stmt.thenStmt.posn);
+            }
             stmt.elseStmt.visit(this, null);
         }
         return null;
@@ -222,6 +234,11 @@ public class Identification implements Visitor<Object, Object> {
     @Override
     public Object visitWhileStmt(WhileStmt stmt, Object arg) throws IdError {
         stmt.cond.visit(this, null);
+
+        if (stmt.body instanceof VarDeclStmt) {
+            throw new IdError("variable declaration cannot be the only statement in a while loop", stmt.body.posn);
+        }
+
         stmt.body.visit(this, null);
         return null;
     }

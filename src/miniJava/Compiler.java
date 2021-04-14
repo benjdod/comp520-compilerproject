@@ -66,9 +66,7 @@ public class Compiler {
 			System.err.println(e);
 			exitProgram(COMMAND_FAILURE);
 		}
-		
-		System.err.println("*** target");
-
+	
 
 		Scanner s = new Scanner(f, _reporter);
 		Parser p = new Parser(s, _reporter);
@@ -122,7 +120,7 @@ public class Compiler {
 		String target;
 		
 		if (args.length < 1) {
-			target = "../tests/pa3_tests/pass392.java";
+			target = "../tests/pa3_tests/fail335.java";
 			//target = "./test/pass/type.java";
 		} else {
 			target = args[0];

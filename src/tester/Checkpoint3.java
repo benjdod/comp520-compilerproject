@@ -53,28 +53,29 @@ public class Checkpoint3 {
                    continue;
             int returnCode = runTest(x); 
             if (returnCode == 1) {
-				System.err.println("### miniJava Compiler fails while processing test " + x.getName());
+				System.err.println("\u2716 " + "### miniJava Compiler fails while processing test " + x.getName());
 				failures++;
 				continue;
 			}
 			if (returnCode == 130) {
-				System.err.println("### miniJava Compiler hangs on test " + x.getName());
+				System.err.println("\u2716 " + "### miniJava Compiler hangs on test " + x.getName());
 				failures++;
 				continue;
 			}
             if (x.getName().indexOf("pass") != -1) {
                 if (returnCode == 0) {
-                    System.out.println(x.getName() + " passed successfully!");
+                    System.out.println("\u2713 " + x.getName() + " passed successfully!");
                 }
                 else {
                     failures++;
-                    System.err.println(x.getName()  + " did not pass!");
+                    System.err.println("\u2716 " + x.getName()  + " did not pass!");
                 }
             } else {
                 if (returnCode == 4)
-                    System.out.println(x.getName() + " failed successfully!");
+                    System.out.println("\u2713 " + x.getName() + " failed successfully!");
+                    
                 else {
-                    System.err.println(x.getName() + " failed to detect the error!");
+                    System.err.println("\u2716 " + x.getName() + " failed to detect the error!");
                     failures++;
                 }
             }
@@ -107,9 +108,9 @@ public class Checkpoint3 {
         while (scan.hasNextLine()) {
             String line = scan.nextLine();
             if (line.startsWith("*** "))
-                System.out.println(line);
+                System.out.println("\t" + line);
             if (line.startsWith("ERROR")) {
-                System.out.println(line);
+                System.out.println("\t" + line);
             }
         }
         scan.close();

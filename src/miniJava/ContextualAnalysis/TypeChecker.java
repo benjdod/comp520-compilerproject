@@ -245,6 +245,12 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             expr.type = new BaseType(TypeKind.ERROR, expr.posn);
             return expr.type;
         }
+        if (! (expr.ref.decl.type instanceof ArrayType)) {
+            _reporter.report(new TypeError("Variable is not an array", expr.posn));
+            expr.type = new BaseType(TypeKind.ERROR, expr.posn);
+            return expr.type;
+        }
+        System.out.println(expr.ref.decl.type.typeKind);
         expr.type = ((ArrayType) expr.ref.decl.type).eltType;
         return expr.type;
     }
@@ -295,11 +301,13 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
 
     @Override
     public TypeDenoter visitIdRef(IdRef ref, Object arg) {
+        
+        ref.id.visit(this, null);
+        System.out.println(ref.decl.type);
         if (ref.id.decl.type.typeKind == TypeKind.UNSUPPORTED) {
 
             return new BaseType(TypeKind.UNSUPPORTED, ref.posn);
         }
-        ref.id.visit(this, null);
         return ref.decl.type;
     }
 
