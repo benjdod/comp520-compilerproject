@@ -3,6 +3,8 @@ package miniJava;
 import java.util.ArrayList;
 import java.util.Iterator;
 
+import javax.xml.transform.Source;
+
 import miniJava.SyntacticAnalyzer.SourceError;
 
 public class ErrorReporter {
@@ -48,7 +50,7 @@ public class ErrorReporter {
         return _errors.iterator();
     }
 
-    public Error getFirst() {
+    public SourceError getFirst() {
         try {
             return _errors.get(0);
         } catch (IndexOutOfBoundsException e) {
@@ -69,8 +71,16 @@ public class ErrorReporter {
     }
 
     public void prinsOutput() {
-        for (SourceError se : _errors) {
-            System.out.println("*** line " + se._location.line + ": " + se.getErrorType() + " - " +  se._errormessage + (se._hint.length() > 0 ? " (" + se._hint + ")" : ""));
+        prinsOutput(_errors);
+    }
+
+    public void prinsOutput(Iterable<SourceError> errors) {
+        for (SourceError se : errors) {
+            prinsOutput(se);
         }
+    }
+
+    public void prinsOutput(SourceError se) {
+        System.out.println("*** line " + se._location.line + ": " + se.getErrorType() + " - " +  se._errormessage + (se._hint.length() > 0 ? " (" + se._hint + ")" : ""));
     }
 }

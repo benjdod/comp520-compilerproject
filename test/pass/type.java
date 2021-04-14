@@ -2,8 +2,9 @@ class Test {
 
     Hello h;
     Hello[] h_array;
+    String s$;
 
-    void sing() {
+    void sing(String s) {
 
         int x = 2;
         int y = 1;

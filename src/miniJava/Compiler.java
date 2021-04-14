@@ -14,7 +14,7 @@ public class Compiler {
 	
 	static final int PARSE_SUCCESS = 0;
 	static final int FILE_FAILURE = 1;
-	static final int COMMAND_FAILURE = 3;
+	static final int COMMAND_FAILURE = 1;
 	static final int PARSE_FAILURE = 4;
 
 	static ErrorReporter _reporter = new ErrorReporter();
@@ -28,7 +28,14 @@ public class Compiler {
 		if (_reporter.hasErrors()) {
 			//System.out.println("\u001B[0;91m----- Compilation failed! -----\u001B[0m");
 			_reporter.prinsOutput();
-			//System.out.print("\u001B[0;31m          ----------\u001B[0m");
+			//System.out.print("\u001B[0;91m          ----------\u001B[0m");
+			exitProgram(PARSE_FAILURE);
+		}
+	}
+
+	static void checkForError() {
+		if (_reporter.hasErrors()) {
+			_reporter.prinsOutput(_reporter.getFirst());
 			exitProgram(PARSE_FAILURE);
 		}
 	}
@@ -62,7 +69,7 @@ public class Compiler {
 
 		Package tree = p.parse();
 
-		checkForErrors();
+		checkForError();
 
 		/*
 		ASTDisplay adt = new ASTDisplay();
@@ -71,7 +78,7 @@ public class Compiler {
 
 		Identification idn = new Identification(tree, _reporter);
 
-		checkForErrors();
+		checkForError();
 
 		TypeChecker tc = new TypeChecker(tree, _reporter);
 
@@ -100,13 +107,14 @@ public class Compiler {
 		if (args.length != 1) {
 			System.out.println("Error: please enter a single path to a valid miniJava source file");
 			exitProgram(COMMAND_FAILURE);
-		} */
+		} 
+		*/
 		
 		String target;
 		
 		if (args.length < 1) {
-			target = "../tests/pa2_tests/pass290.java";
-			target = "./test/pass/type.java";
+			target = "../tests/pa3_tests/pass311.java";
+			//target = "./test/pass/type.java";
 		} else {
 			target = args[0];
 		}

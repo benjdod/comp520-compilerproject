@@ -70,9 +70,11 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
         md.type = md.type.visit(this, null);
 
         checkReturnType(md);
+        
+        /*
         if (md.type.typeKind != TypeKind.VOID) {
             checkReturnPath(md);
-        }
+        } */
         
         return md.type;
     }
@@ -220,7 +222,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     public TypeDenoter visitBinaryExpr(BinaryExpr expr, Object arg)  {
         TypeDenoter lefttype = expr.left.visit(this, null);
         TypeDenoter righttype = expr.right.visit(this, null);
-        //System.out.println(expr.left.type + "\t" + expr.right.type);
+        System.out.println(expr.left.type + "\t" + expr.right.type);
         expr.type = checkBinExpr(expr);
         return expr.type;
     }
@@ -236,9 +238,11 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
         expr.ixExpr.visit(this, null);
         if (expr.ixExpr.type.typeKind != TypeKind.INT) {
             _reporter.report(new TypeError("Array index is not an integer expression", expr.posn));
-            return new BaseType(TypeKind.ERROR, expr.posn);
+            expr.type = new BaseType(TypeKind.ERROR, expr.posn);
+            return expr.type;
         }
-        return ((ArrayType) expr.ref.decl.type).eltType;
+        expr.type = ((ArrayType) expr.ref.decl.type).eltType;
+        return expr.type;
     }
 
     @Override
@@ -340,7 +344,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
 
     private TypeDenoter checkBinExpr(BinaryExpr expr) {
 
-        //System.out.println(expr.left.type);
+        System.out.println(expr.left);
         switch (expr.operator.type) {
             case EqualEqual:
             case NotEqual:
@@ -375,6 +379,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             case Plus:
             case Minus:
             case FSlash:
+            System.out.println(expr.left.type + "\t" + expr.right.type);
                 if ( 
                     (expr.left.type.typeKind != TypeKind.INT && expr.right.type.typeKind != TypeKind.INT)
                 ) {

@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch Checkpoint3",
+            "request": "launch",
+            "mainClass": "tester.Checkpoint3",
+            "projectName": "COMP520_PA1"
+        },
+        {
+            "type": "java",
+            "name": "Launch Backend",
+            "request": "launch",
+            "mainClass": "miniJava.Backend",
+            "projectName": "COMP520_PA1"
+        },
+        {
+            "type": "java",
             "name": "Launch Harness",
             "request": "launch",
             "mainClass": "miniJava.Harness",
