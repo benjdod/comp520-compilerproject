@@ -788,6 +788,8 @@ public class Parser {
             return new LiteralExpr(new IntLiteral(_token), _token.mark);
         } else if (_token.type == TokenType.Ident || _token.type == TokenType.This) {
             return new RefExpr(parseReference(), _token.mark);
+        } else if (_token.type == TokenType.Null) {
+        	return new LiteralExpr(new NullLiteral(_token), _token.mark);
         } else {
             throw new SyntaxError("invalid literal expression (saw " + _token.type + ").", _token.mark);
         }
@@ -874,11 +876,12 @@ public class Parser {
             return parseNewExpr();
         } */
 
+        /*
         if (_token.type == TokenType.Null) {
             NullLiteral out = new NullLiteral(_token);
             acceptIt();
             return new LiteralExpr(out, out.posn);
-        }
+        }*/
 
     	e = parseUnaryExpr();
 

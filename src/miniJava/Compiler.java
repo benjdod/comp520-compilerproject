@@ -41,8 +41,9 @@ public class Compiler {
 	}
 
 	static void runCompiler(String filepath) {
-		
+				
 		int l = filepath.lastIndexOf('.');
+		
 		
 		try {
 			String ext = filepath.substring(l + 1);
@@ -54,15 +55,20 @@ public class Compiler {
 		
 		FileReader f = null;
 
+
 		try {
 			// this is the most surefire way I know to check for ASCII only outside of a raw byte
 			// stream, which seems spartan. Idk how it'll handle eastern encodings 
 			// (shift-JIS, GB, etc.) though...
+
 			f = new FileReader(filepath, StandardCharsets.UTF_8);	
 		} catch (Exception e) {
 			System.err.println(e);
 			exitProgram(COMMAND_FAILURE);
 		}
+		
+		System.err.println("*** target");
+
 
 		Scanner s = new Scanner(f, _reporter);
 		Parser p = new Parser(s, _reporter);
@@ -71,10 +77,10 @@ public class Compiler {
 
 		checkForError();
 
-		/*
+		
 		ASTDisplay adt = new ASTDisplay();
 		adt.showTree(tree);
-		*/
+		
 
 		Identification idn = new Identification(tree, _reporter);
 
@@ -83,12 +89,15 @@ public class Compiler {
 		TypeChecker tc = new TypeChecker(tree, _reporter);
 
 		checkForErrors();
+		
+
 
 		System.out.println("\u001B[0;32mCompilation successful.\u001B[0m");
 
 		/*
 		ASTDisplay adt = new ASTDisplay();
-		adt.showTree(tree); */
+		adt.showTree(tree); 
+		*/
 
 		try {
 			if (f != null)
@@ -107,17 +116,18 @@ public class Compiler {
 		if (args.length != 1) {
 			System.out.println("Error: please enter a single path to a valid miniJava source file");
 			exitProgram(COMMAND_FAILURE);
-		} 
-		*/
+		} */
+		
 		
 		String target;
 		
 		if (args.length < 1) {
-			target = "../tests/pa3_tests/pass311.java";
+			target = "../tests/pa3_tests/pass392.java";
 			//target = "./test/pass/type.java";
 		} else {
 			target = args[0];
 		}
+		
 		
 		runCompiler(target);
 	}

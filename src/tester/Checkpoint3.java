@@ -89,6 +89,7 @@ public class Checkpoint3 {
         pb.directory(classPath);
         pb.redirectErrorStream(true);
         Process p = pb.start();
+        
 
         processStream(p.getInputStream());
         if (!p.waitFor(5, TimeUnit.SECONDS)) {
@@ -96,6 +97,7 @@ public class Checkpoint3 {
 			p.destroy();
 			return 130;  // interrupted
 		}
+        
         return p.exitValue();
     }
         

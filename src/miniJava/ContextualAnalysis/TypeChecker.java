@@ -39,6 +39,8 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
 
     @Override
     public TypeDenoter visitClassDecl(ClassDecl cd, Object arg)  {
+        cd.type = makeClassType(cd);
+
         for (FieldDecl fd : cd.fieldDeclList) {
             fd.visit(this, null);
         }
@@ -46,7 +48,6 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             md.visit(this, null);
         }
 
-        cd.type = makeClassType(cd);
         return null;
     }
 
@@ -123,7 +124,9 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     public TypeDenoter visitVardeclStmt(VarDeclStmt stmt, Object arg)  {
         TypeDenoter vdt = stmt.varDecl.visit(this, null);
         TypeDenoter expt = stmt.initExp.visit(this, null);
-
+        
+        //System.out.println("assigning " + expt.typeKind + " to " + vdt.typeKind);
+        
         if (! vdt.equals(expt)) {
             _reporter.report(new TypeError("Cannot assign an expression of type " + expt.typeKind + " to a declaration of type " + vdt.typeKind, stmt.posn));
             return new BaseType(TypeKind.ERROR, stmt.posn);
@@ -222,8 +225,9 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     public TypeDenoter visitBinaryExpr(BinaryExpr expr, Object arg)  {
         TypeDenoter lefttype = expr.left.visit(this, null);
         TypeDenoter righttype = expr.right.visit(this, null);
-        System.out.println(expr.left.type + "\t" + expr.right.type);
+        //System.out.println("binary type kinds: " + expr.left.type.typeKind + "\t" + expr.right.type.typeKind);
         expr.type = checkBinExpr(expr);
+        //System.out.println("returning type: " + expr.type.typeKind);
         return expr.type;
     }
 
@@ -284,6 +288,8 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
 
     @Override
     public TypeDenoter visitThisRef(ThisRef ref, Object arg)  {
+    	//System.out.println("this ref type: " + ref.decl.posn);
+    	
         return ref.decl.type;
     }
 
@@ -344,7 +350,6 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
 
     private TypeDenoter checkBinExpr(BinaryExpr expr) {
 
-        System.out.println(expr.left);
         switch (expr.operator.type) {
             case EqualEqual:
             case NotEqual:
@@ -402,7 +407,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
                 _reporter.report(new TypeError("Both sides of a boolean binary expression must be integers", expr.posn));
                 return new BaseType(TypeKind.ERROR, expr.posn);
             }
-            return new BaseType(TypeKind.INT, expr.posn);
+            return new BaseType(TypeKind.BOOLEAN, expr.posn);
             default:
                 _reporter.report(new TypeError("unsupported operator type in expression", expr.posn));
                 return new BaseType(TypeKind.ERROR, expr.posn);
@@ -506,7 +511,8 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             checkReturnType(((WhileStmt) s).body, expected);
         } else if (s instanceof ReturnStmt) {
             ReturnStmt rs = (ReturnStmt) s;
-            TypeDenoter actual_rettype = rs.returnExpr != null ? rs.returnExpr.type : new BaseType(TypeKind.VOID, s.posn);
+            TypeDenoter actual_rettype = (rs.returnExpr != null) ? rs.returnExpr.type : new BaseType(TypeKind.VOID, s.posn);
+            //System.out.println("ret type: " + actual_rettype);
             if (! actual_rettype.equals(expected)) {
                 _reporter.report(new TypeError("Invalid return type for method", s.posn));
             }

@@ -2,7 +2,7 @@ class Test {
 
     Hello h;
     Hello[] h_array;
-    String s$;
+    String s;
 
     void sing(String s) {
 
