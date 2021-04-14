@@ -120,7 +120,7 @@ public class Compiler {
 		String target;
 		
 		if (args.length < 1) {
-			target = "../tests/pa3_tests/fail335.java";
+			target = "../tests/pa3_tests/fail351.java";
 			//target = "./test/pass/type.java";
 		} else {
 			target = args[0];

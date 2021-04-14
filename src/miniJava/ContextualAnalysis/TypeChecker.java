@@ -31,6 +31,12 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
 
     @Override
     public TypeDenoter visitPackage(Package prog, Object arg)  {
+
+        /* make types for all classes */
+        for (ClassDecl cd : prog.classDeclList) {
+            cd.type = makeClassType(cd);
+        }
+
         for (ClassDecl cd : prog.classDeclList) {
             cd.visit(this, null);
         }
@@ -39,8 +45,6 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
 
     @Override
     public TypeDenoter visitClassDecl(ClassDecl cd, Object arg)  {
-        cd.type = makeClassType(cd);
-
         for (FieldDecl fd : cd.fieldDeclList) {
             fd.visit(this, null);
         }
@@ -48,7 +52,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             md.visit(this, null);
         }
 
-        return null;
+        return cd.type;
     }
 
     @Override
@@ -303,10 +307,13 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     public TypeDenoter visitIdRef(IdRef ref, Object arg) {
         
         ref.id.visit(this, null);
-        System.out.println(ref.decl.type);
+        System.out.println(ref.id.decl.type);
         if (ref.id.decl.type.typeKind == TypeKind.UNSUPPORTED) {
 
             return new BaseType(TypeKind.UNSUPPORTED, ref.posn);
+        } else if (ref.decl instanceof ClassDecl) {
+            _reporter.report(new TypeError("reference to '" + ref.decl.name + "'' is a class, not a variable ", ref.posn));
+            return new BaseType(TypeKind.ERROR, ref.posn);
         }
         return ref.decl.type;
     }
@@ -323,6 +330,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
         if (id.decl.type instanceof BaseType) {
             //System.out.println("id visit: " + ((BaseType) id.decl.type).typeKind);
         }
+        System.out.println(id.decl.type);
         return id.decl.type;
     }
 

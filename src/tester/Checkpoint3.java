@@ -50,7 +50,7 @@ public class Checkpoint3 {
         for (File x : testDir.listFiles()) {
             if (x.getName().endsWith("out") || x.getName().startsWith(".") 
                 || x.getName().endsWith("mJAM") || x.getName().endsWith("asm"))
-                   continue;
+                    continue;
             int returnCode = runTest(x); 
             if (returnCode == 1) {
 				System.err.println("\u2716 " + "### miniJava Compiler fails while processing test " + x.getName());

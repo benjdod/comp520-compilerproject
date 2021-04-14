@@ -19,6 +19,7 @@ public class Identification implements Visitor<Object, Object> {
     /* some current state variables */
     private ClassDecl _cd;
     private MethodDecl _md;
+    private VarDecl _vd;
 
     public Identification(Package tree, ErrorReporter reporter) {
         _reporter = reporter;
@@ -177,8 +178,10 @@ public class Identification implements Visitor<Object, Object> {
         // or inside a block
 
         _idtable.insert(stmt.varDecl);
+        _vd = stmt.varDecl;
         stmt.varDecl.visit(this, null);
         stmt.initExp.visit(this, null);
+        _vd = null;
 
         return null;
     }
@@ -261,6 +264,9 @@ public class Identification implements Visitor<Object, Object> {
     @Override
     public Object visitRefExpr(RefExpr expr, Object arg) throws IdError {
         expr.ref.visit(this, null);
+        if (expr.ref.decl instanceof MethodDecl) {
+            throw new IdError("cannot reference a method without calling it", expr.posn);
+        }
         expr.type = expr.ref.decl.type;
         return null;
     }
@@ -309,15 +315,28 @@ public class Identification implements Visitor<Object, Object> {
     @Override
     public Object visitThisRef(ThisRef ref, Object arg) throws IdError {
         //System.out.println("this ref");
+        if (_md.isStatic) {
+            throw new IdError("cannot reference an instance in a static context", ref.posn);
+        }
         ref.decl = _cd;
         return null;
     }
 
     @Override
     public Object visitIdRef(IdRef ref, Object arg) throws IdError {
-        //System.out.println("id ref");
         ref.id.visit(this,null);
         ref.decl = ref.id.decl;
+
+        System.out.println("id decl: " + ref.decl.posn);
+
+        // if we are in the initial expression for a 
+        // variable declaration, we have to check that
+        // we're not referring to the newly declared variable
+        if (_vd != null) {
+            if (ref.id.spelling.contentEquals(_vd.name)) {
+                throw new IdError("cannot refer to a newly declared variable in its declaration", ref.posn);
+            }
+        }
 
         if (ref.decl instanceof MemberDecl) {
             MemberDecl md = (MemberDecl) ref.decl;
@@ -334,7 +353,7 @@ public class Identification implements Visitor<Object, Object> {
 
     @Override
     public Object visitQRef(QualRef ref, Object arg) throws IdError {
-        //System.out.println("identification qual ref:\t" + ref.id.hashCode());
+        System.out.println("identification for qref: " + ref.id.spelling);
         unfoldQualRef(ref);
         //ref.ref.visit(this,null);
         //ref.id.visit(this,null);
@@ -417,6 +436,7 @@ public class Identification implements Visitor<Object, Object> {
             if (_md.isStatic) {
                 //System.out.println("method " + _md.name + " is static");
                 isStatic = true;
+                throw new IdError("cannot reference this in a static context", base.posn);
             }
         } else if (base instanceof IdRef) {
 
@@ -534,7 +554,9 @@ public class Identification implements Visitor<Object, Object> {
     }
 
     private ClassDecl getClassDeclFromMember(MemberDecl md) throws IdError {
-        if (md.type.typeKind == TypeKind.CLASS) {
+        if (md instanceof MethodDecl) {
+            throw new IdError("member " + md.name + " is a method",  md.posn);
+        } else if (md.type.typeKind == TypeKind.CLASS) {
             ClassType ct = (ClassType) md.type;
             
             return getClassDecl(ct.className);
