@@ -107,10 +107,11 @@ public class Checkpoint3 {
         Scanner scan = new Scanner(stream);
         while (scan.hasNextLine()) {
             String line = scan.nextLine();
+            //System.out.println(">>> " + line);
             if (line.startsWith("*** "))
-                System.out.println("\t" + line);
+                System.out.println(line);
             if (line.startsWith("ERROR")) {
-                System.out.println("\t" + line);
+                System.out.println(line);
             }
         }
         scan.close();

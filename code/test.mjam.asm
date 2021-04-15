@@ -1,9 +1,8 @@
-  0         LOADL        5
-  1         STORE        0[SB]
-  2         LOAD         0[SB]
-  3         LOADL        3
-  4         CALL         add     
-  5         CALL         putintnl
-  6         LOADL        2
-  7         CALL         newarr  
-  8         HALT   (0)   
+  0         LOADL        69
+  1         LOADL        1
+  2         CALL         alloc   
+  3         STOREI 
+  4         LOAD         0[HT]
+  5         LOAD         0[HT]
+  6         CALL         add     
+  7         CALL         putintnl

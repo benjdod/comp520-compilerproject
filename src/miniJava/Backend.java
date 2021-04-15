@@ -7,20 +7,15 @@ import mJAM.Interpreter;
 
 public class Backend {
 	public static void main(String[] args) {
-		/*
-		Machine.emit(Machine.Op.LOADL, 0, 0, 0);
-		Machine.emit(Machine.Prim.newarr);
-		Machine.emit(Machine.Op.HALT, 0, 0, 0);
-		*/
-		Machine.emit(Machine.Op.LOADL, 5);
-		Machine.emit(Machine.Op.STORE,1,Machine.Reg.SB,0);
-		Machine.emit(Machine.Op.LOAD,1,Machine.Reg.SB,0);
-		Machine.emit(Machine.Op.LOADL,3);
+		
+		Machine.emit(Machine.Op.LOADL, 69);
+		Machine.emit(Machine.Op.LOADL, 1);
+		Machine.emit(Machine.Prim.alloc);
+		Machine.emit(Machine.Op.STOREI, 1);
+		Machine.emit(Machine.Op.LOAD,1,Machine.Reg.HT, 0);
+		Machine.emit(Machine.Op.LOAD,1,Machine.Reg.HT, 0);
 		Machine.emit(Machine.Prim.add);
 		Machine.emit(Machine.Prim.putintnl);
-		Machine.emit(Machine.Op.LOADL,2);
-		Machine.emit(Machine.Prim.newarr);
-		Machine.emit(Machine.Op.HALT, 0, 0, 0);
 		
 		ObjectFile o_file = new ObjectFile("code/test.mjam");
 		boolean failed = false;
@@ -30,7 +25,7 @@ public class Backend {
 		Disassembler d = new Disassembler("code/test.mjam");
 		failed = d.disassemble();
 		
-		//Interpreter.debug("code/test.mjam", "code/test.mjam.asm");
-		Interpreter.interpret("code/test.mjam");
+		Interpreter.debug("code/test.mjam", "code/test.mjam.asm");
+		//Interpreter.interpret("code/test.mjam");
 	}
 }

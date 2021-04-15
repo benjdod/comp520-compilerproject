@@ -61,12 +61,12 @@ public class Compiler {
 			// stream, which seems spartan. Idk how it'll handle eastern encodings 
 			// (shift-JIS, GB, etc.) though...
 
-			f = new FileReader(filepath, StandardCharsets.UTF_8);	
+			f = new FileReader(filepath/*, StandardCharsets.UTF_8*/);	
 		} catch (Exception e) {
 			System.err.println(e);
 			exitProgram(COMMAND_FAILURE);
 		}
-	
+		
 
 		Scanner s = new Scanner(f, _reporter);
 		Parser p = new Parser(s, _reporter);
