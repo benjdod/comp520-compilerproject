@@ -1,5 +1,6 @@
 package miniJava.CodeGenerator;
 
+import java.util.Stack;
 import miniJava.ErrorReporter;
 import miniJava.AbstractSyntaxTrees.*;
 import miniJava.AbstractSyntaxTrees.Package;
@@ -20,7 +21,9 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	
 	private ClassDecl _cd;
 	private MethodDecl _md;
+	private ExprList _arglist;
 	private boolean _method_return;
+	private Stack<Integer> _argsizestack;
 	
 	private final SourcePosition NOPOS = new SourcePosition(0,0);
 	
@@ -28,6 +31,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		_tree = tree;
 		_reporter = reporter;
 		_main_method = null;
+		_argsizestack = new Stack();
 		
 		generate();
 	}
@@ -112,6 +116,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		
 		_md = md;
 		_method_return = false;
+		_argsizestack.push(md.parameterDeclList.size());
 				
 		// is this the main method?
 		if (md.name.contentEquals("main") && 
@@ -189,6 +194,8 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		if (md.type.typeKind == TypeKind.VOID && ! _method_return) {
 			Machine.emit(Op.RETURN);
 		}
+		
+		_argsizestack.pop();
 		
 		return null;
 	}
@@ -291,13 +298,26 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			Machine.emit(Op.CALLI,proc_addr.reg,proc_addr.offset);
 		}
 		
+		if (stmt.methodRef.decl.type.typeKind != TypeKind.VOID) {
+			Machine.emit(Op.POP);
+		}
 				
 		return null;
 	}
 
 	@Override
 	public Object visitReturnStmt(ReturnStmt stmt, Object arg) {
-		// TODO Auto-generated method stub
+		
+		_method_return = true;
+		
+		if (stmt.returnExpr != null) {
+			stmt.returnExpr.visit(this, null);
+			Machine.emit(Op.RETURN,1,0,_argsizestack.peek());
+			System.out.println("args for " +_md.name + ": " + _md.parameterDeclList.size());
+		} else {
+			Machine.emit(Op.RETURN,0,0,_argsizestack.peek());
+		}
+		
 		return null;
 	}
 
@@ -413,7 +433,32 @@ public class CodeGenerator implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitCallExpr(CallExpr expr, Object arg) {
-		// TODO Auto-generated method stub
+		// visit arg expressions and leave them on the stack in order
+		for (int i = 0; i < expr.argList.size(); i++) {
+			expr.argList.get(i).visit(this, null);
+		}
+						
+		boolean is_static = ((MethodDecl) expr.functionRef.decl).isStatic;
+		
+		Address proc_addr = ((MethodDecl) expr.functionRef.decl).address;
+		
+		if (is_static) {
+			Machine.emit(Op.CALL,proc_addr.reg,proc_addr.offset);
+		} else {
+			
+			Address ob_address;
+			
+			if (expr.functionRef instanceof QualRef) {
+				ob_address = ((QualRef) expr.functionRef).ref.decl.entity.address;
+				System.out.println("call statement setting OB: " + ob_address.toString());
+				Machine.emit(Op.LOAD, ob_address.reg, ob_address.offset);
+			} else {
+				// the OB is already set
+			}
+			
+			Machine.emit(Op.CALLI,proc_addr.reg,proc_addr.offset);
+		}
+						
 		return null;
 	}
 

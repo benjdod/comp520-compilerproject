@@ -146,7 +146,7 @@ public class Compiler {
 		
 		if (args.length < 1) {
 			//target = "../tests/pa3_tests/fail351.java";
-			target = "./test/codegen/sing.java";
+			target = "./test/codegen/sang.java";
 		} else {
 			target = args[0];
 		}

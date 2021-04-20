@@ -1,6 +1,6 @@
 class Test {
 	public int x;
-	boolean b;
+	public int y;
 	
 	public static void sing(int n) {
 		int j = n;
@@ -10,20 +10,26 @@ class Test {
 		x = x + 1;
 	}
 	
+	public void setX(int n) {
+		x = n;
+	}
+	
+	public void setY(int n) {
+		y = n;
+	}
+	
+	public int getSum() {
+		return x+y;
+	}
+	
 	public static void main(String[] args) {
 		
-		int arr_len = 10;
-						
-		int[] arr1 = new int[arr_len];
-				
-		arr1[0] = 60;
-		arr1[5] = 6;
+		Test t = new Test();
 		
-		int i = 0;
-		while (i < arr_len) {
-			System.out.println(arr1[i]);
-			i = i + 1;
-		}
+		t.setX(5);
+		t.setY(3);
+		
+		System.out.println(t.getSum());
 						
 	}
 

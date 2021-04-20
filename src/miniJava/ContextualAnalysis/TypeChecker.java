@@ -76,10 +76,10 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
 
         checkReturnType(md);
         
-        /*
+        
         if (md.type.typeKind != TypeKind.VOID) {
             checkReturnPath(md);
-        } */
+        } 
         
         return md.type;
     }
