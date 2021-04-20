@@ -9,6 +9,10 @@ import miniJava.SyntacticAnalyzer.Parser;
 import miniJava.SyntacticAnalyzer.Scanner;
 import miniJava.AbstractSyntaxTrees.*;
 import miniJava.AbstractSyntaxTrees.Package;
+import miniJava.CodeGenerator.CodeGenerator;
+import mJAM.Interpreter;
+import mJAM.ObjectFile;
+import mJAM.Disassembler;
 
 public class Compiler {
 	
@@ -18,6 +22,8 @@ public class Compiler {
 	static final int PARSE_FAILURE = 4;
 
 	static ErrorReporter _reporter = new ErrorReporter();
+
+	// a comment
 	
 	static void exitProgram(int exitcode) {
 		// System.out.println("Exiting with code " + exitcode);
@@ -88,9 +94,28 @@ public class Compiler {
 
 		checkForErrors();
 		
-
+		CodeGenerator cg = new CodeGenerator(tree, _reporter);	
+		
+		checkForErrors();
+		
+		String object_filepath = filepath.substring(0, filepath.lastIndexOf(".")) + ".mjam";
+		
+		ObjectFile ofile = new ObjectFile(object_filepath);
+		boolean failed = ofile.write();
+		
+		if (failed) {
+			System.out.println("Error: could not write object file!");
+		} else {
+			System.out.println("Wrote object file to " + object_filepath);
+		}
 
 		System.out.println("\u001B[0;32mCompilation successful.\u001B[0m");
+		
+		Disassembler d = new Disassembler(object_filepath);
+		d.disassemble();
+		
+		//Interpreter.interpret(object_filepath);
+		Interpreter.debug(object_filepath, filepath);
 
 		/*
 		ASTDisplay adt = new ASTDisplay();
@@ -120,8 +145,8 @@ public class Compiler {
 		String target;
 		
 		if (args.length < 1) {
-			target = "../tests/pa3_tests/fail351.java";
-			//target = "./test/pass/type.java";
+			//target = "../tests/pa3_tests/fail351.java";
+			target = "./test/codegen/sing.java";
 		} else {
 			target = args[0];
 		}

@@ -128,14 +128,14 @@ public class Identification implements Visitor<Object, Object> {
     @Override
     public Object visitBaseType(BaseType type, Object arg) throws IdError {
         // no visiting to do here.
-        System.out.println("visited base type: " + type.typeKind + " @ " + type.posn);
+        //System.out.println("visited base type: " + type.typeKind + " @ " + type.posn);
         return null;
     }
 
     @Override
     public Object visitClassType(ClassType type, Object arg) throws IdError {
 
-        System.out.println("visited class type: '" + type.className.spelling +"' @ " + type.posn);
+        //System.out.println("visited class type: '" + type.className.spelling +"' @ " + type.posn);
 
         for (ClassDecl cd : _tree.classDeclList) {
 
@@ -327,7 +327,7 @@ public class Identification implements Visitor<Object, Object> {
         ref.id.visit(this,null);
         ref.decl = ref.id.decl;
 
-        System.out.println("id decl: " + ref.decl.posn);
+        //System.out.println("id decl: " + ref.decl.posn);
 
         // if we are in the initial expression for a 
         // variable declaration, we have to check that
@@ -353,7 +353,7 @@ public class Identification implements Visitor<Object, Object> {
 
     @Override
     public Object visitQRef(QualRef ref, Object arg) throws IdError {
-        System.out.println("identification for qref: " + ref.id.spelling);
+        //System.out.println("identification for qref: " + ref.id.spelling);
         unfoldQualRef(ref);
         //ref.ref.visit(this,null);
         //ref.id.visit(this,null);

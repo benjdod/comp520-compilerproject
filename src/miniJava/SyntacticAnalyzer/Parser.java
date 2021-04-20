@@ -176,6 +176,7 @@ public class Parser {
             oos);
         pstream_println.parameterDeclList.add(
             new ParameterDecl(new BaseType(TypeKind.INT, oos), "x", oos));
+        pstream_println.patchkey = "System.out.println";
 
         pstream_decl.methodDeclList.add(pstream_println);
 

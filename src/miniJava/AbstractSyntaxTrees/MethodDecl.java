@@ -6,6 +6,7 @@
 package miniJava.AbstractSyntaxTrees;
 
 import miniJava.SyntacticAnalyzer.SourcePosition;
+import miniJava.CodeGenerator.Address;
 
 public class MethodDecl extends MemberDecl {
 	
@@ -13,6 +14,7 @@ public class MethodDecl extends MemberDecl {
     super(md,posn);
     parameterDeclList = pl;
     statementList = sl;
+    patchkey = "";
 	}
 	
 	public <A, R> R visit(Visitor<A, R> v, A o) {
@@ -21,4 +23,6 @@ public class MethodDecl extends MemberDecl {
 	
 	public ParameterDeclList parameterDeclList;
 	public StatementList statementList;
+	public Address address;
+	public String patchkey;
 }

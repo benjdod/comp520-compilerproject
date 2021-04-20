@@ -254,7 +254,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             expr.type = new BaseType(TypeKind.ERROR, expr.posn);
             return expr.type;
         }
-        System.out.println(expr.ref.decl.type.typeKind);
+        //System.out.println(expr.ref.decl.type.typeKind);
         expr.type = ((ArrayType) expr.ref.decl.type).eltType;
         return expr.type;
     }
@@ -307,7 +307,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     public TypeDenoter visitIdRef(IdRef ref, Object arg) {
         
         ref.id.visit(this, null);
-        System.out.println(ref.id.decl.type);
+        //System.out.println(ref.id.decl.type);
         if (ref.id.decl.type.typeKind == TypeKind.UNSUPPORTED) {
 
             return new BaseType(TypeKind.UNSUPPORTED, ref.posn);
@@ -330,7 +330,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
         if (id.decl.type instanceof BaseType) {
             //System.out.println("id visit: " + ((BaseType) id.decl.type).typeKind);
         }
-        System.out.println(id.decl.type);
+        //System.out.println(id.decl.type);
         return id.decl.type;
     }
 
@@ -400,7 +400,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
             case Plus:
             case Minus:
             case FSlash:
-            System.out.println(expr.left.type + "\t" + expr.right.type);
+            //System.out.println(expr.left.type + "\t" + expr.right.type);
                 if ( 
                     (expr.left.type.typeKind != TypeKind.INT && expr.right.type.typeKind != TypeKind.INT)
                 ) {

@@ -260,6 +260,7 @@ public class Disassembler {
 	private void asmWrite(String s) {
 		try {
 			asmOut.write(s);
+			System.out.print(s);
 		} catch (IOException e) {
 			error = true;
 		}
@@ -296,7 +297,9 @@ public class Disassembler {
 			asmName = objectFileName + ".asm";
 
 		// disassemble to file
+		System.out.println("****** Disassembled code ********");
 		disassembleProgram(asmName);
+		System.out.println("*********************************");
 
 		if (error) {
 			System.out.println("Disassembler: unable to write asm file"

@@ -11,3 +11,5 @@ added public field 'type' of type TypeDenoter to the Expression class. This feld
 added public static method 'equals' of type boolean to the TypeDenoter class (takes two TypeDenoters as arguments and compares them for equivalence)
 added public method 'equals' of type boolean to the TypeDenoter class (used to compare the value of the current TypeDenoter instance with another instance)
 added public method 'getLast' of type Statement to the StatementList class (used for return statement checking)
+
+added public field 'patchkey' of type String to the MethodDecl class. This field is initially the empty string.
