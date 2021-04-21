@@ -82,6 +82,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		
 		_main_method = null;
 		
+		fillGlobalEntities();
 		
 		Machine.emit(Op.LOADL,0);
 		Machine.emit(Prim.newarr);
@@ -89,7 +90,6 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		Machine.emit(Op.CALL, Reg.CB, PATCHME);	// PATCHME main
 		Machine.emit(Op.HALT);
 		
-		fillGlobalEntities();
 		
 		for (ClassDecl cd : prog.classDeclList) {
 			cd.visit(this, null);

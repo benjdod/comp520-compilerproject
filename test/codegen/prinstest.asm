@@ -1,8 +1,8 @@
-  0         LOADL        0
-  1         CALL         newarr  
-  2         CALL         L11
-  3         HALT   (0)   
-  4         PUSH         1
+  0         PUSH         1
+  1         LOADL        0
+  2         CALL         newarr  
+  3         CALL         L11
+  4         HALT   (0)   
   5  L10:   LOAD         -1[LB]
   6         CALL         putintnl
   7         RETURN (0)   1

@@ -17,6 +17,10 @@ class Test {
 	}
 	*/
 	
+	public static void go() {
+		System.out.println(6642);
+	}
+	
 	public void runCase() {
 		x = 3;
 		while (x < 10) {
@@ -37,12 +41,21 @@ class Test {
 
 		Test t1 = new Test();
 		
-		A a = new A();
+		A a1 = new A();
+		A a2 = new A();
 		
-		a.x = 4;
+		int x = 0;
 		
-		Test.a = a;
-		System.out.println(Test.a.x);
+		if (a == null) {
+			x = 1;
+		}
+		
+		System.out.println(x);
+		
+		//a.x = 4;
+		
+		//Test.a = a;
+		//System.out.println(Test.a.x);
 		
 		t1.runCase();
 			
@@ -53,5 +66,9 @@ class Test {
 }
 
 class A {
+	public int x;
+}
+
+class B {
 	public int x;
 }
