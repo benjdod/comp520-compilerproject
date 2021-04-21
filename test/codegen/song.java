@@ -1,21 +1,28 @@
 class A {	
 	
-	static void poop() {
-		
+	public static int x;
+	
+	void poop() {
+		this.sing();
+	}
+	
+	void sing() {
+		System.out.println(-1111);
 	}
 	
 	public static void main(String[] args) {
 				
-		System.out.println(2);
+		System.out.println(11111);
 		
 		B b = new B();
 		C c = new C();
 		b.c = c;
 		
-		int t = b.c.getX();
-
-		System.out.println(b.c.getX());
+		A a = new A();
 		
+		System.out.println(A.x);
+		
+		a.poop();
 		
 		b.c.x = 15;
 		b.c.x = b.c.x + 15 - (c.x * 7);
@@ -23,6 +30,7 @@ class A {
 		c = c;
 		
 		System.out.println(b.c.getX());
+		System.out.println(99999);
 	}//
 }
 

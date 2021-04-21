@@ -412,7 +412,7 @@ public class Identification implements Visitor<Object, Object> {
         //System.out.println("unfolding qual ref");
 
         QualRef current = qr;
-
+        
         Reference base = qr;
 
         ArrayList<Identifier> id_arr = new ArrayList<Identifier>();
@@ -425,10 +425,10 @@ public class Identification implements Visitor<Object, Object> {
             ref_arr.add(0, current);
             id_arr.add(0, current.id);
         }
-
+        
         base = current.ref;
         boolean isStatic = false;
-
+                
         // if the start is a 'this', set the base.decl to the current class
         if (base instanceof ThisRef) {
             //System.out.println("THIS REF + " + id_arr.toString());
@@ -464,19 +464,22 @@ public class Identification implements Visitor<Object, Object> {
         MemberDecl md;
         Declaration decl = base.decl;
         Identifier id = id_arr.get(0);
-
+        
 
         md = resolveClassField(decl, id_arr.get(0), isStatic);
         id.decl = md;
+
         id_arr.remove(0);
 
         // loop over the rest of the fields, which are necessarily
         // non-static
         for (i = 0; i < id_arr.size(); i++) {
 
+
             decl = getClassDeclFromMember(md);
 
             id = id_arr.get(i);
+            
 
             //System.out.println("-- " + id_arr.get(i).spelling);
             md = resolveClassField(decl, id, false);
@@ -507,8 +510,14 @@ public class Identification implements Visitor<Object, Object> {
 
             cd = getClassDecl(d);
         }*/
+        
+        //System.out.println("resolving field " + id.spelling + " for decl " + d.type);
+        
         if (d instanceof ClassDecl) {
             cd = getClassDecl(d);
+        } else if (d.type instanceof ArrayType && id.spelling.contentEquals("length")) {
+        	SourcePosition nopos = new SourcePosition(0,0);
+        	return new FieldDecl(true,true,new BaseType(TypeKind.INT,nopos),"length",nopos);
         } else {
             cd = getClassDeclFromInst(d);
         }

@@ -583,6 +583,10 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	public Object visitQRef(QualRef ref, Object arg) {
 		ref.ref.visit(this, null);
 		System.out.println("qref ref field: " + ref.ref.decl.name + "   " + ref.id.decl.name);
+		if (ref.ref.decl.type instanceof ArrayType && ref.id.spelling.contentEquals("length")) {
+			Machine.emit(Prim.arraylen);
+			return null;
+		}
 		Address target = ref.id.decl.entity.address;
 		//emitOpAddr(Op.LOAD, ob_address);		// push value of object address
 		System.out.println("qref id offset: " + target);
