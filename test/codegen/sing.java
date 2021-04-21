@@ -38,6 +38,11 @@ class Test {
 	}
 	
 	public static void main(String[] args) {
+		
+		
+		if (5 == 5 || 5/0 == 9) {
+			System.out.println(11111);
+		} 
 
 		Test t1 = new Test();
 		

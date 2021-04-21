@@ -462,6 +462,16 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	@Override
 	public Object visitBinaryExpr(BinaryExpr expr, Object arg) {
 		expr.left.visit(this, null);
+		
+		int patch_shortjump = 0;
+		
+		// add in short circuiting for || expression 
+		if (expr.operator.type == TokenType.BarBar) {
+			Machine.emit(Op.LOAD,1,Reg.ST,-1);
+			patch_shortjump = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMPIF,1,Reg.CB,PATCHME);
+		} 
+		
 		expr.right.visit(this, null);
 		
 		switch (expr.operator.type) {
@@ -482,6 +492,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 				break;
 			case BarBar:
 				Machine.emit(Prim.or);
+				Machine.patch(patch_shortjump, Machine.nextInstrAddr());
 				break;
 			case LessEqual:
 				Machine.emit(Prim.le);

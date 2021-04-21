@@ -110,7 +110,7 @@ public class Compiler {
 			//System.out.println("Wrote object file to " + object_filepath);
 		}
 
-		/*
+		
 		System.out.println("\u001B[0;32mCompilation successful.\u001B[0m");
 		
 		
@@ -124,7 +124,7 @@ public class Compiler {
 		} else {
 			Interpreter.interpret(object_filepath);
 		}
-		*/
+		
 
 		/*
 		ASTDisplay adt = new ASTDisplay();
@@ -159,7 +159,7 @@ public class Compiler {
 		
 		if (args.length < 1) {
 			//target = "../tests/pa3_tests/fail351.java";
-			target = "./test/codegen/pass440.java";
+			target = "./test/codegen/prinstest.java";
 		} else {
 			target = args[0];
 		}

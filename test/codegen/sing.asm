@@ -33,36 +33,50 @@
  32         RETURN (1)   0
  33         LOADA        0[OB]
  34         RETURN (1)   0
- 35  L15:   PUSH         1
- 36         LOADL        -1
- 37         LOADL        1
- 38         CALL         newobj  
- 39         STORE        3[LB]
- 40         PUSH         1
- 41         LOADL        -1
- 42         LOADL        1
- 43         CALL         newobj  
- 44         STORE        4[LB]
- 45         PUSH         1
- 46         LOADL        -1
- 47         LOADL        1
- 48         CALL         newobj  
- 49         STORE        5[LB]
- 50         PUSH         1
- 51         LOADL        0
- 52         STORE        6[LB]
- 53         LOAD         1[SB]
- 54         LOADL        0
- 55         CALL         eq      
- 56         JUMPIF (0)   L16
- 57         LOADL        1
- 58         STORE        6[LB]
- 59  L16:   LOAD         6[LB]
- 60         CALL         L10
- 61         LOAD         3[LB]
- 62         CALLI        L11
- 63         LOAD         3[LB]
- 64         LOADL        0
- 65         CALL         fieldref
- 66         CALL         L10
- 67         RETURN (0)   1
+ 35  L15:   LOADL        5
+ 36         LOADL        5
+ 37         CALL         eq      
+ 38         LOAD         -1[ST]
+ 39         JUMPIF (1)   L16
+ 40         LOADL        5
+ 41         LOADL        0
+ 42         CALL         div     
+ 43         LOADL        9
+ 44         CALL         eq      
+ 45         CALL         or      
+ 46  L16:   JUMPIF (0)   L17
+ 47         LOADL        11111
+ 48         CALL         L10
+ 49  L17:   PUSH         1
+ 50         LOADL        -1
+ 51         LOADL        1
+ 52         CALL         newobj  
+ 53         STORE        3[LB]
+ 54         PUSH         1
+ 55         LOADL        -1
+ 56         LOADL        1
+ 57         CALL         newobj  
+ 58         STORE        4[LB]
+ 59         PUSH         1
+ 60         LOADL        -1
+ 61         LOADL        1
+ 62         CALL         newobj  
+ 63         STORE        5[LB]
+ 64         PUSH         1
+ 65         LOADL        0
+ 66         STORE        6[LB]
+ 67         LOAD         1[SB]
+ 68         LOADL        0
+ 69         CALL         eq      
+ 70         JUMPIF (0)   L18
+ 71         LOADL        1
+ 72         STORE        6[LB]
+ 73  L18:   LOAD         6[LB]
+ 74         CALL         L10
+ 75         LOAD         3[LB]
+ 76         CALLI        L11
+ 77         LOAD         3[LB]
+ 78         LOADL        0
+ 79         CALL         fieldref
+ 80         CALL         L10
+ 81         RETURN (0)   1
