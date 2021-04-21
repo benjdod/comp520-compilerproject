@@ -1,6 +1,6 @@
 class Test {
 	public int x;
-	public static int st;
+	public static A a;
 	
 	/*
 	public static int weird(int m) {
@@ -37,7 +37,12 @@ class Test {
 
 		Test t1 = new Test();
 		
-		Test.st = 3;
+		A a = new A();
+		
+		a.x = 4;
+		
+		Test.a = a;
+		System.out.println(Test.a.x);
 		
 		t1.runCase();
 			
@@ -45,4 +50,8 @@ class Test {
 								
 	}
 
+}
+
+class A {
+	public int x;
 }

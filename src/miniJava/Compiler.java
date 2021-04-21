@@ -81,10 +81,10 @@ public class Compiler {
 
 		checkForError();
 
-		/*
+		
 		ASTDisplay adt = new ASTDisplay();
 		adt.showTree(tree);
-		*/
+		
 
 		Identification idn = new Identification(tree, _reporter);
 
@@ -98,7 +98,7 @@ public class Compiler {
 		
 		checkForErrors();
 		
-		String object_filepath = filepath.substring(0, filepath.lastIndexOf(".")) + ".mjam";
+		String object_filepath = filepath.substring(0, filepath.lastIndexOf(".")) + ".mJAM";
 		
 		ObjectFile ofile = new ObjectFile(object_filepath);
 		boolean failed = ofile.write();
@@ -112,17 +112,17 @@ public class Compiler {
 
 		System.out.println("\u001B[0;32mCompilation successful.\u001B[0m");
 		
-		/*
+		
 		Disassembler d = new Disassembler(object_filepath);
 		d.disassemble();
 		
-		boolean debug = true;
+		boolean debug = false;
 		
 		if (debug) {
 			Interpreter.debug(object_filepath, filepath);
 		} else {
 			Interpreter.interpret(object_filepath);
-		}*/
+		}
 		
 
 		/*
@@ -139,6 +139,10 @@ public class Compiler {
 		}
 		
 		System.exit(PARSE_SUCCESS);
+	}
+	
+	public static void compile(String filepath) {
+		runCompiler(filepath);
 	}
 	
 	public static void main(String[] args) {

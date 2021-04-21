@@ -34,7 +34,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		_tree = tree;
 		_reporter = reporter;
 		_main_method = null;
-		_argsizestack = new Stack();
+		_argsizestack = new Stack<Integer>();
 		
 		generate();
 	}
@@ -108,7 +108,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	}
 
 	@Override
-	public Object visitClassDecl(ClassDecl cd, Object arg) {
+	public Object visitClassDecl(ClassDecl cd, Object arg) throws CompilationError {
 		
 		_cd = cd;
 		
@@ -287,24 +287,21 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		emitOpAddr(Op.STORE,stmt.varDecl.entity.address);
 		return null;
 	}
-
+	
 	@Override
 	public Object visitAssignStmt(AssignStmt stmt, Object arg) {
 		Address target = stmt.ref.decl.entity.address;
 		
 		boolean is_qualref = stmt.ref instanceof QualRef;
+		boolean is_instf = stmt.ref.decl.entity.address.reg != Reg.SB;
 		
 		if (is_qualref) {
 			
 			QualRef qr = (QualRef) stmt.ref;
 			
-			//System.out.println(qr.ref.decl);
-
-			if (qr.ref.decl instanceof MemberDecl) {
-			}
+			System.out.println(stmt.ref.decl.name + ": " + target);
 			
 			qr.ref.visit(this, null);
-			Address a = qr.ref.decl.entity.address;
 			//System.out.println("assn to qual addr " + stmt.ref.decl.name + ": " + a);
 			//Machine.emit(Op.LOAD,a.reg, a.offset);
 			Machine.emit(Op.LOADL,qr.id.decl.entity.address.offset);
@@ -313,7 +310,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		
 		stmt.val.visit(this, null);
 		
-		if (is_qualref) {
+		if (is_qualref && is_instf) {
 			Machine.emit(Prim.fieldupd);
 		} else {
 			emitOpAddr(Op.STORE, target);
@@ -596,6 +593,8 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	@Override
 	public Object visitIdRef(IdRef ref, Object arg) {
 		//System.out.println("## ref " + ref.id.spelling + "\t" + ref.decl.entity.address);
+		//System.out.println("id ref: " + ref.id.spelling);
+		
 		emitOpAddr(Op.LOAD,ref.decl.entity.address);
 		return null;
 	}
@@ -603,7 +602,8 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	@Override
 	public Object visitQRef(QualRef ref, Object arg) {
 		ref.ref.visit(this, null);
-		//System.out.println("qref ref field: " + ref.ref.decl.name + "   " + ref.id.decl.name);
+		System.out.println("qref names: " + ref.ref.decl.name + "   " + ref.id.decl.name);
+		//System.out.println("qref addrs: " + ref.ref.decl.entity.address + "   " + ref.id.decl.entity.address);
 		if (ref.ref.decl.type instanceof ArrayType && ref.id.spelling.contentEquals("length")) {
 			Machine.emit(Prim.arraylen);
 			return null;
@@ -611,8 +611,17 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		Address target = ref.id.decl.entity.address;
 		//emitOpAddr(Op.LOAD, ob_address);		// push value of object address
 		//System.out.println("qref id offset: " + target);
-		Machine.emit(Op.LOADL, target.offset);	// push field offset
-		Machine.emit(Prim.fieldref);
+		
+		System.out.println(target);
+		
+		if (target.reg == Reg.SB) {
+			Machine.emit(Op.LOAD, Reg.SB, target.offset);
+		} else {
+			Machine.emit(Op.LOADL, target.offset);	// push field offset
+			Machine.emit(Prim.fieldref);
+		}
+		
+		
 		return null;
 	}
 
@@ -677,13 +686,14 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	}
 	
 	private boolean emitPatch(String key) {
-		switch (key) {
-		case "System.out.println":
+		
+		
+		if (key.contentEquals("System.out.println")) {
 			Machine.emit(Op.LOAD,Reg.LB,-1);	// load single int arg from LB
 			Machine.emit(Prim.putintnl);		// print it 
 			Machine.emit(Op.RETURN,0,0,1);		// pop the arg
 			return true;
-		default:
+		} else {
 			return false;
 		}
 	}
