@@ -23,7 +23,10 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	private MethodDecl _md;
 	private ExprList _arglist;
 	private boolean _method_return;
+	private int _vardecl_count;
 	private Stack<Integer> _argsizestack;
+	
+	private static final int PATCHME = -1;
 	
 	private final SourcePosition NOPOS = new SourcePosition(0,0);
 	
@@ -44,19 +47,49 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		}
 		return;
 	}
+	
+	private void fillGlobalEntities() {
+		
+		_static_ptr = 0;
+		
+		for (ClassDecl cd : _tree.classDeclList) {
+			
+			_inst_ptr = 0;
+			
+			cd.entity = new UnknownValue(Reg.SB, _static_ptr);
+			cd.entity.size = 0;
+			
+			for (FieldDecl fd : cd.fieldDeclList) {
+				if (fd.isStatic) {
+					
+					Machine.emit(Op.PUSH,1);
+					fd.entity = new UnknownValue(Reg.SB, _static_ptr++);
+				} else {
+					cd.entity.size++;
+					fd.entity = new UnknownValue(Reg.OB, _inst_ptr++);
+				}
+			}
+			
+			for (MethodDecl md : cd.methodDeclList) {
+				md.entity = new MethodEntity(Reg.CB, PATCHME);
+			}
+			
+		}
+	}
 
 	@Override
 	public Object visitPackage(Package prog, Object arg) throws CompilationError {
 		
 		_main_method = null;
-		_static_ptr = 0;
-		_inst_ptr = 0;
+		
 		
 		Machine.emit(Op.LOADL,0);
 		Machine.emit(Prim.newarr);
 		int patch_callmain = Machine.nextInstrAddr();
-		Machine.emit(Op.CALL, Reg.CB, -1);
+		Machine.emit(Op.CALL, Reg.CB, PATCHME);	// PATCHME main
 		Machine.emit(Op.HALT);
+		
+		fillGlobalEntities();
 		
 		for (ClassDecl cd : prog.classDeclList) {
 			cd.visit(this, null);
@@ -69,7 +102,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		}
 		
 		// patch in call to main
-		Machine.patch(patch_callmain, _main_method.address.offset);
+		Machine.patch(patch_callmain, _main_method.entity.address.offset);
 		
 		return null;
 	}
@@ -79,8 +112,8 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		
 		_cd = cd;
 		
-		cd.entity = new UnknownValue(Reg.SB, _static_ptr);
-		cd.entity.size = 0;
+		//cd.entity = new UnknownValue(Reg.SB, _static_ptr);
+		//cd.entity.size = 0;
 		
 		for (FieldDecl fd : cd.fieldDeclList) {
 			fd.visit(this, null);
@@ -99,13 +132,13 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		if (fd.isStatic) {
 			
 			// push space onto the stack for the field
-			Machine.emit(Op.PUSH,1);
-			fd.entity = new UnknownValue(Reg.SB, _static_ptr++);
+			//Machine.emit(Op.PUSH,1);
+			//fd.entity = new UnknownValue(Reg.SB, _static_ptr++);
 		} else {
 			
 			// increment the instance size by 1
-			_cd.entity.size += 1;
-			fd.entity = new UnknownValue(Reg.OB, _inst_ptr++);
+			//_cd.entity.size += 1;
+			//fd.entity = new UnknownValue(Reg.OB, _inst_ptr++);
 		}
 		
 		return null;
@@ -151,18 +184,16 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		}
 		
 		// add entity with address to the declaration
-		md.entity = new UnknownValue(Reg.CB, Machine.nextInstrAddr());
-		md.address = new Address(Reg.CB, Machine.nextInstrAddr());
+		md.entity.address.offset = Machine.nextInstrAddr();
+	
+		MethodEntity me = (MethodEntity) md.entity;
 		
-		/* add addresses relative to frame for parameters, so forexample:
-		 * 		
-		 *  someMethod(int x, int y, Object z)
-		 * 	
-		 *	LB 	(0)
-		 * 	z	(-1)
-		 * 	y	(-2)
-		 * 	x	(-3)
-		 * */
+		for (Integer i : me.callers) {
+			Machine.patch(i, md.entity.address.offset);
+		}
+		me.ismade = true;
+		
+		//md.address = new Address(Reg.CB, Machine.nextInstrAddr());
 		
 		int num_parameters = md.parameterDeclList.size();
 		
@@ -176,23 +207,18 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		_local_ptr = 3;
 		
 		
-		// if the method is provided by the environment, we need to patch it here
-		switch (md.patchkey) {
-			case "System.out.println":
-				Machine.emit(Op.LOAD,Reg.LB,-1);	// load single int arg from LB
-				Machine.emit(Prim.putintnl);		// print it 
-				Machine.emit(Op.RETURN,0,0,1);		// pop the arg
-				return null;
-			default:
-				;	// otherwise, pass through to the code generation
-		}
+		// if the method is provided by the environment, we patch it here and exit
+		if (emitPatch(md.patchkey)) return null;
 		
+		
+		// otherwise, visit all the statements
 		for (Statement s : md.statementList) {
 			s.visit(this, null);
 		}
 		
+		// insert a return statement if none was present
 		if (md.type.typeKind == TypeKind.VOID && ! _method_return) {
-			Machine.emit(Op.RETURN);
+			Machine.emit(Op.RETURN,0,0,md.parameterDeclList.size());
 		}
 		
 		_argsizestack.pop();
@@ -203,7 +229,8 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	@Override
 	public Object visitParameterDecl(ParameterDecl pd, Object arg) {
 		
-		// we don't use this
+		// we don't use this, parameters are initialized by visiting the 
+		// respective expressions
 		
 		return null;
 	}
@@ -219,32 +246,41 @@ public class CodeGenerator implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitBaseType(BaseType type, Object arg) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Object visitClassType(ClassType type, Object arg) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Object visitArrayType(ArrayType type, Object arg) {
-		// TODO Auto-generated method stub
 		return null;
 	}
 
 	@Override
 	public Object visitBlockStmt(BlockStmt stmt, Object arg) {
+		_vardecl_count = 0;
 		for (Statement s : stmt.sl) {
+			
+			if (s instanceof VarDeclStmt) {
+				_vardecl_count++;
+			}
+			
 			s.visit(this, null);
 		}
+		
+		if (_vardecl_count > 0) {
+			Machine.emit(Op.POP,_vardecl_count);
+		}
+		
 		return null;
 	}
 
 	@Override
 	public Object visitVardeclStmt(VarDeclStmt stmt, Object arg) {
+		
 		stmt.varDecl.visit(this, null);
 		stmt.initExp.visit(this, null);
 				
@@ -255,8 +291,26 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	@Override
 	public Object visitAssignStmt(AssignStmt stmt, Object arg) {
 		Address target = stmt.ref.decl.entity.address;
+		
+		boolean is_qualref = stmt.ref instanceof QualRef;
+		
+		if (is_qualref) {
+			
+			QualRef qr = (QualRef) stmt.ref;
+			qr.ref.visit(this, null);
+			Address a = qr.ref.decl.entity.address;
+			//Machine.emit(Op.LOAD,a.reg, a.offset);
+			Machine.emit(Op.LOADL,qr.id.decl.entity.address.offset);
+			
+		}
+		
 		stmt.val.visit(this, null);
-		emitOpAddr(Op.STORE, target);
+		
+		if (is_qualref) {
+			Machine.emit(Prim.fieldupd);
+		} else {
+			emitOpAddr(Op.STORE, target);
+		}
 		return null;
 	}
 
@@ -277,31 +331,47 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			stmt.argList.get(i).visit(this, null);
 		}
 		
+		
+				
 		boolean is_static = ((MethodDecl) stmt.methodRef.decl).isStatic;
 		
-		Address proc_addr = ((MethodDecl) stmt.methodRef.decl).address;
+		
+				
+		MethodEntity me;
+		me = (MethodEntity) stmt.methodRef.decl.entity;
+		boolean patch = me.address.offset == PATCHME;
+		
+		// if there's a patch for this method, we can short circuit the whole
+		// discovery phase and go straight to the patched code segment.
+		if (patchExists(((MethodDecl) stmt.methodRef.decl).patchkey)) {
+			Machine.emit(Op.CALL,Reg.CB,me.address.offset);
+			return null;
+		}
 		
 		if (is_static) {
-			Machine.emit(Op.CALL,proc_addr.reg,proc_addr.offset);
+			if (patch)	me.callers.add(Machine.nextInstrAddr());
+			Machine.emit(Op.CALL,Reg.CB,me.address.offset);
 		} else {
 			
 			Address ob_address;
 			
 			if (stmt.methodRef instanceof QualRef) {
+				((QualRef) stmt.methodRef).ref.visit(this, null);
 				ob_address = ((QualRef) stmt.methodRef).ref.decl.entity.address;
 				System.out.println("call statement setting OB: " + ob_address.toString());
 				Machine.emit(Op.LOAD, ob_address.reg, ob_address.offset);
 			} else {
 				// the OB is already set
 			}
-			
-			Machine.emit(Op.CALLI,proc_addr.reg,proc_addr.offset);
+					
+			if (patch) me.callers.add(Machine.nextInstrAddr());
+			Machine.emit(Op.CALLI,Reg.CB,me.address.offset);
 		}
 		
 		if (stmt.methodRef.decl.type.typeKind != TypeKind.VOID) {
 			Machine.emit(Op.POP);
 		}
-				
+						
 		return null;
 	}
 
@@ -324,22 +394,24 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	@Override
 	public Object visitIfStmt(IfStmt stmt, Object arg) {
 				
-		int patch_branch, jump_to;
+		int code_after,jump_to;
+		int patch_if, patch_endif;
 		
 		stmt.cond.visit(this, null);
-		patch_branch = Machine.nextInstrAddr();
-		Machine.emit(Op.JUMPIF,0,Reg.CB,-1); 	// patchme!
+		patch_if = Machine.nextInstrAddr();
+		Machine.emit(Op.JUMPIF,0,Reg.CB,PATCHME); 	// PATCHME cond_unmet
 		stmt.thenStmt.visit(this, null);
-
 		
 		if (stmt.elseStmt != null) {
+			patch_endif = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMP,Reg.CB,PATCHME); 						// PATCHME after
 			jump_to = Machine.nextInstrAddr();
-			Machine.emit(Op.JUMP,Reg.CB,-1); 	// patchme!
 			stmt.elseStmt.visit(this, null);
-			Machine.patch(jump_to, Machine.nextInstrAddr());
+			Machine.patch(patch_endif, Machine.nextInstrAddr());	// PATCHED after
+			Machine.patch(patch_if, jump_to);						// PATCHED cond_unmet
+		} else {
+			Machine.patch(patch_if, Machine.nextInstrAddr());
 		}
-		
-		Machine.patch(patch_branch, Machine.nextInstrAddr());
 		
 		return null;
 	}
@@ -351,7 +423,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		stmt.cond.visit(this, null);
 		
 		int patch_branch = Machine.nextInstrAddr();
-		Machine.emit(Op.JUMPIF,0,Reg.CB,-1); 	// patchme!
+		Machine.emit(Op.JUMPIF,0,Reg.CB,PATCHME); 	// patchme!
 		stmt.body.visit(this, null);
 		
 		Machine.emit(Op.JUMP,Reg.CB,while_begin);
@@ -440,22 +512,31 @@ public class CodeGenerator implements Visitor<Object, Object> {
 						
 		boolean is_static = ((MethodDecl) expr.functionRef.decl).isStatic;
 		
-		Address proc_addr = ((MethodDecl) expr.functionRef.decl).address;
+		Address proc_addr = ((MethodDecl) expr.functionRef.decl).entity.address;
+		
+		MethodEntity me = (MethodEntity) expr.functionRef.decl.entity;
+		boolean patch = me.address.offset == PATCHME;
 		
 		if (is_static) {
+			if (patch) me.callers.add(Machine.nextInstrAddr());
 			Machine.emit(Op.CALL,proc_addr.reg,proc_addr.offset);
 		} else {
 			
 			Address ob_address;
-			
+									
 			if (expr.functionRef instanceof QualRef) {
-				ob_address = ((QualRef) expr.functionRef).ref.decl.entity.address;
-				System.out.println("call statement setting OB: " + ob_address.toString());
-				Machine.emit(Op.LOAD, ob_address.reg, ob_address.offset);
+				QualRef funcqref = (QualRef) expr.functionRef;
+				System.out.println("call expr object ref: " + ((QualRef) funcqref.ref).id.decl.name);
+				funcqref.ref.visit(this, null);
+				//ob_address = ((QualRef) expr.functionRef).ref.decl.entity.address;
+				//System.out.println("call statement setting OB: " + ob_address.toString());
+				//Machine.emit(Op.LOAD, ob_address.reg, ob_address.offset);
+				//Machine.emit(Op.STOREI,Reg.OB,0);
 			} else {
 				// the OB is already set
 			}
 			
+			if (patch) me.callers.add(Machine.nextInstrAddr());
 			Machine.emit(Op.CALLI,proc_addr.reg,proc_addr.offset);
 		}
 						
@@ -487,7 +568,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitThisRef(ThisRef ref, Object arg) {
-		// TODO Auto-generated method stub
+		Machine.emit(Op.LOADA,Reg.OB,0);
 		return null;
 	}
 
@@ -500,9 +581,11 @@ public class CodeGenerator implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitQRef(QualRef ref, Object arg) {
-		Address target = ref.decl.entity.address;
-		Address ob_address = ref.ref.decl.entity.address;
-		emitOpAddr(Op.LOAD, ob_address);		// push value of object address
+		ref.ref.visit(this, null);
+		System.out.println("qref ref field: " + ref.ref.decl.name + "   " + ref.id.decl.name);
+		Address target = ref.id.decl.entity.address;
+		//emitOpAddr(Op.LOAD, ob_address);		// push value of object address
+		System.out.println("qref id offset: " + target);
 		Machine.emit(Op.LOADL, target.offset);	// push field offset
 		Machine.emit(Prim.fieldref);
 		return null;
@@ -538,15 +621,45 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		
 		return null;
 	}
+	
 
 	@Override
 	public Object visitNullLiteral(NullLiteral expr, Object arg) {
-		// TODO Auto-generated method stub
+		Machine.emit(Op.LOADL,Machine.nullRep);
 		return null;
 	}
 	
 	private void emitOpAddr(Op op, Address addr) {
 		Machine.emit(op, addr.reg, addr.offset);
 	}
+	
+	/*
+	 * PATCHKEY methods
+	 */
+	
+	private String[] patchkeys = new String[] 
+		{
+			"System.out.println"
+	};
 
+	private boolean patchExists(String s) {
+		for (String key : patchkeys) {
+			if (s.contentEquals(key)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean emitPatch(String key) {
+		switch (key) {
+		case "System.out.println":
+			Machine.emit(Op.LOAD,Reg.LB,-1);	// load single int arg from LB
+			Machine.emit(Prim.putintnl);		// print it 
+			Machine.emit(Op.RETURN,0,0,1);		// pop the arg
+			return true;
+		default:
+			return false;
+		}
+	}
 }

@@ -12,13 +12,23 @@ class A {
 		
 		A a = new A();
 		a.b = b;
+		
+		a.b.c.getX();
+		
+		//System.out.println(a.b.c.x);
+		
 	}
 }
 
 class B {
 	public C c;
+	
 }
 
 class C {
 	public int x;
+	
+	public int getX() {
+		return x;
+	}
 }

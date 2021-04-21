@@ -114,8 +114,14 @@ public class Compiler {
 		Disassembler d = new Disassembler(object_filepath);
 		d.disassemble();
 		
-		//Interpreter.interpret(object_filepath);
-		Interpreter.debug(object_filepath, filepath);
+		boolean debug = true;
+		
+		if (debug) {
+			Interpreter.debug(object_filepath, filepath);
+		} else {
+			Interpreter.interpret(object_filepath);
+		}
+		
 
 		/*
 		ASTDisplay adt = new ASTDisplay();
@@ -146,7 +152,7 @@ public class Compiler {
 		
 		if (args.length < 1) {
 			//target = "../tests/pa3_tests/fail351.java";
-			target = "./test/codegen/sang.java";
+			target = "./test/codegen/song.java";
 		} else {
 			target = args[0];
 		}

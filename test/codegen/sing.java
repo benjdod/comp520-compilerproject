@@ -1,36 +1,29 @@
 class Test {
 	public int x;
-	public int y;
 	
-	public static void sing(int n) {
-		int j = n;
+	/*
+	public static int weird(int m) {
+
+		int z = 2;
+		
+		if (true) {
+			int tempInt = 54;
+			m = m + tempInt + z;
+		}
+				
+		return m;
+			
 	}
-	
-	public void incX() {
-		x = x + 1;
-	}
-	
-	public void setX(int n) {
-		x = n;
-	}
-	
-	public void setY(int n) {
-		y = n;
-	}
-	
-	public int getSum() {
-		return x+y;
-	}
+	*/
 	
 	public static void main(String[] args) {
+
+		Test t1 = null;
 		
-		Test t = new Test();
+		t1 = new Test();
 		
-		t.setX(5);
-		t.setY(3);
-		
-		System.out.println(t.getSum());
-						
+		System.out.println(t1.x);
+								
 	}
 
 }
