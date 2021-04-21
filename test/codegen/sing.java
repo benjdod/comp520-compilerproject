@@ -1,5 +1,6 @@
 class Test {
 	public int x;
+	public static int st;
 	
 	/*
 	public static int weird(int m) {
@@ -35,6 +36,8 @@ class Test {
 	public static void main(String[] args) {
 
 		Test t1 = new Test();
+		
+		Test.st = 3;
 		
 		t1.runCase();
 			

@@ -81,10 +81,10 @@ public class Compiler {
 
 		checkForError();
 
-		
+		/*
 		ASTDisplay adt = new ASTDisplay();
 		adt.showTree(tree);
-		
+		*/
 
 		Identification idn = new Identification(tree, _reporter);
 
@@ -105,12 +105,14 @@ public class Compiler {
 		
 		if (failed) {
 			System.out.println("Error: could not write object file!");
+			exitProgram(FILE_FAILURE);
 		} else {
-			System.out.println("Wrote object file to " + object_filepath);
+			//System.out.println("Wrote object file to " + object_filepath);
 		}
 
 		System.out.println("\u001B[0;32mCompilation successful.\u001B[0m");
 		
+		/*
 		Disassembler d = new Disassembler(object_filepath);
 		d.disassemble();
 		
@@ -120,7 +122,7 @@ public class Compiler {
 			Interpreter.debug(object_filepath, filepath);
 		} else {
 			Interpreter.interpret(object_filepath);
-		}
+		}*/
 		
 
 		/*
@@ -152,7 +154,7 @@ public class Compiler {
 		
 		if (args.length < 1) {
 			//target = "../tests/pa3_tests/fail351.java";
-			target = "./test/codegen/prinstest.java";
+			target = "./test/codegen/sing.java";
 		} else {
 			target = args[0];
 		}

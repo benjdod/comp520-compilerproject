@@ -297,8 +297,15 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		if (is_qualref) {
 			
 			QualRef qr = (QualRef) stmt.ref;
+			
+			//System.out.println(qr.ref.decl);
+
+			if (qr.ref.decl instanceof MemberDecl) {
+			}
+			
 			qr.ref.visit(this, null);
 			Address a = qr.ref.decl.entity.address;
+			//System.out.println("assn to qual addr " + stmt.ref.decl.name + ": " + a);
 			//Machine.emit(Op.LOAD,a.reg, a.offset);
 			Machine.emit(Op.LOADL,qr.id.decl.entity.address.offset);
 			
@@ -393,7 +400,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		if (stmt.returnExpr != null) {
 			stmt.returnExpr.visit(this, null);
 			Machine.emit(Op.RETURN,1,0,_argsizestack.peek());
-			System.out.println("args for " +_md.name + ": " + _md.parameterDeclList.size());
+			//System.out.println("args for " +_md.name + ": " + _md.parameterDeclList.size());
 		} else {
 			Machine.emit(Op.RETURN,0,0,_argsizestack.peek());
 		}
@@ -596,14 +603,14 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	@Override
 	public Object visitQRef(QualRef ref, Object arg) {
 		ref.ref.visit(this, null);
-		System.out.println("qref ref field: " + ref.ref.decl.name + "   " + ref.id.decl.name);
+		//System.out.println("qref ref field: " + ref.ref.decl.name + "   " + ref.id.decl.name);
 		if (ref.ref.decl.type instanceof ArrayType && ref.id.spelling.contentEquals("length")) {
 			Machine.emit(Prim.arraylen);
 			return null;
 		}
 		Address target = ref.id.decl.entity.address;
 		//emitOpAddr(Op.LOAD, ob_address);		// push value of object address
-		System.out.println("qref id offset: " + target);
+		//System.out.println("qref id offset: " + target);
 		Machine.emit(Op.LOADL, target.offset);	// push field offset
 		Machine.emit(Prim.fieldref);
 		return null;

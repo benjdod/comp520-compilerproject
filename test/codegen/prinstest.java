@@ -117,8 +117,6 @@ class A
     }
     
     public int foo(int x, int y) {
-    	System.out.println(x+10000);
-    	System.out.println(y+10000);
     	System.out.println(n+x+y);
         return (n + x + y);
     }

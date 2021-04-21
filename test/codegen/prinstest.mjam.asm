@@ -191,52 +191,44 @@
 190         CALL         add     
 191         CALL         L10
 192         RETURN (0)   0
-193  L20:   LOAD         -2[LB]
-194         LOADL        10000
+193  L20:   LOAD         0[OB]
+194         LOAD         -2[LB]
 195         CALL         add     
-196         CALL         L10
-197         LOAD         -1[LB]
-198         LOADL        10000
-199         CALL         add     
-200         CALL         L10
-201         LOAD         0[OB]
-202         LOAD         -2[LB]
+196         LOAD         -1[LB]
+197         CALL         add     
+198         CALL         L10
+199         LOAD         0[OB]
+200         LOAD         -2[LB]
+201         CALL         add     
+202         LOAD         -1[LB]
 203         CALL         add     
-204         LOAD         -1[LB]
-205         CALL         add     
-206         CALL         L10
-207         LOAD         0[OB]
-208         LOAD         -2[LB]
-209         CALL         add     
-210         LOAD         -1[LB]
+204         RETURN (1)   2
+205  L21:   LOAD         -2[LB]
+206         LOADL        0
+207         CALL         fieldref
+208         LOAD         -1[LB]
+209         LOADL        0
+210         CALL         fieldref
 211         CALL         add     
-212         RETURN (1)   2
-213  L21:   LOAD         -2[LB]
-214         LOADL        0
-215         CALL         fieldref
-216         LOAD         -1[LB]
-217         LOADL        0
-218         CALL         fieldref
-219         CALL         add     
-220         LOADA        0[OB]
-221         LOADL        0
-222         CALL         fieldref
-223         CALL         add     
-224         RETURN (1)   2
-225  L22:   PUSH         1
+212         LOADA        0[OB]
+213         LOADL        0
+214         CALL         fieldref
+215         CALL         add     
+216         RETURN (1)   2
+217  L22:   PUSH         1
+218         LOADL        1
+219         STORE        3[LB]
+220         LOAD         -1[LB]
+221         LOADL        1
+222         CALL         gt      
+223         JUMPIF (0)   L23
+224         LOAD         -1[LB]
+225         LOAD         -1[LB]
 226         LOADL        1
-227         STORE        3[LB]
-228         LOAD         -1[LB]
-229         LOADL        1
-230         CALL         gt      
-231         JUMPIF (0)   L23
-232         LOAD         -1[LB]
-233         LOAD         -1[LB]
-234         LOADL        1
-235         CALL         sub     
-236         LOADA        0[OB]
-237         CALLI        L22
-238         CALL         mult    
-239         STORE        3[LB]
-240  L23:   LOAD         3[LB]
-241         RETURN (1)   1
+227         CALL         sub     
+228         LOADA        0[OB]
+229         CALLI        L22
+230         CALL         mult    
+231         STORE        3[LB]
+232  L23:   LOAD         3[LB]
+233         RETURN (1)   1
