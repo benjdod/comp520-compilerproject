@@ -356,12 +356,22 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			Address ob_address;
 			
 			if (stmt.methodRef instanceof QualRef) {
+				/*
 				((QualRef) stmt.methodRef).ref.visit(this, null);
 				ob_address = ((QualRef) stmt.methodRef).ref.decl.entity.address;
 				System.out.println("call statement setting OB: " + ob_address.toString());
 				Machine.emit(Op.LOAD, ob_address.reg, ob_address.offset);
+				QualRef funcqref = (QualRef) expr.functionRef;
+				*/
+				//System.out.println("call expr object ref: " + ((QualRef) funcqref.ref).id.decl.name);
+				((QualRef) stmt.methodRef).ref.visit(this, null);
+				//ob_address = ((QualRef) expr.functionRef).ref.decl.entity.address;
+				//System.out.println("call statement setting OB: " + ob_address.toString());
+				//Machine.emit(Op.LOAD, ob_address.reg, ob_address.offset);
+				//Machine.emit(Op.STOREI,Reg.OB,0);
 			} else {
-				// the OB is already set
+				// the OB is already set, so push it onto stack
+				Machine.emit(Op.LOADA,Reg.OB,0);
 			}
 					
 			if (patch) me.callers.add(Machine.nextInstrAddr());
@@ -484,6 +494,9 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			case EqualEqual:
 				Machine.emit(Prim.eq);
 				break;
+			case NotEqual:
+				Machine.emit(Prim.ne);
+				break;
 		}
 		
 		return null;
@@ -526,14 +539,15 @@ public class CodeGenerator implements Visitor<Object, Object> {
 									
 			if (expr.functionRef instanceof QualRef) {
 				QualRef funcqref = (QualRef) expr.functionRef;
-				System.out.println("call expr object ref: " + ((QualRef) funcqref.ref).id.decl.name);
+				//System.out.println("call expr object ref: " + ((QualRef) funcqref.ref).id.decl.name);
 				funcqref.ref.visit(this, null);
 				//ob_address = ((QualRef) expr.functionRef).ref.decl.entity.address;
 				//System.out.println("call statement setting OB: " + ob_address.toString());
 				//Machine.emit(Op.LOAD, ob_address.reg, ob_address.offset);
 				//Machine.emit(Op.STOREI,Reg.OB,0);
 			} else {
-				// the OB is already set
+				// the OB is already set, so push it onto the stack again
+				Machine.emit(Op.LOADA,Reg.OB,0);
 			}
 			
 			if (patch) me.callers.add(Machine.nextInstrAddr());

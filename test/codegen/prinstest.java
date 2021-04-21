@@ -26,7 +26,7 @@ class PA4Test
         
         /* 2: simple expression */
         x = 2 * x + x - 1;
-        // System.out.println(x);  
+        System.out.println(x);  
 
         /* 3: System.out.println */
         System.out.println(3);
@@ -117,6 +117,9 @@ class A
     }
     
     public int foo(int x, int y) {
+    	System.out.println(x+10000);
+    	System.out.println(y+10000);
+    	System.out.println(n+x+y);
         return (n + x + y);
     }
     

@@ -12,7 +12,7 @@ class A {
 	
 	public static void main(String[] args) {
 				
-		System.out.println(11111);
+		System.out.println(10101);
 		
 		B b = new B();
 		C c = new C();
@@ -20,7 +20,7 @@ class A {
 		
 		A a = new A();
 		
-		System.out.println(A.x);
+		//System.out.println(A.x);
 		
 		a.poop();
 		
@@ -29,8 +29,11 @@ class A {
 		b = b;
 		c = c;
 		
+		c.goo(c, b);
+		System.out.println(c.goo(c, null));
+		
 		System.out.println(b.c.getX());
-		System.out.println(99999);
+		System.out.println(90909);
 	}//
 }
 
@@ -43,6 +46,15 @@ class C {
 	
 	public int getX() {
 		return x;
+	}
+	
+	public int goo(C c, B b) {
+		int out = 0;
+		
+		if (b != null) {
+			out = 1;
+		}
+		return out + this.x + c.x;
 	}
 }
 

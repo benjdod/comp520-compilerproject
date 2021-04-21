@@ -16,12 +16,28 @@ class Test {
 	}
 	*/
 	
+	public void runCase() {
+		x = 3;
+		while (x < 10) {
+			int t = incX();
+		}
+	}
+	
+	public int incX() {
+		this.x = x + 1;
+		return x;
+	}
+	
+	public Test getThis() {
+		return this;
+	}
+	
 	public static void main(String[] args) {
 
-		Test t1 = null;
+		Test t1 = new Test();
 		
-		t1 = new Test();
-		
+		t1.runCase();
+			
 		System.out.println(t1.x);
 								
 	}
