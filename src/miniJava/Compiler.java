@@ -50,7 +50,6 @@ public class Compiler {
 				
 		int l = filepath.lastIndexOf('.');
 		
-		
 		try {
 			String ext = filepath.substring(l + 1);
 			if ( !(ext.contentEquals("java") || ext.contentEquals("mjava"))) {
@@ -94,6 +93,7 @@ public class Compiler {
 
 		checkForErrors();
 		
+		
 		CodeGenerator cg = new CodeGenerator(tree, _reporter);	
 		
 		checkForErrors();
@@ -109,11 +109,11 @@ public class Compiler {
 		} else {
 			//System.out.println("Wrote object file to " + object_filepath);
 		}
+		
 
 		
-		System.out.println("\u001B[0;32mCompilation successful.\u001B[0m");
 		
-		
+		/*
 		Disassembler d = new Disassembler(object_filepath);
 		d.disassemble();
 		
@@ -124,6 +124,9 @@ public class Compiler {
 		} else {
 			Interpreter.interpret(object_filepath);
 		}
+		*/
+
+		System.out.println("\u001B[0;32mCompilation successful.\u001B[0m");
 		
 
 		/*
@@ -159,7 +162,7 @@ public class Compiler {
 		
 		if (args.length < 1) {
 			//target = "../tests/pa3_tests/fail351.java";
-			target = "./test/codegen/prinstest.java";
+			target = "./test/test.java";
 		} else {
 			target = args[0];
 		}

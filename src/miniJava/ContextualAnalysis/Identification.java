@@ -190,6 +190,10 @@ public class Identification implements Visitor<Object, Object> {
     public Object visitAssignStmt(AssignStmt stmt, Object arg) throws IdError {
         stmt.ref.visit(this, null);
         stmt.val.visit(this, null);
+
+        if (stmt.ref instanceof ThisRef) {
+            throw new IdError("cannot assign to 'this'", stmt.posn);
+        }
         return null;
     }
 

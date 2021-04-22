@@ -7,6 +7,8 @@ class Test {
     public Bollocks bloviate() {
         int x = 2;
 
+        this = new Test();
+
         t = new String();
 
         if (x == b) {
