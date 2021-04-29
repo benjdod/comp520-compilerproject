@@ -154,6 +154,8 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		// is this the main method?
 		if (md.name.contentEquals("main") && 
 			md.isStatic &&
+			! md.isPrivate &&
+			md.type.typeKind == TypeKind.VOID &&
 			md.parameterDeclList.size() == 1) 
 		{
 			ParameterDecl pd = md.parameterDeclList.get(0);
@@ -272,6 +274,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		}
 		
 		if (_vardecl_count > 0) {
+			_local_ptr -= _vardecl_count;
 			Machine.emit(Op.POP,_vardecl_count);
 		}
 		
@@ -290,16 +293,19 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	
 	@Override
 	public Object visitAssignStmt(AssignStmt stmt, Object arg) {
-		Address target = stmt.ref.decl.entity.address;
 		
 		boolean is_qualref = stmt.ref instanceof QualRef;
-		boolean is_instf = stmt.ref.decl.entity.address.reg != Reg.SB;
 		
 		if (is_qualref) {
 			
 			QualRef qr = (QualRef) stmt.ref;
+			if (qr.id.spelling.contentEquals("length")) {
+				if (qr.ref.decl.type instanceof ArrayType) {
+					throw new CompilationError("cannot assign to an array's length field", qr.posn);
+				}
+			}
 			
-			System.out.println(stmt.ref.decl.name + ": " + target);
+			//System.out.println(stmt.ref.decl.name + ": " + target);
 			
 			qr.ref.visit(this, null);
 			//System.out.println("assn to qual addr " + stmt.ref.decl.name + ": " + a);
@@ -309,6 +315,9 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		}
 		
 		stmt.val.visit(this, null);
+
+		Address target = stmt.ref.decl.entity.address;
+		boolean is_instf = stmt.ref.decl.entity.address.reg != Reg.SB;
 		
 		if (is_qualref && is_instf) {
 			Machine.emit(Prim.fieldupd);
@@ -349,6 +358,9 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		// discovery phase and go straight to the patched code segment.
 		if (patchExists(((MethodDecl) stmt.methodRef.decl).patchkey)) {
 			Machine.emit(Op.CALL,Reg.CB,me.address.offset);
+			if (stmt.methodRef.decl.type.typeKind != TypeKind.VOID) {
+				Machine.emit(Op.POP,1);
+			}
 			return null;
 		}
 		
@@ -383,7 +395,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		}
 		
 		if (stmt.methodRef.decl.type.typeKind != TypeKind.VOID) {
-			Machine.emit(Op.POP);
+			Machine.emit(Op.POP,1);
 		}
 						
 		return null;
@@ -471,6 +483,12 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			patch_shortjump = Machine.nextInstrAddr();
 			Machine.emit(Op.JUMPIF,1,Reg.CB,PATCHME);
 		} 
+
+		if (expr.operator.type == TokenType.AmpAmp) {
+			Machine.emit(Op.LOAD,1,Reg.ST,-1);
+			patch_shortjump = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMPIF,0,Reg.CB,PATCHME);
+		} 
 		
 		expr.right.visit(this, null);
 		
@@ -489,6 +507,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 				break;
 			case AmpAmp:
 				Machine.emit(Prim.and);
+				Machine.patch(patch_shortjump, Machine.nextInstrAddr());
 				break;
 			case BarBar:
 				Machine.emit(Prim.or);

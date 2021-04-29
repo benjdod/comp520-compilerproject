@@ -194,6 +194,7 @@ public class Identification implements Visitor<Object, Object> {
         if (stmt.ref instanceof ThisRef) {
             throw new IdError("cannot assign to 'this'", stmt.posn);
         }
+
         return null;
     }
 

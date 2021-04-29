@@ -113,7 +113,7 @@ public class Compiler {
 
 		
 		
-		/*
+		
 		Disassembler d = new Disassembler(object_filepath);
 		d.disassemble();
 		
@@ -124,7 +124,7 @@ public class Compiler {
 		} else {
 			Interpreter.interpret(object_filepath);
 		}
-		*/
+		
 
 		System.out.println("\u001B[0;32mCompilation successful.\u001B[0m");
 		
@@ -161,8 +161,8 @@ public class Compiler {
 		String target;
 		
 		if (args.length < 1) {
-			//target = "../tests/pa3_tests/fail351.java";
-			target = "./test/test.java";
+			target = "../tests/pa4_tests/pass425.java";
+			//target = "./test/test.java";
 		} else {
 			target = args[0];
 		}
