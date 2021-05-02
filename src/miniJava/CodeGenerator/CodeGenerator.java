@@ -625,7 +625,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	@Override
 	public Object visitIdRef(IdRef ref, Object arg) {
 		//System.out.println("## ref " + ref.id.spelling + "\t" + ref.decl.entity.address);
-		System.out.println("id ref: " + ref.id.spelling + " @ " + ref.id.posn);
+		//System.out.println("id ref: " + ref.id.spelling + " @ " + ref.id.posn);
 		emitOpAddr(Op.LOAD,ref.decl.entity.address);
 		return null;
 	}
@@ -633,7 +633,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	@Override
 	public Object visitQRef(QualRef ref, Object arg) {
 		ref.ref.visit(this, null);
-		System.out.println("qref names: " + ref.ref.decl.name + "   " + ref.id.decl.name);
+		//System.out.println("qref names: " + ref.ref.decl.name + "   " + ref.id.decl.name);
 		//System.out.println("qref addrs: " + ref.ref.decl.entity.address + "   " + ref.id.decl.entity.address);
 		if (ref.ref.decl.type instanceof ArrayType && ref.id.spelling.contentEquals("length")) {
 			Machine.emit(Prim.arraylen);
@@ -643,7 +643,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		//emitOpAddr(Op.LOAD, ob_address);		// push value of object address
 		//System.out.println("qref id offset: " + target);
 		
-		System.out.println(target);
+		//System.out.println(target);
 		
 		if (target.reg == Reg.SB) {
 			Machine.emit(Op.LOAD, Reg.SB, target.offset);

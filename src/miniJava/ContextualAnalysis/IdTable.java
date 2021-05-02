@@ -8,6 +8,7 @@ import miniJava.ErrorReporter;
 import miniJava.AbstractSyntaxTrees.Declaration;
 import miniJava.AbstractSyntaxTrees.Identifier;
 import miniJava.SyntacticAnalyzer.SourcePosition;
+import miniJava.AbstractSyntaxTrees.TypeDenoter;
 
 public class IdTable {
 
@@ -71,10 +72,14 @@ public class IdTable {
 
         validate(d);
 
-        currentMap().put(new DeclSignature(d.name), d);
+        currentMap().put(new DeclSignature(d), d);
     }
 
     public Declaration get(String s) throws IdError {
+        return get(s,null);
+    }
+
+    public Declaration get(String s, TypeDenoter[] argtypes) throws IdError {
 
         Iterator<HashMap<DeclSignature, Declaration>> i = _stack.iterator();
 
@@ -83,7 +88,7 @@ public class IdTable {
         while (i.hasNext()) {
             map = i.next();
 
-            DeclSignature search = new DeclSignature(s);
+            DeclSignature search = new DeclSignature(s, argtypes);
             if (map.containsKey(search)) return map.get(search);
         }
         

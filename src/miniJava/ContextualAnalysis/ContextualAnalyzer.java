@@ -238,9 +238,24 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
     @Override
     public TypeDenoter visitCallStmt(CallStmt stmt, Object arg) {
         stmt.methodRef.visit(this, null);
+        /*
         for (Expression e : stmt.argList) {
             e.visit(this, null);
+        }*/
+
+        // build up argument type list for method resolution
+        TypeDenoter[] argtypes = new TypeDenoter[stmt.argList.size()];
+        for (int i = 0; i < stmt.argList.size(); i++) {
+            argtypes[i] = stmt.argList.get(i).visit(this,null);
         }
+
+        System.out.println("entry for method ref " + stmt.methodRef.decl.name + " @ " + stmt.methodRef.posn);
+
+        System.out.println("search: " + stmt.methodRef.decl.name + " " + argtypes.length);
+
+
+        stmt.methodRef.decl = _idtable.get(stmt.methodRef.decl.name, argtypes);
+        System.out.println("got: " + stmt.methodRef.decl);
 
         if (! (stmt.methodRef.decl instanceof MethodDecl)) {
             _reporter.report(new TypeError("Reference to " + stmt.methodRef.decl.name + " is not a method", stmt.posn));
@@ -503,8 +518,6 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
             ClassDecl cd  = (ClassDecl) d;
 
             boolean staticonly = _md != null && _md.isStatic;
-
-            System.out.println("referencing in static environment? " + staticonly);
 
             qr.decl = resolveClassField(cd, id, staticonly);
             //qr.id.decl = qr.decl;

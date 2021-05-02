@@ -31,9 +31,14 @@ public class Compiler {
 		System.exit(exitcode);
 	}
 
+	static void printGreen(String s) {
+		System.out.println("\u001B[0;92m" + s + "\u001B[0m");
+	}
+
 	static void checkForErrors() {
 		if (_reporter.hasErrors()) {
 			//System.out.println("\u001B[0;91m----- Compilation failed! -----\u001B[0m");
+			System.out.print("\u001B[0;91mfailed\u001B[0m\n");
 			_reporter.prinsOutput();
 			//System.out.print("\u001B[0;91m          ----------\u001B[0m");
 			exitProgram(PARSE_FAILURE);
@@ -42,6 +47,7 @@ public class Compiler {
 
 	static void checkForError() {
 		if (_reporter.hasErrors()) {
+			System.out.print("failed ---\n");
 			_reporter.prinsOutput(_reporter.getFirst());
 			exitProgram(PARSE_FAILURE);
 		}
@@ -77,32 +83,36 @@ public class Compiler {
 		Scanner s = new Scanner(f, _reporter);
 		Parser p = new Parser(s, _reporter);
 
-		System.out.println("--- parsing ---");
+		System.out.print("--- parsing ");
 		Package tree = p.parse();
 
 		checkForError();
+		printGreen("complete");
 
-		
+		/*
 		ASTDisplay adt = new ASTDisplay();
-		adt.showTree(tree);
+		adt.showTree(tree); */
 		
 
-		System.out.println("--- identification ---");
+		//System.out.println("--- identification ---");
 		//Identification idn = new Identification(tree, _reporter);
 
 		//checkForError();
 
-		System.out.println("--- type checking ---");
+		//System.out.println("--- type checking ---");
 		//TypeChecker tc = new TypeChecker(tree, _reporter);
 
+		System.out.print("--- contextual analysis ");
 		ContextualAnalyzer ca = new ContextualAnalyzer(tree, _reporter);
 
 		checkForErrors();
+		printGreen("complete ---");
 		
-		System.out.println("--- code generation ---");
+		System.out.print("--- code generation ");
 		CodeGenerator cg = new CodeGenerator(tree, _reporter);	
 		
 		checkForErrors();
+		printGreen("complete ---");
 		
 		String object_filepath = filepath.substring(0, filepath.lastIndexOf(".")) + ".mJAM";
 		
@@ -167,8 +177,8 @@ public class Compiler {
 		String target;
 		
 		if (args.length < 1) {
-			target = "../tests/pa4_tests/pass403.java";
-			//target = "./test/test.java";
+			//target = "../tests/pa4_tests/pass403.java";
+			target = "./test/test.java";
 		} else {
 			target = args[0];
 		}

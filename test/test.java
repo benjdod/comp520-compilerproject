@@ -1,27 +1,22 @@
 class Test {
 
+    public static int x;
+
+    public static int x() {
+        return 1;
+    }
+
+    public static int x(int y) {
+        x = 1 + y;
+        return 1 + y;
+    }
+
     public static void main(String[] args) {
 
-        C c = new C();
-        c.x = 18;
-        B b = new B();
-        b.c = c;
+        x(4);
+        x();
 
-        A.b = b;
-
-        System.out.println(B.c.x);
+        //System.out.println(Test.x);
 
     }
-}
-
-class A {
-    public static B b;
-}
-
-class B {
-    public C c;
-}
-
-class C {
-    public int x;
 }

@@ -78,6 +78,7 @@ public class DeclSignature {
         hash = hash * 31 + name.hashCode();
 		
         if (argtypes != null) {
+            hash = ~hash;
             for (int i = 0; i < argtypes.length; i++) {
                 hash = hash * 31 + argtypes[i].hashCode();
             }
