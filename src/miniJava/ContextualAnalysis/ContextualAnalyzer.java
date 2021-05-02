@@ -7,16 +7,15 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 import miniJava.SyntacticAnalyzer.Token;
 import miniJava.SyntacticAnalyzer.TokenType;
 
-import java.util.ArrayList;
-
-import javax.xml.transform.Source;
+import java.util.Stack;
 
 public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
 
     private IdTable _idtable;
     private Package _tree;
     private ErrorReporter _reporter;
-    private ArrayList<Identifier> _qualrefs;
+    // private ArrayList<Identifier> _qualrefs;
+    private Stack<TypeDenoter[]> _currentargs; 
 
     /* some current state variables */
     private ClassDecl _cd;
@@ -27,7 +26,8 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
         _reporter = reporter;
         _idtable = new IdTable(reporter);
         _tree = tree;
-        _qualrefs = new ArrayList<Identifier>();
+        //_qualrefs = new ArrayList<Identifier>();
+        _currentargs = new Stack<TypeDenoter[]>();
         validate(_tree);
     }
 
@@ -453,6 +453,15 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
 
     @Override
     public TypeDenoter visitIdRef(IdRef ref, Object arg) {
+        /*
+        if (_currentargs.size() > 0) {
+            // we're checking a method reference, so all resolution
+            // will be done later and we don't need type information, so 
+            // just return nothing
+            ref.decl = ref.id.decl;
+            return null;
+        }  */
+
         ref.id.visit(this,null);
         ref.decl = ref.id.decl;
 
@@ -496,7 +505,12 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
 
     @Override
     public TypeDenoter visitIdentifier(Identifier id, Object arg) {
-        id.decl = _idtable.get(id);
+        System.out.println("visiting identifier " + id.spelling);
+        if (_currentargs.size() > 0) {
+            id.decl = _idtable.get(id.spelling, _currentargs.peek());
+        } else {
+            id.decl = _idtable.get(id);
+        }
         return id.decl.type;
     }
 
@@ -683,39 +697,67 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
         throw new IdError("no class '" + s + "' in program", posn);
     }
 
+    private ClassDecl getClassDeclFromDecl(Declaration d) {
+        if (d instanceof ClassDecl) return (ClassDecl) d;
+
+        if (! (d.type instanceof ClassType)) throw new IdError("Declaration is not a class type",d.posn);
+
+        ClassType ct = (ClassType) d.type;
+
+        return getClassDecl(ct.className);
+    }
+
     public TypeDenoter checkCall(Reference methodRef, ExprList argList, SourcePosition posn) {
-        methodRef.visit(this, null);
+
+        TypeDenoter[] argtypes = new TypeDenoter[argList.size()];
+        for (int i = 0; i < argList.size(); i++) {
+            argtypes[i] = argList.get(i).visit(this,null);
+        }
+
+        DeclSignature search;
+
+        if (methodRef instanceof IdRef) {
+            _currentargs.add(argtypes);
+            methodRef.visit(this, null);
+            _currentargs.pop();
+
+            search = new DeclSignature(((IdRef) methodRef).id.spelling, argtypes);
+        } else {
+            methodRef.visit(this, null);
+            search = new DeclSignature(methodRef.decl.name, argtypes);
+        }
+
         /*
         for (Expression e : stmt.argList) {
             e.visit(this, null);
         }*/
 
         // build up argument type list for method resolution
-        TypeDenoter[] argtypes = new TypeDenoter[argList.size()];
-        for (int i = 0; i < argList.size(); i++) {
-            argtypes[i] = argList.get(i).visit(this,null);
-        }
+        
 
-        DeclSignature search = new DeclSignature(methodRef.decl.name, argtypes);
+        System.out.println("searching in current class for " + search);
 
         if (methodRef instanceof QualRef) {
             QualRef qr = (QualRef) methodRef;
             ClassDecl cd;
 
-            if (qr.ref.decl instanceof FieldDecl) {
-                cd = getClassDeclFromMember((FieldDecl) qr.ref.decl);
-            } else {
+            System.out.println(qr.ref.decl.type);
+
+            if (qr.ref.decl instanceof ClassDecl) {
                 cd = getClassDecl(qr.ref.decl);
+            } else {
+                cd = getClassDeclFromDecl(qr.ref.decl);
             }
 
-            //System.out.println("searching class " + cd.name);
+            System.out.println("searching class " + cd.name + " for " + search.name);
 
             methodRef.decl = null;
 
             for (MethodDecl md : cd.methodDeclList) {
-                //System.out.println("...for " + md.name);
+                System.out.println( "..." + md.name + " ?");
                 if (md.matchSignature(search)) {
                     methodRef.decl = md;
+                    System.out.println("found!");
                     break;
                 } else {
                     System.out.println("no match");

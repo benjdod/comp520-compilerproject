@@ -178,7 +178,7 @@ public class Compiler {
 		
 		if (args.length < 1) {
 			//target = "../tests/pa4_tests/pass403.java";
-			target = "./test/test.java";
+			target = "./test/features/overloading/pass101.java";
 		} else {
 			target = args[0];
 		}

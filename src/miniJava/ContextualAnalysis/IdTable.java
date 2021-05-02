@@ -89,6 +89,13 @@ public class IdTable {
 
         HashMap<DeclSignature, Declaration> map;
 
+        /*
+        System.out.println("getting: " + ds);
+        System.out.println("name: " + ds.name);
+        System.out.println("no. of args: " + ds.argtypes.length);*/
+
+        System.out.println("getting decl " + ds);
+
         while (i.hasNext()) {
             map = i.next();
 

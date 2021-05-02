@@ -96,13 +96,16 @@ public class DeclSignature {
 
         if (argtypes == null) return sb.toString();
 
-        sb.append(" (");
+        sb.append("(");
 
-        for (int i = 0; i < argtypes.length-1; i++) {
-            sb.append(argtypes[i].toString() + ", ");
+        if (argtypes.length > 0) sb.append(argtypes[0].toString());
+
+        for (int i = 1; i < argtypes.length; i++) {
+            sb.append(", " + argtypes[i].toString());
         }
 
-        sb.append(argtypes[argtypes.length-1].toString() + ")");
+        sb.append(")");
+
         return sb.toString();
     }
 }
