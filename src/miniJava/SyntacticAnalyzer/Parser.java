@@ -6,6 +6,7 @@ import miniJava.ErrorReporter;
 import miniJava.SyntacticAnalyzer.SyntaxError;
 import miniJava.AbstractSyntaxTrees.*;
 import miniJava.AbstractSyntaxTrees.Package;
+import miniJava.CodeGenerator.Patchkey;
 
 public class Parser {
 
@@ -169,16 +170,35 @@ public class Parser {
 
         // class _PrintStream { public void println(int n){} }
         ClassDecl pstream_decl = new ClassDecl("_PrintStream", new FieldDeclList(), new MethodDeclList(), oos);
-        MethodDecl pstream_println = new MethodDecl(
+        MethodDecl pstream_println_int = new MethodDecl(
             new FieldDecl(false, false, new BaseType(TypeKind.VOID, oos), "println", oos), 
             new ParameterDeclList(), 
             new StatementList(), 
             oos);
-        pstream_println.parameterDeclList.add(
+        pstream_println_int.parameterDeclList.add(
             new ParameterDecl(new BaseType(TypeKind.INT, oos), "x", oos));
-        pstream_println.patchkey = "System.out.println";
+        pstream_println_int.patchkey = new Patchkey("System.out.println", new TypeDenoter[] {new BaseType(TypeKind.INT, SourcePosition.NOPOS)});
 
-        pstream_decl.methodDeclList.add(pstream_println);
+
+        MethodDecl pstream_println_void = new MethodDecl(
+            new FieldDecl(false, false, new BaseType(TypeKind.VOID, oos), "println", oos), 
+            new ParameterDeclList(), 
+            new StatementList(), 
+            oos);
+        pstream_println_void.patchkey = new Patchkey("System.out.println");
+
+        MethodDecl pstream_println_bool = new MethodDecl(
+            new FieldDecl(false, false, new BaseType(TypeKind.VOID, oos), "println", oos), 
+            new ParameterDeclList(), 
+            new StatementList(), 
+            oos);
+        pstream_println_bool.parameterDeclList.add(
+            new ParameterDecl(new BaseType(TypeKind.BOOLEAN, oos), "b", oos));
+        pstream_println_bool.patchkey = new Patchkey("System.out.println", new TypeDenoter[] {new BaseType(TypeKind.BOOLEAN, SourcePosition.NOPOS)});
+
+        pstream_decl.methodDeclList.add(pstream_println_int);
+        pstream_decl.methodDeclList.add(pstream_println_void);
+        pstream_decl.methodDeclList.add(pstream_println_bool);
 
         ClassDecl system_decl = new ClassDecl("System", new FieldDeclList(), new MethodDeclList(), oos);
         FieldDecl out_decl = new FieldDecl(false, true, new ClassType(new Identifier(new Token(TokenType.Ident, oos, "_PrintStream")), oos), "out", oos);

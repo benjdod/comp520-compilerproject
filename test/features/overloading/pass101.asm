@@ -12,26 +12,9 @@
  11         LOAD         -1[LB]
  12         CALL         add     
  13         RETURN (1)   1
- 14  L13:   PUSH         1
- 15         LOADL        -1
- 16         LOADL        0
- 17         CALL         newobj  
- 18         STORE        3[LB]
- 19         LOAD         3[LB]
- 20         CALLI        L14
- 21         CALL         L11
- 22         POP          1
- 23         LOADL        5
- 24         LOAD         3[LB]
- 25         CALLI        L12
- 26         POP          1
- 27         LOADL        5
- 28         LOAD         3[LB]
- 29         CALLI        L12
- 30         CALL         L10
- 31         RETURN (0)   1
- 32  L14:   LOADL        4
- 33         LOADA        0[OB]
- 34         CALLI        L12
- 35         POP          1
- 36         RETURN (0)   0
+ 14  L13:   CALL         L11
+ 15         CALL         L10
+ 16         LOADL        1
+ 17         CALL         L12
+ 18         CALL         L10
+ 19         RETURN (0)   1
