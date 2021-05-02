@@ -2,7 +2,7 @@
   1         PUSH         1
   2         LOADL        0
   3         CALL         newarr  
-  4         CALL         L12
+  4         CALL         L16
   5         HALT   (0)   
   6  L10:   LOAD         -1[LB]
   7         CALL         putintnl
@@ -33,18 +33,20 @@
  32         CALL         put     
  33         CALL         puteol  
  34         RETURN (0)   1
- 35  L12:   PUSH         1
- 36         LOADL        1
- 37         JUMPIF (0)   L15
- 38         LOADL        0
- 39         JUMPIF (0)   L13
- 40         LOADL        100
- 41         JUMP         L14
- 42  L13:   LOADL        1
- 43  L14:   JUMP         L16
- 44  L15:   LOADL        100
+ 35  L12:   LOAD         1[SB]
+ 36         CALL         not     
+ 37         STORE        1[SB]
+ 38         LOAD         1[SB]
+ 39         RETURN (1)   0
+ 40  L13:   CALL         L12
+ 41         JUMPIF (0)   L14
+ 42         LOADL        5
+ 43         JUMP         L15
+ 44  L14:   LOADL        5
  45         CALL         neg     
- 46  L16:   STORE        3[LB]
- 47         LOAD         3[LB]
+ 46  L15:   RETURN (1)   0
+ 47  L16:   CALL         L13
  48         CALL         L10
- 49         RETURN (0)   1
+ 49         CALL         L13
+ 50         CALL         L10
+ 51         RETURN (0)   1

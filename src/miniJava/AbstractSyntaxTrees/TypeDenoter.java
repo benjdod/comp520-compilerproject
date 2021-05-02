@@ -76,6 +76,14 @@ abstract public class TypeDenoter extends AST {
         return false;
     }
 
+    /**
+     * This is a hacky way of making the compiler
+     * not yell at us, but it is overriden in 
+     * every subclass so it's safe. 
+     */
+    public TypeDenoter copy() {
+        return null;
+    }
 }
 
         

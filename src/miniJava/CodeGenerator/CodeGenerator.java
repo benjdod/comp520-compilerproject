@@ -540,6 +540,25 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		return null;
 	}
 
+
+	@Override
+	public Object visitTernaryExpr(TernaryExpr expr, Object arg) {
+		expr.cond.visit(this, null);
+
+		int patch_to_else = Machine.nextInstrAddr();
+		Machine.emit(Op.JUMPIF,0,Reg.CB, PATCHME);
+
+		expr.trueExpr.visit(this, null);
+		int patch_to_end = Machine.nextInstrAddr();
+		Machine.emit(Op.JUMP,0,Reg.CB, PATCHME);
+
+		Machine.patch(patch_to_else, Machine.nextInstrAddr());
+		expr.falseExpr.visit(this, null);
+		Machine.patch(patch_to_end, Machine.nextInstrAddr());
+
+		return null;
+	}
+
 	@Override
 	public Object visitRefExpr(RefExpr expr, Object arg) {
 		expr.ref.visit(this, null);

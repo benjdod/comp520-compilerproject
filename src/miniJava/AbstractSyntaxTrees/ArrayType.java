@@ -44,6 +44,10 @@ public class ArrayType extends TypeDenoter {
 	        return v.visitArrayType(this, o);
 	    }
 
+		public ArrayType copy() {
+			return new ArrayType(eltType.copy(), posn.makeCopy());
+		}
+
 	    public TypeDenoter eltType;
 	}
 

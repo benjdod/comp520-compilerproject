@@ -371,6 +371,18 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
     }
 
     @Override
+    public TypeDenoter visitTernaryExpr(TernaryExpr expr, Object arg) throws IdError {
+        expr.cond.type = expr.cond.visit(this, null);
+        expr.trueExpr.visit(this, null);
+        expr.falseExpr.visit(this, null);
+
+        expr.type = checkTernaryExpr(expr);
+
+        return expr.type;
+    }
+
+
+    @Override
     public TypeDenoter visitRefExpr(RefExpr expr, Object arg) {
 
         // FIXME: watch it!!
@@ -851,6 +863,26 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
                 return new BaseType(TypeKind.ERROR, expr.posn);
         }
     }  
+
+    private TypeDenoter checkTernaryExpr(TernaryExpr expr) {
+
+        System.out.println(expr.trueExpr.type + "\t" + expr.falseExpr.type);
+        System.out.println(expr.cond.type);
+
+        if (! expr.trueExpr.type.equals(expr.falseExpr.type)) {
+            _reporter.report(new TypeError("Both subexpressions in a ternary expression must be the same type", "Saw " + expr.trueExpr.type.toString() + " and " + expr.falseExpr.type.toString(),expr.posn));
+            return new BaseType(TypeKind.ERROR, expr.posn);
+        }
+
+        if (expr.cond.type.typeKind != TypeKind.BOOLEAN) {
+            _reporter.report(new TypeError("The condition in a boolean expression must be boolean", "Saw " + expr.cond.type,expr.posn));
+            return new BaseType(TypeKind.ERROR, expr.posn);
+        }
+
+        expr.type = expr.trueExpr.type;
+
+        return expr.type;
+    }
 
     private TypeDenoter checkUnaryExpr(UnaryExpr expr)  {
         switch (expr.operator.type) {

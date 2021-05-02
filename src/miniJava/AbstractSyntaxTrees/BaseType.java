@@ -36,4 +36,8 @@ public class BaseType extends TypeDenoter
     public <A,R> R visit(Visitor<A,R> v, A o) {
         return v.visitBaseType(this, o);
     }
+
+    public BaseType copy() {
+        return new BaseType(typeKind, posn.makeCopy());
+    }
 }

@@ -265,6 +265,14 @@ public class Identification implements Visitor<Object, Object> {
     }
 
     @Override
+    public Object visitTernaryExpr(TernaryExpr expr, Object arg) throws IdError {
+        expr.cond.visit(this, null);
+        expr.trueExpr.visit(this, null);
+        expr.falseExpr.visit(this, null);
+        return null;
+    }
+
+    @Override
     public Object visitRefExpr(RefExpr expr, Object arg) throws IdError {
         expr.ref.visit(this, null);
         if (expr.ref.decl instanceof MethodDecl) {

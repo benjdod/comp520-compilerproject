@@ -2,8 +2,6 @@ package miniJava.SyntacticAnalyzer;
 
 import java.util.Iterator;
 
-import org.graalvm.compiler.graph.spi.Canonicalizable.Binary;
-
 import miniJava.ErrorReporter;
 import miniJava.SyntacticAnalyzer.SyntaxError;
 import miniJava.AbstractSyntaxTrees.*;
@@ -705,6 +703,24 @@ public class Parser {
         return cs;
     }
 
+    private Expression parseTernaryExpr(Expression cond_expr) throws SyntaxError {
+        Expression out = parseDisjuncExpr(cond_expr);
+        Expression te = null;
+        Expression fe = null;
+        Expression cond = null;
+
+        if (_token.type == TokenType.QuestionMark) {
+            cond = out;
+            acceptIt();
+            te = parseTernaryExpr(null);
+            accept(TokenType.Colon);
+            fe = parseTernaryExpr(null);
+            out = new TernaryExpr(cond, te, fe, cond.posn);
+        }
+
+        return out;
+    }
+
     private Expression parseDisjuncExpr(Expression left_expr) throws SyntaxError {
         Expression out = parseConjuncExpr(left_expr);
         Expression le = null;
@@ -956,6 +972,10 @@ public class Parser {
         }*/
 
     	e = parseUnaryExpr();
+
+        if (_token.type == TokenType.QuestionMark) {
+            e = parseTernaryExpr(e);
+        }
 
         if (isBinaryOp(_token.type)) {
             e = parseDisjuncExpr(e);    // coding 

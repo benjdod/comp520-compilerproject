@@ -368,4 +368,13 @@ public class ASTDisplay implements Visitor<String,Object> {
         show(arg, expr);
         return null;
     }
+
+    @Override
+    public Object visitTernaryExpr(TernaryExpr expr, String arg) {
+        show(arg,expr);
+        expr.cond.visit(this, indent(arg));
+        expr.trueExpr.visit(this, indent(indent(arg)));
+        expr.falseExpr.visit(this, indent(indent(arg)));
+        return null;
+    }
 }

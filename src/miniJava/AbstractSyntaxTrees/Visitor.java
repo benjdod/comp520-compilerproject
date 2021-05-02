@@ -39,6 +39,7 @@ public interface Visitor<ArgType,ResultType> {
   // Expressions
     public ResultType visitUnaryExpr(UnaryExpr expr, ArgType arg);
     public ResultType visitBinaryExpr(BinaryExpr expr, ArgType arg);
+    public ResultType visitTernaryExpr(TernaryExpr expr, ArgType arg);
     public ResultType visitRefExpr(RefExpr expr, ArgType arg);
     public ResultType visitIxExpr(IxExpr expr, ArgType arg);
     public ResultType visitCallExpr(CallExpr expr, ArgType arg);

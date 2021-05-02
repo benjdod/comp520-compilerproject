@@ -44,5 +44,9 @@ public class ClassType extends TypeDenoter
         return className.spelling;
     }
 
+    public ClassType copy() {
+        return new ClassType(className, posn.makeCopy());
+    }
+
     public Identifier className;
 }

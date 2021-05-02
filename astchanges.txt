@@ -1,5 +1,5 @@
 PA3:
-added class 'NullLiteral' for the null keyword (and made changes to related methods in Scanner Parser, AST visitor)
+added class 'NullLiteral' for the null keyword (and made changes to all classes implementing the visitor interface)
 added Enum 'NULL' to TypeKind to serve as a comparator for reference types (array, class)
 
     - This is parsed by parseExpression, which returns it as the only component of the parseExpression
@@ -16,5 +16,7 @@ added public field 'patchkey' of type String to the MethodDecl class. This field
 added override methods equals and hashCode to TypeDenoter and all its subclasses to enable the use of a DeclSignature class in the id table.
 
 added public method 'matchSignature' of type boolean to the MethodDecl class (takes a DeclSignature as an argument and determines whether or not they match)
+
+added class TernaryExpr and related method to Visitor interface.
 
 added 
