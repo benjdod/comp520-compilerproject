@@ -3,6 +3,7 @@ package miniJava;
 import java.io.FileReader;
 import java.nio.charset.StandardCharsets;
 
+import miniJava.ContextualAnalysis.ContextualAnalyzer;
 import miniJava.ContextualAnalysis.Identification;
 import miniJava.ContextualAnalysis.TypeChecker;
 import miniJava.SyntacticAnalyzer.Parser;
@@ -87,12 +88,14 @@ public class Compiler {
 		
 
 		System.out.println("--- identification ---");
-		Identification idn = new Identification(tree, _reporter);
+		//Identification idn = new Identification(tree, _reporter);
 
-		checkForError();
+		//checkForError();
 
 		System.out.println("--- type checking ---");
-		TypeChecker tc = new TypeChecker(tree, _reporter);
+		//TypeChecker tc = new TypeChecker(tree, _reporter);
+
+		ContextualAnalyzer ca = new ContextualAnalyzer(tree, _reporter);
 
 		checkForErrors();
 		
@@ -164,7 +167,7 @@ public class Compiler {
 		String target;
 		
 		if (args.length < 1) {
-			target = "../tests/pa4_tests/pass415.java";
+			target = "../tests/pa4_tests/pass403.java";
 			//target = "./test/test.java";
 		} else {
 			target = args[0];

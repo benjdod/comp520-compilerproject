@@ -337,7 +337,6 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
 
     @Override
     public TypeDenoter visitOperator(Operator op, Object arg) {
-        // TODO Auto-generated method stub
         return null;
     }
 
