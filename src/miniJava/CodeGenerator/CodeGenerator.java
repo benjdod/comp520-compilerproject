@@ -73,7 +73,6 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			for (MethodDecl md : cd.methodDeclList) {
 				md.entity = new MethodEntity(Reg.CB, PATCHME);
 			}
-			
 		}
 	}
 
@@ -702,27 +701,61 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	 * PATCHKEY methods
 	 */
 	
-	private String[] patchkeys = new String[] 
+	private Patchkey[] patchkeys = new Patchkey[] 
 		{
-			"System.out.println"
+			new Patchkey("System.out.println", new BaseType(TypeKind.INT, SourcePosition.NOPOS)),
+			new Patchkey("System.out.println"),
+			new Patchkey("System.out.println", new BaseType(TypeKind.BOOLEAN, SourcePosition.NOPOS))
 	};
 
-	private boolean patchExists(String s) {
-		for (String key : patchkeys) {
-			if (s.contentEquals(key)) {
+	private boolean patchExists(Patchkey p) {
+		for (Patchkey key : patchkeys) {
+			if (p.equals(key)) {
 				return true;
 			}
 		}
 		return false;
 	}
 	
-	private boolean emitPatch(String key) {
+	private boolean emitPatch(Patchkey key) {
 		
 		
-		if (key.contentEquals("System.out.println")) {
+		if (key.equals(patchkeys[0])) {
 			Machine.emit(Op.LOAD,Reg.LB,-1);	// load single int arg from LB
 			Machine.emit(Prim.putintnl);		// print it 
 			Machine.emit(Op.RETURN,0,0,1);		// pop the arg
+			return true;
+		} else if (key.equals(patchkeys[1])) {
+			Machine.emit(Prim.puteol);
+			Machine.emit(Op.RETURN,0);
+			return true;
+		} else if(key.equals(patchkeys[2])) {
+			Machine.emit(Op.LOAD,Reg.LB,-1);	// load boolean value from LB
+			int patch_tfjump = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMPIF,0,Reg.CB,PATCHME);	
+			Machine.emit(Op.LOADL,116);			// load and print chars to spell true
+			Machine.emit(Prim.put);				// do sequentially to save stack space
+			Machine.emit(Op.LOADL,114);			// (there's no benefit to stacking high)
+			Machine.emit(Prim.put);
+			Machine.emit(Op.LOADL,117);
+			Machine.emit(Prim.put);
+			Machine.emit(Op.LOADL,101);
+			Machine.emit(Prim.put);
+			Machine.emit(Prim.puteol);
+			Machine.emit(Op.RETURN,1);
+			Machine.patch(patch_tfjump, Machine.nextInstrAddr());
+			Machine.emit(Op.LOADL,102);			// load and spell false
+			Machine.emit(Prim.put);
+			Machine.emit(Op.LOADL,97);
+			Machine.emit(Prim.put);
+			Machine.emit(Op.LOADL,108);
+			Machine.emit(Prim.put);
+			Machine.emit(Op.LOADL,115);
+			Machine.emit(Prim.put);
+			Machine.emit(Op.LOADL,101);
+			Machine.emit(Prim.put);
+			Machine.emit(Prim.puteol);
+			Machine.emit(Op.RETURN,1);
 			return true;
 		} else {
 			return false;

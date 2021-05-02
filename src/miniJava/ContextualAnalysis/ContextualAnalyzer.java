@@ -362,6 +362,8 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
         expr.operator.visit(this, null);
         TypeDenoter lefttype = expr.left.visit(this, null);
         TypeDenoter righttype = expr.right.visit(this, null);
+        expr.left.type = lefttype;
+        expr.right.type = righttype;
         //System.out.println("binary type kinds: " + expr.left.type.typeKind + "\t" + expr.right.type.typeKind);
         expr.type = checkBinExpr(expr);
         //System.out.println("returning type: " + expr.type.typeKind);
@@ -735,8 +737,6 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
         // build up argument type list for method resolution
         
 
-        System.out.println("searching in current class for " + search);
-
         if (methodRef instanceof QualRef) {
             QualRef qr = (QualRef) methodRef;
             ClassDecl cd;
@@ -749,18 +749,18 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
                 cd = getClassDeclFromDecl(qr.ref.decl);
             }
 
-            System.out.println("searching class " + cd.name + " for " + search.name);
+            //System.out.println("searching class " + cd.name + " for " + search.name);
 
             methodRef.decl = null;
 
             for (MethodDecl md : cd.methodDeclList) {
-                System.out.println( "..." + md.name + " ?");
+                //System.out.println( "..." + md.name + " ?");
                 if (md.matchSignature(search)) {
                     methodRef.decl = md;
-                    System.out.println("found!");
+                    //System.out.println("found!");
                     break;
                 } else {
-                    System.out.println("no match");
+                    //System.out.println("no match");
                 }
             }
 
@@ -821,7 +821,7 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
             case Plus:
             case Minus:
             case FSlash:
-            //System.out.println(expr.left.type + "\t" + expr.right.type);
+            System.out.println(expr.left.type + "\t" + expr.right.type);
                 if ( 
                     (expr.left.type.typeKind != TypeKind.INT && expr.right.type.typeKind != TypeKind.INT)
                 ) {

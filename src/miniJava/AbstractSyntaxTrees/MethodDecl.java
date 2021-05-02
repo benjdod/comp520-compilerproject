@@ -7,6 +7,7 @@ package miniJava.AbstractSyntaxTrees;
 
 import miniJava.SyntacticAnalyzer.SourcePosition;
 import miniJava.CodeGenerator.Address;
+import miniJava.CodeGenerator.Patchkey;
 import miniJava.ContextualAnalysis.DeclSignature;
 
 public class MethodDecl extends MemberDecl {
@@ -15,7 +16,7 @@ public class MethodDecl extends MemberDecl {
     super(md,posn);
     parameterDeclList = pl;
     statementList = sl;
-    patchkey = "";
+    patchkey = Patchkey.NONE;
 	}
 	
 	public <A, R> R visit(Visitor<A, R> v, A o) {
@@ -25,7 +26,7 @@ public class MethodDecl extends MemberDecl {
 	public ParameterDeclList parameterDeclList;
 	public StatementList statementList;
 	public Address address;
-	public String patchkey;
+	public Patchkey patchkey;
 
 	/**
 	 * Determines whether a method matches a decl signature

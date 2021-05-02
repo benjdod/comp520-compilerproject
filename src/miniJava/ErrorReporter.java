@@ -81,6 +81,6 @@ public class ErrorReporter {
     }
 
     public void prinsOutput(SourceError se) {
-        System.out.println("*** line " + se._location.line + ": " + se.getErrorType() + " - " +  se._errormessage + (se._hint.length() > 0 ? " (" + se._hint + ")" : ""));
+        System.out.println("*** line " + se._location.line + ": " + se.getErrorType() + " - " +  se._errormessage + (se._hint.length() > 0 ? ". " + se._hint + "." : ""));
     }
 }
