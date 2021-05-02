@@ -13,10 +13,12 @@ public class BaseType extends TypeDenoter
         super(t, posn);
     }
 
+    @Override
     public int hashCode() {
         return super.hashCode();
     }
 
+    @Override
     public boolean equals(Object o) {
         if (o instanceof BaseType) {
             BaseType b = (BaseType) o;
@@ -24,6 +26,11 @@ public class BaseType extends TypeDenoter
         } else {
             return false;
         }
+    }
+
+    @Override
+    public String toString() {
+        return typeKind.toString();
     }
     
     public <A,R> R visit(Visitor<A,R> v, A o) {

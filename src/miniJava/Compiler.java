@@ -83,11 +83,11 @@ public class Compiler {
 		Scanner s = new Scanner(f, _reporter);
 		Parser p = new Parser(s, _reporter);
 
-		System.out.print("--- parsing ");
+		System.out.println("--- parsing ---");
 		Package tree = p.parse();
 
 		checkForError();
-		printGreen("complete");
+		printGreen("--- completed ---");
 
 		/*
 		ASTDisplay adt = new ASTDisplay();
@@ -102,17 +102,17 @@ public class Compiler {
 		//System.out.println("--- type checking ---");
 		//TypeChecker tc = new TypeChecker(tree, _reporter);
 
-		System.out.print("--- contextual analysis ");
+		System.out.println("--- contextual analysis ---");
 		ContextualAnalyzer ca = new ContextualAnalyzer(tree, _reporter);
 
 		checkForErrors();
-		printGreen("complete ---");
+		printGreen("--- completed ---");
 		
-		System.out.print("--- code generation ");
+		System.out.println("--- code generation ---");
 		CodeGenerator cg = new CodeGenerator(tree, _reporter);	
 		
 		checkForErrors();
-		printGreen("complete ---");
+		printGreen("--- completed ---");
 		
 		String object_filepath = filepath.substring(0, filepath.lastIndexOf(".")) + ".mJAM";
 		

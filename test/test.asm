@@ -2,14 +2,14 @@
   1         PUSH         1
   2         LOADL        0
   3         CALL         newarr  
-  4         CALL         L12
+  4         CALL         L14
   5         HALT   (0)   
-  6         LOAD         -1[LB]
+  6  L10:   LOAD         -1[LB]
   7         CALL         putintnl
   8         RETURN (0)   1
-  9  L10:   LOADL        1
+  9  L11:   LOADL        1
  10         RETURN (1)   0
- 11  L11:   LOADL        1
+ 11  L12:   LOADL        1
  12         LOAD         -1[LB]
  13         CALL         add     
  14         STORE        1[SB]
@@ -17,9 +17,20 @@
  16         LOAD         -1[LB]
  17         CALL         add     
  18         RETURN (1)   1
- 19  L12:   LOADL        4
- 20         CALL         L11
- 21         POP          1
- 22         CALL         L10
- 23         POP          1
- 24         RETURN (0)   1
+ 19  L13:   LOAD         -2[LB]
+ 20         LOAD         -1[LB]
+ 21         CALL         add     
+ 22         RETURN (1)   2
+ 23  L14:   LOADL        4
+ 24         CALL         L12
+ 25         POP          1
+ 26         CALL         L11
+ 27         POP          1
+ 28         LOADL        9
+ 29         CALL         L12
+ 30         CALL         L10
+ 31         LOADL        80
+ 32         LOADL        90
+ 33         CALL         L13
+ 34         CALL         L10
+ 35         RETURN (0)   1

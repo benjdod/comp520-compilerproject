@@ -11,12 +11,17 @@ class Test {
         return 1 + y;
     }
 
+    public static int x(int z, int q) {
+        return z + q;
+    }
+
     public static void main(String[] args) {
 
         x(4);
         x();
 
-        //System.out.println(Test.x);
 
+        System.out.println(x(9));
+        System.out.println(x(80,90,9));
     }
 }

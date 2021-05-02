@@ -7,6 +7,7 @@ package miniJava.AbstractSyntaxTrees;
 
 import miniJava.SyntacticAnalyzer.SourcePosition;
 import miniJava.CodeGenerator.Address;
+import miniJava.ContextualAnalysis.DeclSignature;
 
 public class MethodDecl extends MemberDecl {
 	
@@ -25,4 +26,28 @@ public class MethodDecl extends MemberDecl {
 	public StatementList statementList;
 	public Address address;
 	public String patchkey;
+
+	/**
+	 * Determines whether a method matches a decl signature
+	 * @param ds
+	 * @return
+	 */
+	public boolean matchSignature(DeclSignature ds) {
+
+		// names don't match
+		if (! this.name.contentEquals(ds.name)) return false;
+
+		// the decl signature is not for a method
+		if (ds.argtypes == null ) return false;
+
+		// number of args doesn't match
+		if (this.parameterDeclList.size() != ds.argtypes.length) return false;
+
+		for (int i = 0; i < this.parameterDeclList.size(); i++) {
+			// type of positional arg i doesn't match
+			if (! this.parameterDeclList.get(i).type.equals(ds.argtypes[i])) return false;
+		}
+
+		return true;
+	}
 }

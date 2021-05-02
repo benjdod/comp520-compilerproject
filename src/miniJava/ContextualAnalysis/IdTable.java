@@ -81,6 +81,10 @@ public class IdTable {
 
     public Declaration get(String s, TypeDenoter[] argtypes) throws IdError {
 
+       return get(new DeclSignature(s,argtypes), SourcePosition.NOPOS);
+    }
+
+    public Declaration get(DeclSignature ds, SourcePosition posn) {
         Iterator<HashMap<DeclSignature, Declaration>> i = _stack.iterator();
 
         HashMap<DeclSignature, Declaration> map;
@@ -88,11 +92,10 @@ public class IdTable {
         while (i.hasNext()) {
             map = i.next();
 
-            DeclSignature search = new DeclSignature(s, argtypes);
-            if (map.containsKey(search)) return map.get(search);
+            if (map.containsKey(ds)) return map.get(ds);
         }
         
-        throw new IdError("Identifier '" + s + "'' is not declared", new SourcePosition(1, 1));
+        throw new IdError("Identifier '" + ds.toString() + "' is not declared", posn);
     }
 
     public Declaration get(Identifier id) throws IdError {

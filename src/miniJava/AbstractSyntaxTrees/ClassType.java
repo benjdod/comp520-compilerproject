@@ -14,6 +14,7 @@ public class ClassType extends TypeDenoter
         className = cn;
     }
 
+    @Override
     public int hashCode() {
         int hash = 17;
         hash = hash * 31 + super.hashCode();
@@ -21,6 +22,7 @@ public class ClassType extends TypeDenoter
         return hash;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (o instanceof ClassType) {
             ClassType ct = (ClassType) o;
@@ -35,6 +37,11 @@ public class ClassType extends TypeDenoter
             
     public <A,R> R visit(Visitor<A,R> v, A o) {
         return v.visitClassType(this, o);
+    }
+
+    @Override
+    public String toString() {
+        return className.spelling;
     }
 
     public Identifier className;

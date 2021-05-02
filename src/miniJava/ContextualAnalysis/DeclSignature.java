@@ -87,4 +87,22 @@ public class DeclSignature {
 
         return hash;
     }
+
+    public String toString() {
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append(this.name);
+
+        if (argtypes == null) return sb.toString();
+
+        sb.append(" (");
+
+        for (int i = 0; i < argtypes.length-1; i++) {
+            sb.append(argtypes[i].toString() + ", ");
+        }
+
+        sb.append(argtypes[argtypes.length-1].toString() + ")");
+        return sb.toString();
+    }
 }

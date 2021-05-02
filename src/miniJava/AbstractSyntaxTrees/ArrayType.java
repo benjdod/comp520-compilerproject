@@ -15,6 +15,7 @@ public class ArrayType extends TypeDenoter {
 	        this.eltType = eltType;
 	    }
 
+		@Override
 		public int hashCode() {
 			int hash = 17;
 			hash *= 31;
@@ -22,6 +23,21 @@ public class ArrayType extends TypeDenoter {
 			hash *= 31;
 			hash += this.eltType.hashCode();
 			return hash;
+		}
+
+		@Override
+		public boolean equals(Object o) {
+			if (o instanceof ArrayType) {
+				ArrayType a = (ArrayType) o;
+				return this.eltType.equals(a.eltType);
+			} else {
+				return false;
+			}
+		}
+
+		@Override
+		public String toString() {
+			return this.eltType.toString() + "[]";
 		}
 	        
 	    public <A,R> R visit(Visitor<A,R> v, A o) {
