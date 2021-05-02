@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Launch Test",
+            "request": "launch",
+            "mainClass": "Test",
+            "projectName": "COMP520_PA1"
+        },
+        {
+            "type": "java",
+            "name": "Launch Driver",
+            "request": "launch",
+            "mainClass": "miniJava.Driver",
+            "projectName": "COMP520_PA1"
+        },
+        {
+            "type": "java",
             "name": "Launch Checkpoint4",
             "request": "launch",
             "mainClass": "tester.Checkpoint4",

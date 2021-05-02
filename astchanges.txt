@@ -13,3 +13,6 @@ added public method 'equals' of type boolean to the TypeDenoter class (used to c
 added public method 'getLast' of type Statement to the StatementList class (used for return statement checking)
 
 added public field 'patchkey' of type String to the MethodDecl class. This field is initially the empty string.
+added override methods equals and hashCode to TypeDenoter and all its subclasses. 
+
+added 

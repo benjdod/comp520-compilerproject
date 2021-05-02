@@ -89,8 +89,6 @@ public class Identification implements Visitor<Object, Object> {
         _md = md;
         md.type.visit(this, null);
 
-        Declaration d;
-
         /*
         if ((_idtable.contains(md.name))) {
             throw new IdError("There is already a declaration '" + _idtable.get(md.name).name + "'", md.posn);
@@ -208,6 +206,7 @@ public class Identification implements Visitor<Object, Object> {
 
     @Override
     public Object visitCallStmt(CallStmt stmt, Object arg) throws IdError {
+
         stmt.methodRef.visit(this, null);
         for (Expression e : stmt.argList) {
             e.visit(this, null);
@@ -217,7 +216,6 @@ public class Identification implements Visitor<Object, Object> {
 
     @Override
     public Object visitReturnStmt(ReturnStmt stmt, Object arg) throws IdError {
-        // FIXME: sticky spot????
         if (stmt.returnExpr != null)
             stmt.returnExpr.visit(this, null);
         return null;
@@ -359,7 +357,7 @@ public class Identification implements Visitor<Object, Object> {
     @Override
     public Object visitQRef(QualRef ref, Object arg) throws IdError {
         //System.out.println("identification for qref: " + ref.id.spelling);
-        unfoldQualRef(ref);
+        ref.decl = unfoldQualRef(ref);
         //ref.ref.visit(this,null);
         //ref.id.visit(this,null);
         //System.out.println(_idtable.toString());
@@ -411,7 +409,7 @@ public class Identification implements Visitor<Object, Object> {
 
 
 
-
+    /*
     public void unfoldQualRef(QualRef qr) throws IdError {
 
         //System.out.println("unfolding qual ref");
@@ -496,6 +494,55 @@ public class Identification implements Visitor<Object, Object> {
         }
 
         qr.decl = qr.id.decl;
+    } */
+
+    private Declaration unfoldQualRef(QualRef qr) {
+        Declaration d;
+
+        if (qr.ref instanceof QualRef) {
+            d = unfoldQualRef((QualRef) qr.ref);
+        } else if (qr.ref instanceof IdRef) {
+            // we've hit the bottom
+
+            IdRef ref = (IdRef) qr.ref;
+
+            d = _idtable.get(ref.id);
+
+            ref.id.decl = d;
+            ref.decl = d;
+
+        } else if (qr.ref instanceof ThisRef) {
+            d = _cd;
+            qr.ref.decl = _cd;
+        } else {
+            throw new IdError("unresolvable reference type", "type is " + qr.ref.toString(), qr.posn);
+        }
+
+        Identifier id = qr.id;
+
+        if (d instanceof ClassDecl) {
+
+            ClassDecl cd  = (ClassDecl) d;
+
+            boolean staticonly = _md != null && _md.isStatic;
+
+            System.out.println("referencing in static environment? " + staticonly);
+
+            qr.decl = resolveClassField(cd, id, staticonly);
+            //qr.id.decl = qr.decl;
+            //return qr.decl;
+
+        } else if (d.type instanceof ArrayType && id.spelling.contentEquals("length")) {
+            SourcePosition nopos = new SourcePosition(0,0);
+            qr.decl = new FieldDecl(true,true,new BaseType(TypeKind.INT,nopos),"length",nopos);
+        } else {
+            ClassDecl cd = getClassDecl((d.type));
+            qr.decl = resolveClassField(cd, id, false);
+        }
+
+        qr.id.decl = qr.decl;
+        return qr.decl;
+
     }
 
     private MemberDecl resolveClassField(Declaration d, Identifier id, boolean staticOnly) throws IdError {
@@ -590,6 +637,7 @@ public class Identification implements Visitor<Object, Object> {
     }
 
     private ClassDecl getClassDecl(Declaration d) throws IdError { 
+        if (d instanceof ClassDecl) return (ClassDecl) d;
         return getClassDecl(d.name, d.posn);
     }
 

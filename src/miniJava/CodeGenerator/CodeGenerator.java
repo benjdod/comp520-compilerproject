@@ -82,19 +82,21 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		
 		_main_method = null;
 		
+		// manifest all methods and fields in the program
 		fillGlobalEntities();
-		
+
+
+		// load arguments for main and insert a call statement for it
 		Machine.emit(Op.LOADL,0);
 		Machine.emit(Prim.newarr);
 		int patch_callmain = Machine.nextInstrAddr();
 		Machine.emit(Op.CALL, Reg.CB, PATCHME);	// PATCHME main
 		Machine.emit(Op.HALT);
 		
-		
+		// generate code for each class 
 		for (ClassDecl cd : prog.classDeclList) {
 			cd.visit(this, null);
 		}
-		
 
 		// is there a main method?
 		if (_main_method == null) {
@@ -623,8 +625,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	@Override
 	public Object visitIdRef(IdRef ref, Object arg) {
 		//System.out.println("## ref " + ref.id.spelling + "\t" + ref.decl.entity.address);
-		//System.out.println("id ref: " + ref.id.spelling);
-		
+		System.out.println("id ref: " + ref.id.spelling + " @ " + ref.id.posn);
 		emitOpAddr(Op.LOAD,ref.decl.entity.address);
 		return null;
 	}

@@ -9,7 +9,7 @@ import miniJava.SyntacticAnalyzer.SourcePosition;
 
 public abstract class AST {
 	
-	  public SourcePosition posn;
+	public SourcePosition posn;
 
   public AST (SourcePosition posn) {
     this.posn = posn;

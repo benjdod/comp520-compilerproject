@@ -322,6 +322,7 @@ public class TypeChecker implements Visitor<Object, TypeDenoter> {
     public TypeDenoter visitQRef(QualRef ref, Object arg) {
         //ref.id.visit(this, null);
         //System.out.println("type checking qual ref:\t\t" +  ref.id.hashCode());
+        System.out.println("type checking qual ref: " + ref.id.decl.posn);
         return ref.id.decl.type;
     }
 

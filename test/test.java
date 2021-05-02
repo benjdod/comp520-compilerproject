@@ -1,22 +1,27 @@
 class Test {
-    Bollocks b;
-    Bollocks c;
-    String s;
-    String t;
 
-    public Bollocks bloviate() {
-        int x = 2;
+    public static void main(String[] args) {
 
-        this = new Test();
+        C c = new C();
+        c.x = 18;
+        B b = new B();
+        b.c = c;
 
-        t = new String();
+        A.b = b;
 
-        if (x == b) {
-            return b;
-        } 
+        System.out.println(B.c.x);
+
     }
 }
 
-class Bollocks {
+class A {
+    public static B b;
+}
 
+class B {
+    public C c;
+}
+
+class C {
+    public int x;
 }

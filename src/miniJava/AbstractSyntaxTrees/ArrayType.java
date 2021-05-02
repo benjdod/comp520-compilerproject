@@ -14,6 +14,15 @@ public class ArrayType extends TypeDenoter {
 	        super(TypeKind.ARRAY, posn);
 	        this.eltType = eltType;
 	    }
+
+		public int hashCode() {
+			int hash = 17;
+			hash *= 31;
+			hash += super.hashCode();
+			hash *= 31;
+			hash += this.eltType.hashCode();
+			return hash;
+		}
 	        
 	    public <A,R> R visit(Visitor<A,R> v, A o) {
 	        return v.visitArrayType(this, o);

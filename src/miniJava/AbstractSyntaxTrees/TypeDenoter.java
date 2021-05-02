@@ -15,6 +15,20 @@ abstract public class TypeDenoter extends AST {
     
     public TypeKind typeKind;
 
+    @Override
+    public int hashCode() {
+        return typeKind.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o instanceof TypeDenoter) {
+            return equals((TypeDenoter) o);
+        } else {
+            return false;
+        }
+    }
+
     public boolean equals(TypeDenoter td) {
         return equals(td, this);
     }

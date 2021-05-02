@@ -76,6 +76,7 @@ public class Compiler {
 		Scanner s = new Scanner(f, _reporter);
 		Parser p = new Parser(s, _reporter);
 
+		System.out.println("--- parsing ---");
 		Package tree = p.parse();
 
 		checkForError();
@@ -85,15 +86,17 @@ public class Compiler {
 		adt.showTree(tree);
 		
 
+		System.out.println("--- identification ---");
 		Identification idn = new Identification(tree, _reporter);
 
 		checkForError();
 
+		System.out.println("--- type checking ---");
 		TypeChecker tc = new TypeChecker(tree, _reporter);
 
 		checkForErrors();
 		
-		
+		System.out.println("--- code generation ---");
 		CodeGenerator cg = new CodeGenerator(tree, _reporter);	
 		
 		checkForErrors();
@@ -161,7 +164,7 @@ public class Compiler {
 		String target;
 		
 		if (args.length < 1) {
-			target = "../tests/pa4_tests/pass425.java";
+			target = "../tests/pa4_tests/pass415.java";
 			//target = "./test/test.java";
 		} else {
 			target = args[0];
