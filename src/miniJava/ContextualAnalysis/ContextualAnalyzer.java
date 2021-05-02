@@ -821,6 +821,7 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
             case Plus:
             case Minus:
             case FSlash:
+            case Modulo:
             System.out.println(expr.left.type + "\t" + expr.right.type);
                 if ( 
                     (expr.left.type.typeKind != TypeKind.INT && expr.right.type.typeKind != TypeKind.INT)

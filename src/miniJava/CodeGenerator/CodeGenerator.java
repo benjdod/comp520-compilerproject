@@ -506,6 +506,9 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			case FSlash:
 				Machine.emit(Prim.div);
 				break;
+			case Modulo:
+				Machine.emit(Prim.mod);
+				break;
 			case AmpAmp:
 				Machine.emit(Prim.and);
 				Machine.patch(patch_shortjump, Machine.nextInstrAddr());

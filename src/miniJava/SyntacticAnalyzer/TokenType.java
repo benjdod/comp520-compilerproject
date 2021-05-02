@@ -1,5 +1,7 @@
 package miniJava.SyntacticAnalyzer;
 
+import jdk.internal.module.IllegalAccessLogger.Mode;
+
 public enum TokenType {
 	
 	/* text and file things */
@@ -53,12 +55,14 @@ public enum TokenType {
 	 * 
 	PlusPlus,		// ++
 	MinusMinus,		// --
+	*/
 	PlusEqual,		// +=
 	MinusEqual,		// -=
 	SlashEqual,		// /=
 	StarEqual,		// *=
+	ModEqual,		// %=
 	
-	
+	/*
 	Amp,			// &
 	Bar,			// |
 	Tilde,			// ~
@@ -68,6 +72,7 @@ public enum TokenType {
 	Minus,			// -
 	Star,			// *
 	FSlash,			// /
+	Modulo,			// %
 	
 	Equal,			// =
 	
@@ -77,6 +82,7 @@ public enum TokenType {
 	Comma,			// ,
 	Semicolon,		// ;
 	Colon,			// :
+	QuestionMark,	// ?
 	
 	LBracket,		// [
 	RBracket,		// ]

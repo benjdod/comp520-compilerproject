@@ -2,6 +2,8 @@ package miniJava.SyntacticAnalyzer;
 
 import java.util.Iterator;
 
+import org.graalvm.compiler.graph.spi.Canonicalizable.Binary;
+
 import miniJava.ErrorReporter;
 import miniJava.SyntacticAnalyzer.SyntaxError;
 import miniJava.AbstractSyntaxTrees.*;
@@ -46,6 +48,20 @@ public class Parser {
             case Minus:   
             case Star:  
             case FSlash:  
+            case Modulo:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    private boolean isShortAssnOp(TokenType type) {
+        switch (type) {
+            case PlusEqual:
+            case MinusEqual:
+            case StarEqual:
+            case SlashEqual:
+            case ModEqual:
                 return true;
             default:
                 return false;
@@ -399,7 +415,36 @@ public class Parser {
 
                 	Identifier base_id = new Identifier(_token);
                     acceptIt();
-                    if (_token.type == TokenType.LBracket) {
+                    if (isShortAssnOp(_token.type)) {
+
+                        System.out.println("short assignment");
+
+                        // expand to simple assignment
+                        // e.g. 
+                        // x *= 3 + 2    -> x = x * (3+2)
+
+                        BinaryExpr e = new BinaryExpr(null, new RefExpr(r, r.posn), null, _token.mark);
+                        out = new AssignStmt(r, e, r.posn);
+
+                        switch (_token.type) {
+                            case PlusEqual:
+                                e.operator = new Operator(new Token(TokenType.Plus, _token.mark)); break;
+                            case MinusEqual:
+                                e.operator = new Operator(new Token(TokenType.Minus, _token.mark)); break;
+                            case StarEqual:
+                                e.operator = new Operator(new Token(TokenType.Star, _token.mark));  break;
+                            case SlashEqual:
+                                e.operator = new Operator(new Token(TokenType.FSlash, _token.mark));break;
+                            case ModEqual:
+                                e.operator = new Operator(new Token(TokenType.Modulo, _token.mark));    break;
+                        }
+
+                        acceptIt();
+
+                        Expression right = parseExpression();
+                        e.right = right;
+
+                    } else if (_token.type == TokenType.LBracket) {
                         // could be TypeId[] Id = E; or Ref[E] = E;
                         acceptIt();
                         if (_token.type == TokenType.RBracket) {
@@ -685,6 +730,7 @@ public class Parser {
         Expression re = null;
         Operator o = null;
 
+
         while (
             _token.type == TokenType.AmpAmp
         ) {
@@ -728,6 +774,8 @@ public class Parser {
         Expression le = null;
         Expression re = null;
         Operator o = null;
+
+        
 
         while (
             _token.type == TokenType.LessEqual      || 
@@ -777,8 +825,11 @@ public class Parser {
 
         while (
             _token.type == TokenType.Star      || 
-            _token.type == TokenType.FSlash
+            _token.type == TokenType.FSlash    ||
+            _token.type == TokenType.Modulo
         ) {
+
+            System.out.println("matched: " + _token.type);
             le = out;   // left associative shift
             o = new Operator(_token);
             acceptIt();

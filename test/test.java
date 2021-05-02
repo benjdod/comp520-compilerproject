@@ -20,8 +20,11 @@ class Test {
         x(4);
         x();
 
+        int z  = 4;
 
-        System.out.println(x(9));
-        System.out.println(x(80,90,9));
+        z *= 1 + 2;
+
+
+        System.out.println(z);
     }
 }

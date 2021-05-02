@@ -205,13 +205,51 @@ public class Scanner {
 			case '.': out =  makeToken(TokenType.Dot, ".", mark); break;
 			case ',': out =  makeToken(TokenType.Comma, ",", mark); break;
 			case ';': out =  makeToken(TokenType.Semicolon, ";", mark); break;
+			case ':': out =  makeToken(TokenType.Colon, ":", mark); break;
+			case '?': out =  makeToken(TokenType.QuestionMark, "?", mark); break;
 			
 			// these might need to be moved if support is added 
 			// for +=, -= and family
-			case '+': out =  makeToken(TokenType.Plus, "+", mark); break;
-			case '-': out =  makeToken(TokenType.Minus, "-", mark); break;
-			case '*': out =  makeToken(TokenType.Star, "*", mark); break;
-			case '/': out =  makeToken(TokenType.FSlash, "/", mark); break;
+			case '+': 
+				if (next == '=') {
+					out = makeToken(TokenType.PlusEqual, "==", mark);
+					advance();
+					break;
+				} else {
+					out =  makeToken(TokenType.Plus, "+", mark); break;
+				}
+			case '-': 
+				if (next == '=') {
+					out = makeToken(TokenType.MinusEqual, "-=", mark);
+					advance();
+					break;
+				} else {
+					out =  makeToken(TokenType.Minus, "-", mark); break;
+				}
+			case '*': 
+				if (next == '=') {
+					out = makeToken(TokenType.StarEqual, "*=", mark);
+					advance();
+					break;
+				} else {
+					out =  makeToken(TokenType.Star, "*", mark); break;
+				}
+			case '/':
+				if (next == '=') {
+					out = makeToken(TokenType.SlashEqual, "/=", mark);
+					advance();
+					break;
+				} else {
+					out =  makeToken(TokenType.FSlash, "/", mark); break;
+				}
+			case '%':
+				if (next == '=') {
+					out = makeToken(TokenType.ModEqual, "%=", mark);
+					advance();
+					break;
+				} else {
+					out =  makeToken(TokenType.Modulo, "%", mark); break;
+				}
 		}
 		
 		// have we found the token?
@@ -331,6 +369,10 @@ public class Scanner {
 	
 	public boolean spaceBefore() {
 		return this._spacebefore;
+	}
+
+	public boolean spaceAfter() {
+		return Character.isWhitespace(_next);
 	}
 	
 	public String getBufferLines() {
