@@ -32,6 +32,8 @@ public enum TokenType {
 	If,
 	Else,
 	While,
+	Continue,
+	Break,
 	
 	This,
 	New,

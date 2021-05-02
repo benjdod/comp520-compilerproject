@@ -35,16 +35,23 @@
  34         RETURN (0)   1
  35  L12:   PUSH         1
  36         LOADL        1
- 37         JUMPIF (0)   L15
- 38         LOADL        0
- 39         JUMPIF (0)   L13
- 40         LOADL        100
- 41         JUMP         L14
- 42  L13:   LOADL        1
- 43  L14:   JUMP         L16
- 44  L15:   LOADL        100
- 45         CALL         neg     
- 46  L16:   STORE        3[LB]
- 47         LOAD         3[LB]
- 48         CALL         L10
- 49         RETURN (0)   1
+ 37         STORE        3[LB]
+ 38  L13:   LOAD         3[LB]
+ 39         LOADL        10
+ 40         CALL         lt      
+ 41         JUMPIF (0)   L15
+ 42         LOAD         3[LB]
+ 43         LOADL        7
+ 44         CALL         gt      
+ 45         JUMPIF (0)   L14
+ 46         LOADL        9
+ 47         STORE        3[LB]
+ 48         JUMP         L13
+ 49  L14:   LOAD         3[LB]
+ 50         LOADL        1
+ 51         CALL         add     
+ 52         STORE        3[LB]
+ 53         JUMP         L13
+ 54  L15:   LOAD         3[LB]
+ 55         CALL         L10
+ 56         RETURN (0)   1

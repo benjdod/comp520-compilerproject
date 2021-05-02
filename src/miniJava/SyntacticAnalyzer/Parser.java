@@ -17,10 +17,13 @@ public class Parser {
     
     private Package _package;
 
+    private int _looplevel;
+
     public Parser(Scanner scanner, ErrorReporter reporter) {
         this._reporter = reporter;
         this._scanner = scanner;
         this._package = new Package(new ClassDeclList(), new SourcePosition(1,1));
+        this._looplevel = 0;
     }
 
     public boolean ready() {
@@ -387,6 +390,23 @@ public class Parser {
             return parseStatementBlock();
         } else {
             switch (_token.type) {
+                case Break:
+                    if (_looplevel <= 0) {
+                        throw new SyntaxError("Break statement is not valid outside of a loop", _token.mark);
+                    }
+
+                    out = new BreakStmt(_token.mark);
+                    acceptIt();
+                    accept(TokenType.Semicolon);
+                    return out;
+                case Continue:
+                    if (_looplevel <= 0) {
+                        throw new SyntaxError("Continue statement is not valid outside of a loop", _token.mark);
+                    }
+                    out = new ContinueStmt(_token.mark);
+                    acceptIt();
+                    accept(TokenType.Semicolon);
+                    return out;
                 case If:
                     return parseIfStatement();
                 case While:
@@ -576,6 +596,8 @@ public class Parser {
     }
 
     private WhileStmt parseWhileStatement() throws SyntaxError {
+
+        _looplevel++;
     	
     	Expression cond = null;
     	Statement st = null;
@@ -585,6 +607,8 @@ public class Parser {
         cond = parseExpression();
         accept(TokenType.RParen);
         st = parseStatement();
+
+        _looplevel--;
         
         return new WhileStmt(cond, st, cond.posn);
     }

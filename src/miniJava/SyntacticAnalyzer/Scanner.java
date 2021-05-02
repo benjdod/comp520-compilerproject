@@ -44,6 +44,9 @@ public class Scanner {
 		_keywordtree.insert("true", TokenType.True);
 		_keywordtree.insert("false", TokenType.False);
 		_keywordtree.insert("null", TokenType.Null);
+		_keywordtree.insert("continue", TokenType.Continue);
+		_keywordtree.insert("break", TokenType.Break);
+
 	}
 	
 	public Scanner(Reader r, ErrorReporter reporter) {

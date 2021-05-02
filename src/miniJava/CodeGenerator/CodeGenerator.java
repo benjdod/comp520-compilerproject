@@ -25,6 +25,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	private boolean _method_return;
 	private int _vardecl_count;
 	private Stack<Integer> _argsizestack;
+	private Stack<LoopPatches> _breakpatches;
 	
 	private static final int PATCHME = -1;
 	
@@ -35,6 +36,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		_reporter = reporter;
 		_main_method = null;
 		_argsizestack = new Stack<Integer>();
+		_breakpatches = new Stack<LoopPatches>();
 		
 		generate();
 	}
@@ -445,17 +447,37 @@ public class CodeGenerator implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitWhileStmt(WhileStmt stmt, Object arg) {
+
 		
 		int while_begin = Machine.nextInstrAddr();
+		_breakpatches.add(new LoopPatches(while_begin));
 		stmt.cond.visit(this, null);
 		
-		int patch_branch = Machine.nextInstrAddr();
-		Machine.emit(Op.JUMPIF,0,Reg.CB,PATCHME); 	// patchme!
+		int patch_to_end = Machine.nextInstrAddr();
+		Machine.emit(Op.JUMPIF,0,Reg.CB,PATCHME);
 		stmt.body.visit(this, null);
 		
 		Machine.emit(Op.JUMP,Reg.CB,while_begin);
-		Machine.patch(patch_branch, Machine.nextInstrAddr());
+		int while_end = Machine.nextInstrAddr();
+		Machine.patch(patch_to_end, while_end);
+		_breakpatches.pop().applyPatches(while_end);
 		
+		return null;
+	}
+
+	@Override
+	public Object visitBreakStmt(BreakStmt stmt, Object arg) {
+		_breakpatches.peek().addBreakPatch(Machine.nextInstrAddr());
+		Machine.emit(Op.JUMP,0,Reg.CB, PATCHME);
+		return null;
+	}
+
+	@Override
+	public Object visitContinueStmt(ContinueStmt stmt, Object arg) {
+		//_breakpatches.peek().addContPatch(Machine.nextInstrAddr());
+		int while_begin = _breakpatches.peek().startAddr;
+		System.out.println(while_begin);
+		Machine.emit(Op.JUMP,0,Reg.CB, while_begin);
 		return null;
 	}
 
@@ -783,4 +805,30 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			return false;
 		}
 	}
+}
+
+class LoopPatches {
+	public Stack<Integer> breakpatches;
+	public int startAddr;
+
+	public LoopPatches(int startAddr) {
+		this.startAddr = startAddr;
+		this.breakpatches = new Stack<Integer>();
+	}
+
+	public void addBreakPatch(int patch) {
+		breakpatches.add(patch);
+	}
+
+	public void addContPatch(int patch) {
+		Machine.patch(patch, startAddr);
+	}
+
+	public void applyPatches(int endAddr) {
+		while (! breakpatches.empty()) {
+			System.out.println("patching address ");
+			Machine.patch(breakpatches.pop(), endAddr);
+		}
+	}
+
 }

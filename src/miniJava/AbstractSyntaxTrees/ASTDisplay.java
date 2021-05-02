@@ -377,4 +377,16 @@ public class ASTDisplay implements Visitor<String,Object> {
         expr.falseExpr.visit(this, indent(indent(arg)));
         return null;
     }
+
+    @Override
+    public Object visitBreakStmt(BreakStmt b, String arg) {
+        show(arg, b);
+        return null;
+    }
+
+    @Override
+    public Object visitContinueStmt(ContinueStmt c, String arg) {
+        show(arg, c);
+        return null;
+    }
 }

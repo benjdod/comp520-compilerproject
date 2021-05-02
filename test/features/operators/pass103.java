@@ -1,7 +1,8 @@
 class Test {
 
     /**
-     * Nested ternary expressions
+     * Nested ternary expressions.
+     * Valid but smelly code.
      */
 
 
@@ -21,5 +22,6 @@ class Test {
 
 
         System.out.println(x);  // >>> 7
+
     }
 }

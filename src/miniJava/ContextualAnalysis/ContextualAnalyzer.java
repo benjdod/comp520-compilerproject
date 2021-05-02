@@ -21,6 +21,7 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
     private ClassDecl _cd;
     private MethodDecl _md;
     private VarDecl _vd;
+    private WhileStmt _loop;
 
     public ContextualAnalyzer(Package tree, ErrorReporter reporter) {
         _reporter = reporter;
@@ -306,6 +307,16 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
         if (stmt.returnExpr != null) {
             stmt.returnExpr.visit(this, null);
         } 
+        return null;
+    }
+
+    @Override
+    public TypeDenoter visitBreakStmt(BreakStmt stmt, Object arg) {
+        return null;
+    }
+
+    @Override
+    public TypeDenoter visitContinueStmt(ContinueStmt stmt, Object arg) {
         return null;
     }
 
