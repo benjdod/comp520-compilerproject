@@ -54,17 +54,12 @@ public class Patchkey {
     private static boolean argsEqual(TypeDenoter[] a, TypeDenoter[] b) {
         if (a == null || b == null) return false;
 
-        System.out.println(a.length + "\t" + b.length);
-
-
         if (a.length != b.length) return false;
 
         for (int i = 0; i < b.length; i++) {
-            System.out.println(a[i] + "\t" + b[i]);
             if (! a[i].equals(b[i])) return false;
         }
 
-        System.out.println("found");
         return true;
     }
     

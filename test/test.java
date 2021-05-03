@@ -2,13 +2,13 @@ class test {
 
     public static void main(String[] args) {
 
-        String s = "hello \\ there";
+        int x = 1;
 
-        System.out.println(s);
-
-        String t = s;
-
-        System.out.println(t);
+        if (true && true && false && false && false || true) {
+            x = 100;
+        } else {
+            x = -100;
+        }
 
     }
 }

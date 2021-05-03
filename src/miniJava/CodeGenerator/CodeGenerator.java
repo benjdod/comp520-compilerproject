@@ -25,9 +25,14 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	private ExprList _arglist;
 	private boolean _method_return;
 	private int _vardecl_count;
-	private Stack<Integer> _argsizestack;
-	private Stack<LoopPatches> _breakpatches;
 	private ClassType _strtype;
+	private int _bin_depth;
+	private BlockPatcher _shortcircuitpatches;
+	private TokenType _lastop;
+
+	private Stack<Integer> _argsizestack;
+	private Stack<BlockPatcher> _breakpatches;
+	private Stack<TokenType> _binopstack;
 	
 	private static final int PATCHME = -1;
 	
@@ -37,10 +42,15 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		_tree = tree;
 		_reporter = reporter;
 		_main_method = null;
+		_lastop = null;
 		_argsizestack = new Stack<Integer>();
-		_breakpatches = new Stack<LoopPatches>();
+		_breakpatches = new Stack<BlockPatcher>();
+		_binopstack = new Stack<TokenType>();
 		Token strtoken = new Token(TokenType.Ident, SourcePosition.NOPOS, "String");
 		_strtype = new ClassType(new Identifier(strtoken), SourcePosition.NOPOS);
+		_bin_depth = 0;
+
+		_shortcircuitpatches = null;
 		
 		generate();
 	}
@@ -454,7 +464,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 
 		
 		int while_begin = Machine.nextInstrAddr();
-		_breakpatches.add(new LoopPatches(while_begin));
+		_breakpatches.add(new BlockPatcher(while_begin));
 		stmt.cond.visit(this, null);
 		
 		int patch_to_end = Machine.nextInstrAddr();
@@ -471,14 +481,13 @@ public class CodeGenerator implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitBreakStmt(BreakStmt stmt, Object arg) {
-		_breakpatches.peek().addBreakPatch(Machine.nextInstrAddr());
+		_breakpatches.peek().patchToEnd(Machine.nextInstrAddr());
 		Machine.emit(Op.JUMP,0,Reg.CB, PATCHME);
 		return null;
 	}
 
 	@Override
 	public Object visitContinueStmt(ContinueStmt stmt, Object arg) {
-		//_breakpatches.peek().addContPatch(Machine.nextInstrAddr());
 		int while_begin = _breakpatches.peek().startAddr;
 		System.out.println(while_begin);
 		Machine.emit(Op.JUMP,0,Reg.CB, while_begin);
@@ -500,21 +509,40 @@ public class CodeGenerator implements Visitor<Object, Object> {
 
 	@Override
 	public Object visitBinaryExpr(BinaryExpr expr, Object arg) {
+
+
+		_shortcircuitpatches = new BlockPatcher(-1);
+
+		_binopstack.add(expr.operator.type);
 		expr.left.visit(this, null);
 		
-		int patch_shortjump = 0;
+		int patch_shortcircuit = 0;
+
+		boolean match_parent = expr.operator.type == _binopstack.pop();
 		
 		// add in short circuiting for || expression 
 		if (expr.operator.type == TokenType.BarBar) {
 			Machine.emit(Op.LOAD,1,Reg.ST,-1);
-			patch_shortjump = Machine.nextInstrAddr();
+			patch_shortcircuit = Machine.nextInstrAddr();
+			if (match_parent) {
+				_shortcircuitpatches.patchToEnd(patch_shortcircuit);
+			}
 			Machine.emit(Op.JUMPIF,1,Reg.CB,PATCHME);
 		} 
 
 		if (expr.operator.type == TokenType.AmpAmp) {
 			Machine.emit(Op.LOAD,1,Reg.ST,-1);
-			patch_shortjump = Machine.nextInstrAddr();
+			patch_shortcircuit = Machine.nextInstrAddr();
+			if (match_parent) {
+				_shortcircuitpatches.patchToEnd(patch_shortcircuit);
+			}
 			Machine.emit(Op.JUMPIF,0,Reg.CB,PATCHME);
+		} 
+
+		if (_lastop == null) _lastop = expr.operator.type;
+		else if (_lastop != expr.operator.type) {
+			_shortcircuitpatches.applyPatches(Machine.nextInstrAddr());
+			_lastop = expr.operator.type;
 		} 
 		
 		expr.right.visit(this, null);
@@ -537,11 +565,11 @@ public class CodeGenerator implements Visitor<Object, Object> {
 				break;
 			case AmpAmp:
 				Machine.emit(Prim.and);
-				Machine.patch(patch_shortjump, Machine.nextInstrAddr());
+				Machine.patch(patch_shortcircuit, Machine.nextInstrAddr());
 				break;
 			case BarBar:
 				Machine.emit(Prim.or);
-				Machine.patch(patch_shortjump, Machine.nextInstrAddr());
+				Machine.patch(patch_shortcircuit, Machine.nextInstrAddr());
 				break;
 			case LessEqual:
 				Machine.emit(Prim.le);
@@ -562,7 +590,11 @@ public class CodeGenerator implements Visitor<Object, Object> {
 				Machine.emit(Prim.ne);
 				break;
 		}
-		
+
+		if (_binopstack.size() == 0) {
+			_shortcircuitpatches.applyPatches(Machine.nextInstrAddr());
+		}
+
 		return null;
 	}
 
@@ -864,27 +896,26 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	}
 }
 
-class LoopPatches {
-	public Stack<Integer> breakpatches;
+class BlockPatcher {
+	public Stack<Integer> patch_to_end;
 	public int startAddr;
 
-	public LoopPatches(int startAddr) {
+	public BlockPatcher(int startAddr) {
 		this.startAddr = startAddr;
-		this.breakpatches = new Stack<Integer>();
+		this.patch_to_end = new Stack<Integer>();
 	}
 
-	public void addBreakPatch(int patch) {
-		breakpatches.add(patch);
+	public void patchToEnd(int patch) {
+		patch_to_end.add(patch);
 	}
 
-	public void addContPatch(int patch) {
+	public void patchToStart(int patch) {
 		Machine.patch(patch, startAddr);
 	}
 
 	public void applyPatches(int endAddr) {
-		while (! breakpatches.empty()) {
-			System.out.println("patching address ");
-			Machine.patch(breakpatches.pop(), endAddr);
+		while (! patch_to_end.empty()) {
+			Machine.patch(patch_to_end.pop(), endAddr);
 		}
 	}
 
