@@ -103,6 +103,7 @@ public class Checkpoint4 {
     private static int runTest(File x) throws IOException, InterruptedException {
 
     	String testPath = x.getPath();
+		System.out.println("running test: " + testPath);
     	ProcessBuilder pb = new ProcessBuilder("java", "miniJava.Compiler", testPath);
     	pb.directory(classPath);
     	pb.redirectErrorStream(true);
