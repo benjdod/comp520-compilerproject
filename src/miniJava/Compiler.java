@@ -107,7 +107,7 @@ public class Compiler {
 		checkForErrors();
 		printGreen("--- completed ---");
 
-		/*
+		
 		
 		System.out.println("--- code generation ---");
 		CodeGenerator cg = new CodeGenerator(tree, _reporter);	
@@ -134,14 +134,13 @@ public class Compiler {
 		Disassembler d = new Disassembler(object_filepath);
 		d.disassemble();
 		
-		boolean debug = false;
+		boolean debug = true;
 		
 		if (debug) {
 			Interpreter.debug(object_filepath, filepath);
 		} else {
 			Interpreter.interpret(object_filepath);
 		}
-		*/
 		
 
 		System.out.println("\u001B[0;32mCompilation successful.\u001B[0m");

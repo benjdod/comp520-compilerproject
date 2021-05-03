@@ -213,9 +213,22 @@ public class Parser {
             new ParameterDecl(new BaseType(TypeKind.BOOLEAN, oos), "b", oos));
         pstream_println_bool.patchkey = new Patchkey("System.out.println", new TypeDenoter[] {new BaseType(TypeKind.BOOLEAN, SourcePosition.NOPOS)});
 
+        MethodDecl pstream_println_str = new MethodDecl(
+            new FieldDecl(false, false, new BaseType(TypeKind.VOID, oos), "println", oos), 
+            new ParameterDeclList(), 
+            new StatementList(), 
+            oos);
+        Token strtoken = new Token(TokenType.Ident, oos);
+        strtoken.spelling = "String";
+        ClassType strtype = new ClassType(new Identifier(strtoken), oos);
+        pstream_println_str.parameterDeclList.add(
+            new ParameterDecl(strtype, "s", oos));
+        pstream_println_str.patchkey = new Patchkey("System.out.println", new TypeDenoter[] {strtype});
+
         pstream_decl.methodDeclList.add(pstream_println_int);
         pstream_decl.methodDeclList.add(pstream_println_void);
         pstream_decl.methodDeclList.add(pstream_println_bool);
+        pstream_decl.methodDeclList.add(pstream_println_str);
 
         ClassDecl system_decl = new ClassDecl("System", new FieldDeclList(), new MethodDeclList(), oos);
         FieldDecl out_decl = new FieldDecl(false, true, new ClassType(new Identifier(new Token(TokenType.Ident, oos, "_PrintStream")), oos), "out", oos);

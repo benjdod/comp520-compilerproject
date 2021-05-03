@@ -1,19 +1,14 @@
 class Test {
 
-    public static int x;
-
-    public static String global_string;
-
     public static void main(String[] args) {
 
-        A.globalStr = 5;
+        String s = "hello";
 
-        String s = A.globalStr;
+        System.out.println(s);
 
+        String t = s;
+
+        System.out.println(t);
 
     }
-}
-
-class A {
-    public static String globalStr;
 }

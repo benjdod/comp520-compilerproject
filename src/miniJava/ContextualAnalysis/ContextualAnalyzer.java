@@ -246,67 +246,8 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
 
     @Override
     public TypeDenoter visitCallStmt(CallStmt stmt, Object arg) {
-        /*
-        stmt.methodRef.visit(this, null);
-        //for (Expression e : stmt.argList) {
-        //    e.visit(this, null);
-        //}
-
-        // build up argument type list for method resolution
-        TypeDenoter[] argtypes = new TypeDenoter[stmt.argList.size()];
-        for (int i = 0; i < stmt.argList.size(); i++) {
-            argtypes[i] = stmt.argList.get(i).visit(this,null);
-        }
-
-        DeclSignature search = new DeclSignature(stmt.methodRef.decl.name, argtypes);
-
-        if (stmt.methodRef instanceof QualRef) {
-            QualRef qr = (QualRef) stmt.methodRef;
-            ClassDecl cd;
-
-            if (qr.ref.decl instanceof FieldDecl) {
-                cd = getClassDeclFromMember((FieldDecl) qr.ref.decl);
-            } else {
-                cd = getClassDecl(qr.ref.decl);
-            }
-
-            //System.out.println("searching class " + cd.name);
-
-            stmt.methodRef.decl = null;
-
-            for (MethodDecl md : cd.methodDeclList) {
-                //System.out.println("...for " + md.name);
-                if (md.matchSignature(search)) {
-                    stmt.methodRef.decl = md;
-                    break;
-                } else {
-                    System.out.println("no match");
-                }
-            }
-
-            if (stmt.methodRef.decl == null)
-                throw new IdError("could not find method '" + search.name + "' with " + search.argtypes.length + " args", stmt.posn);
-        } else {
-            //System.out.println("entry for method ref " + stmt.methodRef.decl.name + " @ " + stmt.methodRef.posn);
-            //System.out.println("search: " + stmt.methodRef.decl.name + " " + argtypes.length);
-            stmt.methodRef.decl = _idtable.get(search);
-            //System.out.println("got: " + stmt.methodRef.decl);
-        }
-
-        
-        if (! (stmt.methodRef.decl instanceof MethodDecl)) {
-            _reporter.report(new TypeError("Reference to " + stmt.methodRef.decl.name + " is not a method", stmt.posn));
-            return new BaseType(TypeKind.ERROR, stmt.posn);
-        }
-        MethodDecl md = (MethodDecl) stmt.methodRef.decl;
-        //checkArgs(stmt, md);    // FIXME: this should be redundant after method resolution.
-        return null;
-        */
-
         return checkCall(stmt.methodRef, stmt.argList, stmt.posn);
     }
-
-    
 
     @Override
     public TypeDenoter visitReturnStmt(ReturnStmt stmt, Object arg) {
@@ -1051,11 +992,10 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
 
     private TypeDenoter makeClassType(ClassDecl cd) {
 
-        // crude way of checking for unsupported String class
-        if (cd.name == "String") {
-            return new BaseType(TypeKind.UNSUPPORTED, cd.posn);
-        }
+        ClassType out = new ClassType(new Identifier(new Token(TokenType.Ident, cd.posn, cd.name)), cd.posn);
 
-        return new ClassType(new Identifier(new Token(TokenType.Ident, cd.posn, cd.name)), cd.posn);
+        if (_strtype == null && cd.name.contentEquals("String")) _strtype = out;
+
+        return out;
     }
 } 

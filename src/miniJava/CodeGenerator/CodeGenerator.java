@@ -5,6 +5,7 @@ import miniJava.ErrorReporter;
 import miniJava.AbstractSyntaxTrees.*;
 import miniJava.AbstractSyntaxTrees.Package;
 import miniJava.SyntacticAnalyzer.SourcePosition;
+import miniJava.SyntacticAnalyzer.Token;
 import miniJava.SyntacticAnalyzer.TokenType;
 import mJAM.*;
 import mJAM.Machine.*;
@@ -26,6 +27,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	private int _vardecl_count;
 	private Stack<Integer> _argsizestack;
 	private Stack<LoopPatches> _breakpatches;
+	private ClassType _strtype;
 	
 	private static final int PATCHME = -1;
 	
@@ -37,6 +39,8 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		_main_method = null;
 		_argsizestack = new Stack<Integer>();
 		_breakpatches = new Stack<LoopPatches>();
+		Token strtoken = new Token(TokenType.Ident, SourcePosition.NOPOS, "String");
+		_strtype = new ClassType(new Identifier(strtoken), SourcePosition.NOPOS);
 		
 		generate();
 	}
@@ -562,7 +566,6 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		return null;
 	}
 
-
 	@Override
 	public Object visitTernaryExpr(TernaryExpr expr, Object arg) {
 		expr.cond.visit(this, null);
@@ -729,7 +732,6 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		
 		return null;
 	}
-	
 
 	@Override
 	public Object visitNullLiteral(NullLiteral expr, Object arg) {
@@ -737,6 +739,26 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		return null;
 	}
 	
+	public Object visitStringLiteral(StringLiteral lit, Object arg) {
+		
+		Machine.emit(Op.LOADL, lit.content.length());
+		Machine.emit(Prim.newarr);
+
+		for (int i = 0; i < lit.content.length(); i++) {
+			Machine.emit(Op.LOAD,Reg.ST,-1);
+			Machine.emit(Op.LOADL,i);
+			Machine.emit(Op.LOADL, lit.content.charAt(i));
+			Machine.emit(Prim.arrayupd);
+		}
+		
+		return null;
+	}
+
+
+	/**
+	 * Helper methods
+	 */
+
 	private void emitOpAddr(Op op, Address addr) {
 		Machine.emit(op, addr.reg, addr.offset);
 	}
@@ -744,15 +766,18 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	/*
 	 * PATCHKEY methods
 	 */
-	
+
 	private Patchkey[] patchkeys = new Patchkey[] 
 		{
 			new Patchkey("System.out.println", new BaseType(TypeKind.INT, SourcePosition.NOPOS)),
-			new Patchkey("System.out.println"),
-			new Patchkey("System.out.println", new BaseType(TypeKind.BOOLEAN, SourcePosition.NOPOS))
+			new Patchkey("System.out.println"), 
+			new Patchkey("System.out.println", new BaseType(TypeKind.BOOLEAN, SourcePosition.NOPOS)),
+			new Patchkey("System.out.println", new ClassType(new Identifier(new Token(TokenType.Ident, SourcePosition.NOPOS, "String")), SourcePosition.NOPOS))
+
 	};
 
 	private boolean patchExists(Patchkey p) {
+
 		for (Patchkey key : patchkeys) {
 			if (p.equals(key)) {
 				return true;
@@ -761,19 +786,18 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		return false;
 	}
 	
-	private boolean emitPatch(Patchkey key) {
+	private boolean emitPatch(Patchkey key) {		
 		
-		
-		if (key.equals(patchkeys[0])) {
+		if (key.equals(patchkeys[0])) {			// println(int n)
 			Machine.emit(Op.LOAD,Reg.LB,-1);	// load single int arg from LB
 			Machine.emit(Prim.putintnl);		// print it 
 			Machine.emit(Op.RETURN,0,0,1);		// pop the arg
 			return true;
-		} else if (key.equals(patchkeys[1])) {
+		} else if (key.equals(patchkeys[1])) {	// println(void)
 			Machine.emit(Prim.puteol);
 			Machine.emit(Op.RETURN,0);
 			return true;
-		} else if(key.equals(patchkeys[2])) {
+		} else if (key.equals(patchkeys[2])) {	// println(boolean b)
 			Machine.emit(Op.LOAD,Reg.LB,-1);	// load boolean value from LB
 			int patch_tfjump = Machine.nextInstrAddr();
 			Machine.emit(Op.JUMPIF,0,Reg.CB,PATCHME);	
@@ -800,6 +824,38 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			Machine.emit(Prim.put);
 			Machine.emit(Prim.puteol);
 			Machine.emit(Op.RETURN,1);
+			return true;
+		} else if (key.equals(patchkeys[3])) {	// println(String s)
+			
+			Machine.emit(Op.PUSH,1);			// arr_len (LB[3]),    
+			Machine.emit(Op.LOADL,0); 			// i (LB[4]) = 0
+			Machine.emit(Op.LOAD, Reg.LB, -1);	// load char array address to stack
+			Machine.emit(Prim.arraylen);
+			Machine.emit(Op.STORE,Reg.LB,3);
+
+			// while (i < arr_len)
+			int while_begin = Machine.nextInstrAddr();
+			Machine.emit(Op.LOAD,Reg.LB,3);
+			Machine.emit(Op.LOAD,Reg.LB,4);
+			Machine.emit(Prim.sub);
+			int patch_to_end = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMPIF,0,Reg.CB, PATCHME);
+
+			Machine.emit(Op.LOAD, Reg.LB,-1);	 // x = s.charAt(i)
+			Machine.emit(Op.LOAD,Reg.LB,4);		
+			Machine.emit(Prim.arrayref);
+			Machine.emit(Prim.put);
+
+			Machine.emit(Op.LOAD, Reg.LB,4);
+			Machine.emit(Prim.succ);
+			Machine.emit(Op.STORE, Reg.LB,4);
+
+			Machine.emit(Op.JUMP,Reg.CB, while_begin);
+
+			Machine.patch(patch_to_end, Machine.nextInstrAddr());
+			Machine.emit(Prim.puteol);
+
+			Machine.emit(Op.RETURN,1);		// pop the arg
 			return true;
 		} else {
 			return false;
