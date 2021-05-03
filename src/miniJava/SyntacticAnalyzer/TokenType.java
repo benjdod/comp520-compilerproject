@@ -85,6 +85,7 @@ public enum TokenType {
 	Semicolon,		// ;
 	Colon,			// :
 	QuestionMark,	// ?
+	DoubleQuote,	// "
 	
 	LBracket,		// [
 	RBracket,		// ]

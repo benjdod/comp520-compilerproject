@@ -4,8 +4,6 @@ import java.io.FileReader;
 import java.nio.charset.StandardCharsets;
 
 import miniJava.ContextualAnalysis.ContextualAnalyzer;
-import miniJava.ContextualAnalysis.Identification;
-import miniJava.ContextualAnalysis.TypeChecker;
 import miniJava.SyntacticAnalyzer.Parser;
 import miniJava.SyntacticAnalyzer.Scanner;
 import miniJava.AbstractSyntaxTrees.*;
@@ -102,11 +100,14 @@ public class Compiler {
 		//System.out.println("--- type checking ---");
 		//TypeChecker tc = new TypeChecker(tree, _reporter);
 
+
 		System.out.println("--- contextual analysis ---");
 		ContextualAnalyzer ca = new ContextualAnalyzer(tree, _reporter);
 
 		checkForErrors();
 		printGreen("--- completed ---");
+
+		/*
 		
 		System.out.println("--- code generation ---");
 		CodeGenerator cg = new CodeGenerator(tree, _reporter);	
@@ -140,6 +141,7 @@ public class Compiler {
 		} else {
 			Interpreter.interpret(object_filepath);
 		}
+		*/
 		
 
 		System.out.println("\u001B[0;32mCompilation successful.\u001B[0m");
@@ -178,8 +180,8 @@ public class Compiler {
 		
 		if (args.length < 1) {
 			//target = "../tests/pa4_tests/pass403.java";
-			target = "./test/features/breakcont/fail102.java";
-			//target = "./test/test.java";
+			//target = "./test/features/breakcont/fail102.java";
+			target = "./test/test.java";
 		} else {
 			target = args[0];
 		}

@@ -945,6 +945,12 @@ public class Parser {
         Expression e = null;
 
         switch (_token.type) {
+            case DoubleQuote:
+                SourcePosition start = _token.mark;
+                StringLiteral lit = new StringLiteral(_token, _scanner.readStringLiteral());
+                System.out.println("new string literal: " + lit.content);
+                accept(TokenType.DoubleQuote);
+                return new LiteralExpr(lit, start);
             case New:
                 return parseNewExpr();
             case Num:

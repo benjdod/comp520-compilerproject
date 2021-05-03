@@ -23,6 +23,8 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
     private VarDecl _vd;
     private WhileStmt _loop;
 
+    private ClassType _strtype;
+
     public ContextualAnalyzer(Package tree, ErrorReporter reporter) {
         _reporter = reporter;
         _idtable = new IdTable(reporter);
@@ -48,6 +50,9 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
 
     @Override
     public TypeDenoter visitPackage(Package prog, Object arg) {
+
+        Token classtoken = new Token(TokenType.Ident, SourcePosition.NOPOS, "String");
+        _strtype = new ClassType(new Identifier(classtoken), SourcePosition.NOPOS);
 
         /* open lowest class scope */
         _idtable.openScope();
@@ -150,9 +155,10 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
     @Override
     public TypeDenoter visitClassType(ClassType type, Object arg) {
 
+        /*
         if (type.className.spelling.contentEquals("String")) {
             return new BaseType(TypeKind.UNSUPPORTED, type.posn);
-        }
+        } */
 
         for (ClassDecl cd : _tree.classDeclList) {
 
@@ -198,7 +204,7 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
         //System.out.println("assigning " + expt.typeKind + " to " + vdt.typeKind);
         
         if (! vdt.equals(expt)) {
-            _reporter.report(new TypeError("Cannot assign an expression of type " + expt.typeKind + " to a declaration of type " + vdt.typeKind, stmt.posn));
+            _reporter.report(new TypeError("Cannot assign an expression of type " + expt.typeKind + " to a declaration of type " + vdt.toString(), stmt.posn));
             return new BaseType(TypeKind.ERROR, stmt.posn);
         }
 
@@ -212,7 +218,7 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
         TypeDenoter vt = stmt.val.visit(this, null);
         TypeDenoter rt = stmt.ref.visit(this, null);
         if (! vt.equals(rt)) {
-            _reporter.report(new TypeError("Cannot assign expression of type " + vt.typeKind + " to reference of type " + rt.typeKind, stmt.posn));
+            _reporter.report(new TypeError("Cannot assign expression of type " + vt.typeKind + " to reference of type " + rt.toString(), stmt.posn));
             return new BaseType(TypeKind.ERROR, stmt.posn);
         }
 
@@ -557,7 +563,10 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
     @Override
     public TypeDenoter visitNullLiteral(NullLiteral expr, Object arg) {
         return new BaseType(TypeKind.NULL, expr.posn);
+    }
 
+    public TypeDenoter visitStringLiteral(StringLiteral lit, Object arg) {
+        return _strtype;
     }
 
     /**
@@ -862,10 +871,10 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
             if ( 
                 (expr.left.type.typeKind != TypeKind.BOOLEAN && expr.right.type.typeKind != TypeKind.BOOLEAN)
             ) {
-                _reporter.report(new TypeError("Both sides of a boolean binary expression must be integers", expr.posn));
+                _reporter.report(new TypeError("Both sides of a boolean binary expression must be boolean", expr.posn));
                 return new BaseType(TypeKind.ERROR, expr.posn);
             } else if (! TypeDenoter.equals(expr.left.type, expr.right.type)) {
-                _reporter.report(new TypeError("Both sides of a boolean binary expression must be integers", expr.posn));
+                _reporter.report(new TypeError("Both sides of a boolean binary expression must be boolean", expr.posn));
                 return new BaseType(TypeKind.ERROR, expr.posn);
             }
             return new BaseType(TypeKind.BOOLEAN, expr.posn);

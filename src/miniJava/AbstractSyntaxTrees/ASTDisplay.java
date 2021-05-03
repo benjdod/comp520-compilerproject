@@ -369,6 +369,11 @@ public class ASTDisplay implements Visitor<String,Object> {
         return null;
     }
 
+    public Object visitStringLiteral(StringLiteral lit, String arg) {
+        show(arg, lit + " " + quote(lit.content));
+        return null;
+    }
+
     @Override
     public Object visitTernaryExpr(TernaryExpr expr, String arg) {
         show(arg,expr);

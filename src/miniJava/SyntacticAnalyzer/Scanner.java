@@ -210,6 +210,8 @@ public class Scanner {
 			case ';': out =  makeToken(TokenType.Semicolon, ";", mark); break;
 			case ':': out =  makeToken(TokenType.Colon, ":", mark); break;
 			case '?': out =  makeToken(TokenType.QuestionMark, "?", mark); break;
+			case '"': out =  makeToken(TokenType.DoubleQuote, "\"", mark); break;
+
 			
 			// these might need to be moved if support is added 
 			// for +=, -= and family
@@ -380,6 +382,20 @@ public class Scanner {
 	
 	public String getBufferLines() {
 		return _reader.getBufferLines();
+	}
+
+	public String readStringLiteral() {
+		char ch;
+		StringBuffer sb = new StringBuffer();
+		while ((ch = currentChar()) != '"') {
+			sb.append(ch);
+			advance();
+			System.out.println(sb.toString());
+		}
+
+		advance();
+
+		return sb.toString();
 	}
 	
 }
