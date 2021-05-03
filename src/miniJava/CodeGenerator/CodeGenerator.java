@@ -833,24 +833,25 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			Machine.emit(Prim.arraylen);
 			Machine.emit(Op.STORE,Reg.LB,3);
 
-			// while (i < arr_len)
-			int while_begin = Machine.nextInstrAddr();
+			/* WHILE BEGIN */
+			int while_begin = Machine.nextInstrAddr(); // while (i < arr_len) {....
 			Machine.emit(Op.LOAD,Reg.LB,3);
 			Machine.emit(Op.LOAD,Reg.LB,4);
 			Machine.emit(Prim.sub);
 			int patch_to_end = Machine.nextInstrAddr();
 			Machine.emit(Op.JUMPIF,0,Reg.CB, PATCHME);
 
-			Machine.emit(Op.LOAD, Reg.LB,-1);	 // x = s.charAt(i)
+			Machine.emit(Op.LOAD, Reg.LB,-1);	 // ch = s.charAt(i)
 			Machine.emit(Op.LOAD,Reg.LB,4);		
 			Machine.emit(Prim.arrayref);
-			Machine.emit(Prim.put);
 
-			Machine.emit(Op.LOAD, Reg.LB,4);
-			Machine.emit(Prim.succ);
-			Machine.emit(Op.STORE, Reg.LB,4);
+			Machine.emit(Prim.put);				// print(ch)
 
-			Machine.emit(Op.JUMP,Reg.CB, while_begin);
+			Machine.emit(Prim.succ);			// i++
+
+			Machine.emit(Op.JUMP,Reg.CB, while_begin);	// ...}
+
+			/* WHILE END */
 
 			Machine.patch(patch_to_end, Machine.nextInstrAddr());
 			Machine.emit(Prim.puteol);

@@ -387,10 +387,45 @@ public class Scanner {
 	public String readStringLiteral() {
 		char ch;
 		StringBuffer sb = new StringBuffer();
-		while ((ch = currentChar()) != '"') {
-			sb.append(ch);
+
+		SourcePosition lit_start = new SourcePosition(_line, _column);
+
+		boolean esc = false;
+
+		while (true &&
+			! ((ch = currentChar()) == '"' && !esc)
+		) {
+
+			
+
+			if (esc) {
+				switch (ch) {
+					case '"': 	sb.append(ch); break;
+					case '\\':  sb.append(ch); break;
+					case '\'': 	sb.append('\''); break;
+					case 't': 	sb.append('\t'); break;
+					case 'r':	sb.append('\r'); break;
+					case 'n': 	sb.append('\n'); break;
+					case 'b': 	sb.append('\b'); break;
+					case 'f': 	sb.append('\f'); break;
+					default: break;
+				}
+				esc = false;
+			} else if (ch == '\\') {
+				esc = true;
+				advance();
+				System.out.println("next char is " + currentChar() + (int) currentChar());
+				continue;
+			} else {
+				sb.append(ch);
+			}
+
+			if (! hasNext()) {
+				_reporter.report( new ScanError("unterminated string", lit_start));
+				return null;
+			}
+
 			advance();
-			System.out.println(sb.toString());
 		}
 
 		advance();

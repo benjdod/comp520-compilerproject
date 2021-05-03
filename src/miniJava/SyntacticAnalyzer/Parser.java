@@ -961,6 +961,7 @@ public class Parser {
             case DoubleQuote:
                 SourcePosition start = _token.mark;
                 StringLiteral lit = new StringLiteral(_token, _scanner.readStringLiteral());
+                if (lit.content == null) return null;
                 System.out.println("new string literal: " + lit.content);
                 accept(TokenType.DoubleQuote);
                 return new LiteralExpr(lit, start);
