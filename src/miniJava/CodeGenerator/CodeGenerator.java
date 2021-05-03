@@ -804,8 +804,8 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			new Patchkey("System.out.println", new BaseType(TypeKind.INT, SourcePosition.NOPOS)),
 			new Patchkey("System.out.println"), 
 			new Patchkey("System.out.println", new BaseType(TypeKind.BOOLEAN, SourcePosition.NOPOS)),
-			new Patchkey("System.out.println", new ClassType(new Identifier(new Token(TokenType.Ident, SourcePosition.NOPOS, "String")), SourcePosition.NOPOS))
-
+			new Patchkey("System.out.println", new ClassType(new Identifier(new Token(TokenType.Ident, SourcePosition.NOPOS, "String")), SourcePosition.NOPOS)),
+			new Patchkey("String.length")
 	};
 
 	private boolean patchExists(Patchkey p) {
@@ -890,7 +890,14 @@ public class CodeGenerator implements Visitor<Object, Object> {
 
 			Machine.emit(Op.RETURN,1);		// pop the arg
 			return true;
-		} else {
+		} else if (key.equals(patchkeys[4])) {
+
+			Machine.emit(Op.LOAD,Reg.OB,0);
+			Machine.emit(Prim.arraylen);
+			Machine.emit(Op.RETURN,1,0,0);
+			return true;
+
+		}else {
 			return false;
 		}
 	}

@@ -185,6 +185,19 @@ public class Parser {
         // class String { }
         ClassDecl string_decl = new ClassDecl("String", new FieldDeclList(), new MethodDeclList(), oos);
 
+        /*
+        MethodDecl string_length = new MethodDecl(
+            new FieldDecl(false, false, new BaseType(TypeKind.INT, oos), "length", oos), 
+            new ParameterDeclList(), 
+            new StatementList(), 
+            oos);
+
+        string_length.statementList.add(new ReturnStmt(new LiteralExpr(new IntLiteral(new Token(TokenType.Num,oos,"0")), oos),oos));
+
+        string_length.patchkey = new Patchkey("String.length", new TypeDenoter[0]);
+        string_decl.methodDeclList.add(string_length);
+        */
+
         // class _PrintStream { public void println(int n){} }
         ClassDecl pstream_decl = new ClassDecl("_PrintStream", new FieldDeclList(), new MethodDeclList(), oos);
         MethodDecl pstream_println_int = new MethodDecl(
