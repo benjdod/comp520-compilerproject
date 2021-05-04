@@ -1,8 +1,8 @@
 # MiniJava Compiler
-#### Benjamin Dod
-#### COMP520
-#### 1/2021 - 5/2021
----
+Benjamin Dod 
+UNC-CH COMP520 SP21
+1/2021 - 5/2021
+
 
 ## Scope
 
@@ -55,7 +55,7 @@ The compiler has options that can be set via command line arguments. These featu
  - `-c, --color`    : colored output
  - `-d, --dest`     : destination filepath
 
----
+
 ## mJAM changes
 
 The `putarr` primitive was added to the mJAM Machine class and implemented in the Interpreter. This primitive takes a single array as an argument and prints out all of its data slots in sequence as ASCII characters. This was added to support printing of strings; originally `System.out.println` looped through the array and put each character in sequence, but this was much more inefficient (and also generated unnecessarily verbose code) compared to adding an instruction in the interpreter. 
@@ -90,8 +90,9 @@ The following changes were made to aid in contextual analysis and code generatio
 
 ## Tests
 
-Test sets are included for each of the extension groups. They are divided into four groups:
+Test sets are included for each of the extension groups. Each test file has a short description of what it is intended to test. They are divided into five groups by directory:
  - loop control
  - operators
  - overloading
  - string
+ - forloop
