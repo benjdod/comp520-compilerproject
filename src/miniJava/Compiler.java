@@ -52,7 +52,7 @@ public class Compiler {
 	static void checkForErrors() {
 		if (! quiet)
 			if (_reporter.hasErrors()) {
-				printRed("failed");
+				printVerboseRed("compilation failed");
 				_reporter.prinsOutput();
 				exitProgram(PARSE_FAILURE);
 			}
@@ -61,7 +61,7 @@ public class Compiler {
 	static void checkForError() {
 		if (! quiet)
 			if (_reporter.hasErrors()) {
-				System.out.print("failed ---\n");
+				printVerboseRed("compilation failed");
 				_reporter.prinsOutput(_reporter.getFirst());
 				exitProgram(PARSE_FAILURE);
 			}
@@ -87,6 +87,7 @@ public class Compiler {
 		
 		FileReader f = null;
 
+		printVerbose("compiling " + filepath);
 
 		try {
 			// this is the most surefire way I know to check for ASCII only outside of a raw byte
@@ -178,7 +179,10 @@ public class Compiler {
 
 				if (a.contentEquals("q") || a.contentEquals("-quiet")) {
 					quiet = true;
-				}  else if (a.contentEquals("v") || a.contentEquals("-verbose")) {
+				} else if (a.contentEquals("v") || a.contentEquals("-version")) {
+					System.out.println("mJAM Compiler v0.0.1");
+					exitProgram(FILE_FAILURE);
+				} else if (a.contentEquals("-verbose")) {
 					verbose = true;
 					quiet = false;
 				} else if (a.contentEquals("c") || a.contentEquals("-color")) {

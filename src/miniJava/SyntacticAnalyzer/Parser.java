@@ -111,7 +111,7 @@ public class Parser {
                 if ((st = elt.toString().indexOf("parse")) != -1) {
                     end = elt.toString().indexOf('(');
                     s = elt.toString().substring(st+5, end);
-                    System.out.println("Parser accepted " + type + (s.length() > 0 ? (" in " + s) : ""));
+                   //System.out.println("Parser accepted " + type + (s.length() > 0 ? (" in " + s) : ""));
                     break;
                 }
             }
@@ -120,14 +120,14 @@ public class Parser {
         } else {
             /*
             StackTraceElement[] trace_elts = Thread.currentThread().getStackTrace();
-            System.err.println("error!");
+           //System.err.println("error!");
 
             int st, end;
 
             for (StackTraceElement elt : trace_elts) {
                 if ((st = elt.toString().indexOf("parse")) != -1) {
                     end = elt.toString().indexOf('(');
-                    System.err.println("in " + elt.toString().substring(st + 5, end));
+                   //System.err.println("in " + elt.toString().substring(st + 5, end));
                 }
             }
             */
@@ -174,7 +174,7 @@ public class Parser {
         if ( p == null) return;
 
         /* Add predefined classes:
-         * class System { public static _PrintStream out; }
+         * class//System { public static _PrintStream out; }
          * class _PrintStream { public void println(int n){}; }
          * class String { }
          * */
@@ -476,7 +476,7 @@ public class Parser {
                     acceptIt();
                     if (isShortAssnOp(_token.type)) {
 
-                        System.out.println("short assignment");
+                       //System.out.println("short assignment");
 
                         // expand to simple assignment
                         // e.g. 
@@ -703,7 +703,7 @@ public class Parser {
 
             if (isShortAssnOp(_token.type)) {
 
-                System.out.println("short assignment");
+                //System.out.println("short assignment");
 
                 // expand to simple assignment
                 // e.g. 
@@ -1004,7 +1004,7 @@ public class Parser {
             _token.type == TokenType.Modulo
         ) {
 
-            System.out.println("matched: " + _token.type);
+            //System.out.println("matched: " + _token.type);
             le = out;   // left associative shift
             o = new Operator(_token);
             acceptIt();
@@ -1084,7 +1084,7 @@ public class Parser {
                 SourcePosition start = _token.mark;
                 StringLiteral lit = new StringLiteral(_token, _scanner.readStringLiteral());
                 if (lit.content == null) return null;
-                System.out.println("new string literal: " + lit.content);
+                //System.out.println("new string literal: " + lit.content);
                 accept(TokenType.DoubleQuote);
                 return new LiteralExpr(lit, start);
             case New:
