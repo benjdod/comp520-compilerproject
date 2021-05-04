@@ -888,13 +888,16 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			int patch_to_nullprint = Machine.nextInstrAddr();
 			Machine.emit(Op.JUMPIF,0,Reg.CB,PATCHME);
 			
+			Machine.emit(Op.LOAD, Reg.LB, -1);
+			Machine.emit(Prim.putarr);
+			/*
 			Machine.emit(Op.PUSH,1);			// arr_len (LB[3]),    
 			Machine.emit(Op.LOADL,0); 			// i (LB[4]) = 0
 			Machine.emit(Op.LOAD, Reg.LB, -1);	// load char array address to stack
 			Machine.emit(Prim.arraylen);
 			Machine.emit(Op.STORE,Reg.LB,3);
 
-			/* WHILE BEGIN */
+			// WHILE BEGIN
 			int while_begin = Machine.nextInstrAddr(); // while (i < arr_len) {....
 			Machine.emit(Op.LOAD,Reg.LB,3);
 			Machine.emit(Op.LOAD,Reg.LB,4);
@@ -918,8 +921,9 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			Machine.patch(patch_to_nullprint, Machine.nextInstrAddr());
 			emitPrintString("null");
 
-			/* WHILE END */
+			// WHILE END 
 			Machine.patch(patch_to_end, Machine.nextInstrAddr());
+			*/
 
 			Machine.emit(Prim.puteol);
 			Machine.emit(Op.RETURN,1);		// pop the arg

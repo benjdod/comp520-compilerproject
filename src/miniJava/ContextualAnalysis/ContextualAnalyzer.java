@@ -520,7 +520,7 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
 
     @Override
     public TypeDenoter visitIdentifier(Identifier id, Object arg) {
-        System.out.println("visiting identifier " + id.spelling);
+       // System.out.println("visiting identifier " + id.spelling);
         if (_currentargs.size() > 0) {
             id.decl = _idtable.get(id.spelling, _currentargs.peek());
         } else {

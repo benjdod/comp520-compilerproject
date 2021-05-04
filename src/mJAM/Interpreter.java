@@ -378,6 +378,25 @@ public class Interpreter {
 			ch = (char) data[ST];
 			System.out.print(ch);
 			break;
+
+		case putarr:
+			addr = data[ST - 1];
+
+			if (invalidHeapRef(addr)) break;
+
+			if (data[addr - 2] != -2) {
+				status = failedHeapRef;  // not tagged as array in heap
+				break;
+			} 
+			char[] p_arr = new char[data[addr-1]];
+			for (int i = 0; i < p_arr.length; i++) {
+				p_arr[i] = (char) data[addr+i];
+			}
+			System.out.print(new String(p_arr));
+
+			ST = ST - 1;
+			break;
+
 		case geteol:
 			try {
 				while ((currentChar = System.in.read()) != '\n')

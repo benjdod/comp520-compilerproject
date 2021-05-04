@@ -681,7 +681,7 @@ public class Parser {
 
             Expression initexpr = parseExpression();
 
-            decllist.add(new VarDeclStmt(new VarDecl(decltype, name, null), initexpr, posn));
+            decllist.add(new VarDeclStmt(new VarDecl(decltype, name, posn), initexpr, posn));
 
             if (_token.type == TokenType.Comma) acceptIt();
         }

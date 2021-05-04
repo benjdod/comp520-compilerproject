@@ -94,7 +94,7 @@ public class IdTable {
         System.out.println("name: " + ds.name);
         System.out.println("no. of args: " + ds.argtypes.length);*/
 
-        System.out.println("getting decl " + ds);
+        //System.out.println("getting decl " + ds);
 
         while (i.hasNext()) {
             map = i.next();
@@ -173,6 +173,7 @@ public class IdTable {
             if (lvl == IdTable.PARAM_LEVEL && map.containsKey(search)) {
                 throw new IdError("Invalid declaration", "Variables declared in parameter declarations cannot be hidden", decl.posn);
             } else if (lvl >= IdTable.LOCAL_LEVEL && map.containsKey(search)) {
+                //System.out.println("duplicate decl: " + map.get(search).posn);
                 throw new IdError("Duplicate declaration in local scope", "nested inner local scopes cannot override outer declarations (previous declaration  at " + map.get(search).posn.toString() + ")", decl.posn);
             } else if (lvl == _level && map.containsKey(search)) {
                 throw new IdError("Duplicate declaration in scope", "only one unique declaration is allowed per scope (previous declaration was at " + map.get(search).posn.toString() + ")", decl.posn);

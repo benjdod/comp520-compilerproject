@@ -81,6 +81,7 @@ public final class Machine {
 	    getint,
 	    putint,
 	    putintnl,
+		putarr,
 	    alloc,
 	    dispose,
 	    newobj,
