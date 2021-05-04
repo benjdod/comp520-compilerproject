@@ -47,9 +47,10 @@ Methods can be overloaded as in Java. The predefined method `System.out.println`
 
 ### CLI Arguments
 
-The compiler has options that can be set via command line arguments.
+The compiler has options that can be set via command line arguments. These features are not useful for the scope of this assignment, but they are present for standard use cases.
 
- - `-v, --verbose`  : output information about the compilation process
+ - `-v, --version`  : output version information
+ - `--verbose`      : output information about the compilation process
  - `-q, --quiet`    : suppress all output including errors
  - `-c, --color`    : colored output
  - `-d, --dest`     : destination filepath
@@ -57,7 +58,9 @@ The compiler has options that can be set via command line arguments.
 ---
 ## mJAM changes
 
-The `putarr` primitive was added to the mJAM Machine class and implemented in the Interpreter. This primitive takes a single array as an argument and prints out all of its data slots in sequence as ASCII characters. This was added to support printing of strings; originally `System.out.println` looped through the array and put each character in sequence, but this was much more inefficient (and also generated unnecessarily verbose code) compared to adding an instruction in the interpreter.
+The `putarr` primitive was added to the mJAM Machine class and implemented in the Interpreter. This primitive takes a single array as an argument and prints out all of its data slots in sequence as ASCII characters. This was added to support printing of strings; originally `System.out.println` looped through the array and put each character in sequence, but this was much more inefficient (and also generated unnecessarily verbose code) compared to adding an instruction in the interpreter. 
+
+> A note on semantics: This primitive is named `putarr` rather than `putarrc` or `putcarr` or some variation thereof because the character-printing primitive is not deliniated in the same way. Given this, I opted to name this primitive `putarr`. 
 
 ---
 
