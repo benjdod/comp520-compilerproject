@@ -185,7 +185,7 @@ public class Parser {
         // class String { }
         ClassDecl string_decl = new ClassDecl("String", new FieldDeclList(), new MethodDeclList(), oos);
 
-        /*
+        
         MethodDecl string_length = new MethodDecl(
             new FieldDecl(false, false, new BaseType(TypeKind.INT, oos), "length", oos), 
             new ParameterDeclList(), 
@@ -195,8 +195,20 @@ public class Parser {
         string_length.statementList.add(new ReturnStmt(new LiteralExpr(new IntLiteral(new Token(TokenType.Num,oos,"0")), oos),oos));
 
         string_length.patchkey = new Patchkey("String.length", new TypeDenoter[0]);
+
+        MethodDecl string_equals = new MethodDecl(
+            new FieldDecl(false, false, new BaseType(TypeKind.BOOLEAN, oos), "equals", oos), 
+            new ParameterDeclList(), 
+            new StatementList(), 
+            oos);
+
+        TypeDenoter stringargtype = new ClassType(new Identifier(new Token(TokenType.Ident, oos, "String")), oos);
+        string_equals.parameterDeclList.add(new ParameterDecl(stringargtype, "s", oos));
+        string_equals.statementList.add(new ReturnStmt(new LiteralExpr(new BooleanLiteral(new Token(TokenType.True,oos,"true")), oos),oos));
+        string_equals.patchkey = new Patchkey("String.equals", new TypeDenoter[] {stringargtype});
+
+        string_decl.methodDeclList.add(string_equals);
         string_decl.methodDeclList.add(string_length);
-        */
 
         // class _PrintStream { public void println(int n){} }
         ClassDecl pstream_decl = new ClassDecl("_PrintStream", new FieldDeclList(), new MethodDeclList(), oos);

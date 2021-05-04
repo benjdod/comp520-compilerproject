@@ -1,6 +1,7 @@
 package miniJava;
 
 import java.io.FileReader;
+import java.util.ListIterator;
 
 import miniJava.ContextualAnalysis.ContextualAnalyzer;
 import miniJava.SyntacticAnalyzer.Parser;
@@ -21,6 +22,7 @@ public class Compiler {
 	static boolean verbose = false;
 	static boolean quiet = false;
 	static boolean color = false;
+	static String dest = null;
 	
 	static void exitProgram(int exitcode) {
 		// System.out.println("Exiting with code " + exitcode);
@@ -117,7 +119,8 @@ public class Compiler {
 		checkForErrors();
 		printVerbose("code generation complete.");
 		
-		String object_filepath = filepath.substring(0, filepath.lastIndexOf(".")) + ".mJAM";
+		String object_filepath = (dest == null) ? filepath.substring(0, filepath.lastIndexOf(".")) : dest;
+		object_filepath += ".mJAM";
 		
 		ObjectFile ofile = new ObjectFile(object_filepath);
 		boolean failed = ofile.write();
@@ -158,7 +161,14 @@ public class Compiler {
 
 		String target = null;
 
-		for (String arg : args) {
+		int i = 0;
+		int arglen = args.length;
+
+		if (arglen == 0) argFail("must provide a path to a miniJava program", "");
+
+		while (i < arglen) {
+
+			String arg = args[i];
 
 			if (arg.charAt(0) == '-') {
 
@@ -173,6 +183,13 @@ public class Compiler {
 					quiet = false;
 				} else if (a.contentEquals("c") || a.contentEquals("-color")) {
 					color = true;
+				} else if (a.contentEquals("d") || a.contentEquals("-dest")) {
+					try {
+						dest = args[++i];
+					} catch (Exception e) {
+						argFail("unterminated option; argument required", arg);
+					}
+
 				}
 			} 
 
@@ -180,6 +197,8 @@ public class Compiler {
 				if (target == null) target = arg;
 				else argFail("duplicate filepath" ,arg);
 			}
+
+			i++;
 		}
 
 		if (target == null ) argFail("no filepath specified", "");

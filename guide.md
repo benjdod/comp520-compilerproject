@@ -23,7 +23,7 @@ The `break` and `continue` keywords are implemented and function as in normal Ja
 
 ### For Loop
 
-For loops are supported just as in Java. Loop variables are properly scoped, multiple variable declarations and increment statements can be given, and loop control statements work.
+For loops are supported just as in Java. Loop variables are properly scoped, multiple variable declarations and increment statements can be given, and loop control statements work. Like in while loops, for loops with variable declarations as the only statement are not allowed.
 
 ### Improved Short Circuiting Evaluation
 
@@ -39,11 +39,20 @@ child   =>   parent
 
 ### Strings
 
-Strings can be used as described in the PA5 specification. Escape characters are supported.
+Strings can be used as described in the PA5 specification. All valid [Java escape characters](https://docs.oracle.com/javase/tutorial/java/data/characters.html) except `\u` are supported. The `length()` and `equals()` methods are supported on String instances as well.
 
 ### Method Overloading
 
 Methods can be overloaded as in Java. The predefined method `System.out.println` has been overloaded to accept `int`, `boolean`, `String`, and void arguments.
+
+### CLI Arguments
+
+The compiler has options that can be set via command line arguments.
+
+ - `-v, --verbose`  : output information about the compilation process
+ - `-q, --quiet`    : suppress all output including errors
+ - `-c, --color`    : colored output
+ - `-d, --dest`     : destination filepath
 
 ---
 

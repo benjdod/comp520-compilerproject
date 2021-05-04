@@ -5,12 +5,9 @@ class test {
 
     public static void main(String[] args) {
 
-        for (int i = 0, j = 60; i < j; i += 1) {
+        String s = "abc";
 
-            if (i > 20) continue;
-
-            System.out.println(i);
-        }
+        System.out.println(s.equals("abc"));
 
 
     }

@@ -3,14 +3,14 @@
   2         PUSH         1
   3         LOADL        0
   4         CALL         newarr  
-  5         CALL         L15
+  5         CALL         L20
   6         HALT   (0)   
-  7  L10:   LOAD         -1[LB]
+  7         LOAD         -1[LB]
   8         CALL         putintnl
   9         RETURN (0)   1
  10         CALL         puteol  
  11         RETURN (0)   0
- 12         LOAD         -1[LB]
+ 12  L10:   LOAD         -1[LB]
  13         JUMPIF (0)   L11
  14         LOADL        116
  15         CALL         put     
@@ -60,28 +60,67 @@
  59         CALL         put     
  60  L14:   CALL         puteol  
  61         RETURN (0)   1
- 62  L15:   PUSH         1
- 63         LOADL        0
- 64         STORE        3[LB]
- 65         PUSH         1
- 66         LOADL        60
- 67         STORE        4[LB]
- 68         JUMP         L17
- 69  L16:   LOAD         3[LB]
- 70         LOADL        1
- 71         CALL         add     
- 72         STORE        3[LB]
- 73  L17:   LOAD         3[LB]
- 74         LOAD         4[LB]
+ 62  L15:   LOAD         -2[LB]
+ 63         CALL         arraylen
+ 64         LOAD         -1[LB]
+ 65         CALL         arraylen
+ 66         CALL         ne      
+ 67         JUMPIF (0)   L17
+ 68  L16:   LOADL        0
+ 69         RETURN (1)   1
+ 70  L17:   LOAD         -1[LB]
+ 71         CALL         arraylen
+ 72         LOADL        0
+ 73  L18:   LOAD         4[LB]
+ 74         LOAD         3[LB]
  75         CALL         lt      
  76         JUMPIF (0)   L19
- 77         LOAD         3[LB]
- 78         LOADL        20
- 79         CALL         gt      
- 80         JUMPIF (0)   L18
- 81         JUMP         L16
- 82  L18:   LOAD         3[LB]
- 83         CALL         L10
- 84         JUMP         L16
- 85  L19:   POP          2
- 86         RETURN (0)   1
+ 77         LOAD         -2[LB]
+ 78         LOAD         4[LB]
+ 79         CALL         fieldref
+ 80         LOAD         -1[LB]
+ 81         LOAD         4[LB]
+ 82         CALL         fieldref
+ 83         CALL         eq      
+ 84         JUMPIF (0)   L16
+ 85         CALL         succ    
+ 86         JUMP         ***
+ 87  L19:   LOADL        1
+ 88         RETURN (1)   1
+ 89         LOAD         -1[LB]
+ 90         CALL         arraylen
+ 91         RETURN (1)   0
+ 92  L20:   PUSH         1
+ 93         LOADL        3
+ 94         CALL         newarr  
+ 95         LOAD         -1[ST]
+ 96         LOADL        0
+ 97         LOADL        97
+ 98         CALL         arrayupd
+ 99         LOAD         -1[ST]
+100         LOADL        1
+101         LOADL        98
+102         CALL         arrayupd
+103         LOAD         -1[ST]
+104         LOADL        2
+105         LOADL        99
+106         CALL         arrayupd
+107         STORE        3[LB]
+108         LOADL        3
+109         CALL         newarr  
+110         LOAD         -1[ST]
+111         LOADL        0
+112         LOADL        97
+113         CALL         arrayupd
+114         LOAD         -1[ST]
+115         LOADL        1
+116         LOADL        98
+117         CALL         arrayupd
+118         LOAD         -1[ST]
+119         LOADL        2
+120         LOADL        99
+121         CALL         arrayupd
+122         LOAD         3[LB]
+123         CALLI        L15
+124         CALL         L10
+125         RETURN (0)   1

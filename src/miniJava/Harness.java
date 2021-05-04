@@ -7,7 +7,7 @@ public class Harness {
     public static void main(String[] args) {
 
         String filepath = "./test/test.java";
-
+        //String filepath = "./test/features/forloop/fail101.java";
 
         String object_filepath = Compiler.compile(new String[] {"-v", "-c", filepath});
 

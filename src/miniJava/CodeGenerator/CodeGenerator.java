@@ -844,7 +844,8 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			new Patchkey("System.out.println"), 
 			new Patchkey("System.out.println", new BaseType(TypeKind.BOOLEAN, SourcePosition.NOPOS)),
 			new Patchkey("System.out.println", new ClassType(new Identifier(new Token(TokenType.Ident, SourcePosition.NOPOS, "String")), SourcePosition.NOPOS)),
-			new Patchkey("String.length")
+			new Patchkey("String.length"),
+			new Patchkey("String.equals", new ClassType(new Identifier(new Token(TokenType.Ident, SourcePosition.NOPOS, "String")), SourcePosition.NOPOS))
 	};
 
 	private boolean patchExists(Patchkey p) {
@@ -925,9 +926,64 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			return true;
 		} else if (key.equals(patchkeys[4])) {
 
-			Machine.emit(Op.LOAD,Reg.OB,0);
+			Machine.emit(Op.LOAD,Reg.LB,-1);
 			Machine.emit(Prim.arraylen);
 			Machine.emit(Op.RETURN,1,0,0);
+			return true;
+
+		} else if (key.equals(patchkeys[5])) {
+
+			Machine.emit(Op.LOAD, Reg.LB, -2);		// this
+			Machine.emit(Prim.arraylen);
+			Machine.emit(Op.LOAD, Reg.LB, -1);		// other
+			Machine.emit(Prim.arraylen);
+			Machine.emit(Prim.ne);
+			
+			int patch_to_cont = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMPIF, 0,Reg.CB, PATCHME);
+
+
+			// return false
+			int begin_returnfalse = Machine.nextInstrAddr();
+			Machine.emit(Op.LOADL,0);
+			Machine.emit(Op.RETURN,1,0,1);
+
+			Machine.patch(patch_to_cont, Machine.nextInstrAddr());
+
+			Machine.emit(Op.LOAD, Reg.LB, -1);		// arrlen [3] = this.length
+			Machine.emit(Prim.arraylen);
+			Machine.emit(Op.LOADL,0);				// i [4] = 0
+
+			// for (; i < arrlen ; i++) 
+
+			int for_begin = Machine.nextInstrAddr();
+			Machine.emit(Op.LOAD, Reg.LB,4);
+			Machine.emit(Op.LOAD, Reg.LB,3);
+			Machine.emit(Prim.lt);
+			int patch_to_rettrue = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMPIF,0, Reg.CB, PATCHME);
+
+			Machine.emit(Op.LOAD,Reg.LB,-2);		// char ch_this  = this.charAt(i)
+			Machine.emit(Op.LOAD,Reg.LB,4);			
+			Machine.emit(Prim.fieldref);
+			Machine.emit(Op.LOAD, Reg.LB, -1);		// char ch_other = other.charAt(i)
+			Machine.emit(Op.LOAD, Reg.LB,4);
+			Machine.emit(Prim.fieldref);
+
+			Machine.emit(Prim.eq);					// if (ch_this != ch_other) return false;
+
+			Machine.emit(Op.JUMPIF,0,Reg.CB, begin_returnfalse);
+
+			Machine.emit(Prim.succ);				// i++
+
+			Machine.emit(Op.JUMP, for_begin);
+
+			// return true
+			Machine.patch(patch_to_rettrue, Machine.nextInstrAddr());
+			Machine.emit(Op.LOADL,1);
+			Machine.emit(Op.RETURN,1,0,1);
+
+			
 			return true;
 
 		}else {
