@@ -654,7 +654,11 @@ public class Parser {
         accept(TokenType.For);
         accept(TokenType.LParen);
 
-        TypeDenoter decltype = parseType();
+        TypeDenoter decltype = null;
+
+        if (_token.type == TokenType.Semicolon) {
+            ;
+        } else decltype = parseType();
 
         while (_token.type == TokenType.Ident) {
             String name = _token.spelling;
@@ -671,7 +675,8 @@ public class Parser {
         }
 
         accept(TokenType.Semicolon);
-        Expression cond = parseExpression();
+        Expression cond = null;
+        if (_token.type != TokenType.Semicolon) cond = parseExpression();
         accept(TokenType.Semicolon);
 
         StatementList assnlist = new StatementList();

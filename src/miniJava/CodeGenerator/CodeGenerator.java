@@ -485,23 +485,32 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			s.visit(this, null);
 		}
 
+		int patch_to_cond = Machine.nextInstrAddr();
+		Machine.emit(Op.JUMP, Reg.CB,PATCHME);
 		int for_begin = Machine.nextInstrAddr();
 		_breakpatches.add(new BlockPatcher(for_begin));
-		stmt.cond.visit(this, null);
-		
-		int patch_to_end = Machine.nextInstrAddr();
-		Machine.emit(Op.JUMPIF,0,Reg.CB,PATCHME);
-
-
-		stmt.body.visit(this, null);
 
 		for (Statement s : stmt.inc) {
 			s.visit(this,null);
 		}
+
+		int patch_to_end = -1;
+
+		Machine.patch(patch_to_cond, Machine.nextInstrAddr());
+
+		if (stmt.cond != null) {
+			stmt.cond.visit(this, null);
+			patch_to_end = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMPIF,0,Reg.CB,PATCHME);
+		}
+
+		stmt.body.visit(this, null);
 		
 		Machine.emit(Op.JUMP,Reg.CB,for_begin);
 		int for_end = Machine.nextInstrAddr();
-		Machine.patch(patch_to_end, for_end);
+		if (patch_to_end > -1) {
+			Machine.patch(patch_to_end, for_end);
+		}
 		_breakpatches.pop().applyPatches(for_end);
 
 		Machine.emit(Op.POP, stmt.declList.size());

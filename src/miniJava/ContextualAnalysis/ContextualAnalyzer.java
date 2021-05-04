@@ -323,7 +323,7 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
         for (Statement s : stmt.declList) {
             s.visit(this, null);
         }
-        stmt.cond.visit(this, null);
+        if (stmt.cond != null) stmt.cond.visit(this, null);
 
         if (stmt.body instanceof BlockStmt) {
             BlockStmt bodyblock = (BlockStmt) stmt.body;
@@ -340,9 +340,12 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
 
         _idtable.closeScope();
 
-        if (! stmt.cond.type.equals(new BaseType(TypeKind.BOOLEAN, stmt.posn))) {
-            _reporter.report(new TypeError("for loop condition must be boolean type (saw "+ stmt.cond.type.toString() +")", stmt.cond.posn));
+        if (stmt.cond != null) {
+            if (! stmt.cond.type.equals(new BaseType(TypeKind.BOOLEAN, stmt.posn))) {
+                _reporter.report(new TypeError("for loop condition must be boolean type (saw "+ stmt.cond.type.toString() +")", stmt.cond.posn));
+            }
         }
+        
         
         return null;
     }

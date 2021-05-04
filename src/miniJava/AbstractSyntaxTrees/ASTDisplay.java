@@ -252,7 +252,9 @@ public class ASTDisplay implements Visitor<String,Object> {
         for (Statement s : stmt.declList) {
             s.visit(this, indent(arg));
         }
-        stmt.cond.visit(this, indent(arg));
+        if (stmt.cond != null)
+            stmt.cond.visit(this, indent(arg));
+        else show(arg, "no condition");
         for (Statement s : stmt.inc) {
             s.visit(this, indent(arg));
         }
