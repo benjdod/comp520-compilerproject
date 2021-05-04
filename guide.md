@@ -1,14 +1,14 @@
 # MiniJava Compiler
-### Benjamin Dod
-### COMP520
-### 1/2021 - 5/2021
+#### Benjamin Dod
+#### COMP520
+#### 1/2021 - 5/2021
 ---
 
 ## Scope
 
 This compiler implements all functionality in the PA4 specification as well as the following features:
 
-### Operators
+#### Operators
 
 Additional operators have been added. These include:
 
@@ -17,15 +17,15 @@ Additional operators have been added. These include:
  - Ternary operator ( ? : )
 
 
-### Loop control (break, continue)
+#### Loop control (break, continue)
 
 The `break` and `continue` keywords are implemented and function as in normal Java to control program flow in loops. 
 
-### For Loop
+#### For Loop
 
 For loops are supported just as in Java. Loop variables are properly scoped, multiple variable declarations and increment statements can be given, and loop control statements work. Like in while loops, for loops with variable declarations as the only statement are not allowed.
 
-### Improved Short Circuiting Evaluation
+#### Improved Short Circuiting Evaluation
 
 Code generation for chained boolean expressions is optimized using a simple algorithm. If a binary boolean expression has a binary boolean expression as a left child with the same operator, the short circuit jump in the child will jump to the jump target of the parent. For example:
 
@@ -37,15 +37,15 @@ child   =>   parent
 ```
 
 
-### Strings
+#### Strings
 
 Strings can be used as described in the PA5 specification. All valid [Java escape characters](https://docs.oracle.com/javase/tutorial/java/data/characters.html) except `\u` are supported. The `length()` and `equals()` methods are supported on String instances as well.
 
-### Method Overloading
+#### Method Overloading
 
 Methods can be overloaded as in Java. The predefined method `System.out.println` has been overloaded to accept `int`, `boolean`, `String`, and void arguments.
 
-### CLI Arguments
+#### CLI Arguments
 
 The compiler has options that can be set via command line arguments. These features are not useful for the scope of this assignment, but they are present for standard use cases.
 
