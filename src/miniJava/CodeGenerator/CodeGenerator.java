@@ -479,6 +479,36 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		return null;
 	}
 
+	public Object visitForStmt(ForStmt stmt, Object arg ) {
+
+		for (Statement s : stmt.declList) {
+			s.visit(this, null);
+		}
+
+		int for_begin = Machine.nextInstrAddr();
+		_breakpatches.add(new BlockPatcher(for_begin));
+		stmt.cond.visit(this, null);
+		
+		int patch_to_end = Machine.nextInstrAddr();
+		Machine.emit(Op.JUMPIF,0,Reg.CB,PATCHME);
+
+
+		stmt.body.visit(this, null);
+
+		for (Statement s : stmt.inc) {
+			s.visit(this,null);
+		}
+		
+		Machine.emit(Op.JUMP,Reg.CB,for_begin);
+		int for_end = Machine.nextInstrAddr();
+		Machine.patch(patch_to_end, for_end);
+		_breakpatches.pop().applyPatches(for_end);
+
+		Machine.emit(Op.POP, stmt.declList.size());
+
+		return null;
+	}
+
 	@Override
 	public Object visitBreakStmt(BreakStmt stmt, Object arg) {
 		_breakpatches.peek().patchToEnd(Machine.nextInstrAddr());
@@ -833,31 +863,20 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			Machine.emit(Op.LOAD,Reg.LB,-1);	// load boolean value from LB
 			int patch_tfjump = Machine.nextInstrAddr();
 			Machine.emit(Op.JUMPIF,0,Reg.CB,PATCHME);	
-			Machine.emit(Op.LOADL,116);			// load and print chars to spell true
-			Machine.emit(Prim.put);				// do sequentially to save stack space
-			Machine.emit(Op.LOADL,114);			// (there's no benefit to stacking high)
-			Machine.emit(Prim.put);
-			Machine.emit(Op.LOADL,117);
-			Machine.emit(Prim.put);
-			Machine.emit(Op.LOADL,101);
-			Machine.emit(Prim.put);
-			Machine.emit(Prim.puteol);
+			emitPrintString("true");
 			Machine.emit(Op.RETURN,1);
 			Machine.patch(patch_tfjump, Machine.nextInstrAddr());
-			Machine.emit(Op.LOADL,102);			// load and spell false
-			Machine.emit(Prim.put);
-			Machine.emit(Op.LOADL,97);
-			Machine.emit(Prim.put);
-			Machine.emit(Op.LOADL,108);
-			Machine.emit(Prim.put);
-			Machine.emit(Op.LOADL,115);
-			Machine.emit(Prim.put);
-			Machine.emit(Op.LOADL,101);
-			Machine.emit(Prim.put);
+			emitPrintString("false");
 			Machine.emit(Prim.puteol);
 			Machine.emit(Op.RETURN,1);
 			return true;
 		} else if (key.equals(patchkeys[3])) {	// println(String s)
+
+			// test if the reference is null
+
+			Machine.emit(Op.LOAD, Reg.LB, -1);
+			int patch_to_nullprint = Machine.nextInstrAddr();
+			Machine.emit(Op.JUMPIF,0,Reg.CB,PATCHME);
 			
 			Machine.emit(Op.PUSH,1);			// arr_len (LB[3]),    
 			Machine.emit(Op.LOADL,0); 			// i (LB[4]) = 0
@@ -883,11 +902,16 @@ public class CodeGenerator implements Visitor<Object, Object> {
 
 			Machine.emit(Op.JUMP,Reg.CB, while_begin);	// ...}
 
+			// code to print 'null'
+			// note that if we enter the while loop, this code is never
+			// executed
+			Machine.patch(patch_to_nullprint, Machine.nextInstrAddr());
+			emitPrintString("null");
+
 			/* WHILE END */
-
 			Machine.patch(patch_to_end, Machine.nextInstrAddr());
-			Machine.emit(Prim.puteol);
 
+			Machine.emit(Prim.puteol);
 			Machine.emit(Op.RETURN,1);		// pop the arg
 			return true;
 		} else if (key.equals(patchkeys[4])) {
@@ -899,6 +923,13 @@ public class CodeGenerator implements Visitor<Object, Object> {
 
 		}else {
 			return false;
+		}
+	}
+
+	public void emitPrintString(String s) {
+		for (int i = 0; i < s.length(); i++) {
+			Machine.emit(Op.LOADL,s.charAt(i));
+			Machine.emit(Prim.put);
 		}
 	}
 }

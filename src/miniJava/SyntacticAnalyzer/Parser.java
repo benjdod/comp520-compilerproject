@@ -410,6 +410,7 @@ public class Parser {
 
     private Statement parseStatement() throws SyntaxError {
     	
+
     	Statement out = null;
 
         if (_token.type == TokenType.LBrace) {
@@ -437,6 +438,8 @@ public class Parser {
                     return parseIfStatement();
                 case While:
                     return parseWhileStatement();
+                case For:
+                    return parseForStatement();
                 case Return:
                     return parseReturnStatement();
                 case RBrace:
@@ -637,6 +640,60 @@ public class Parser {
         _looplevel--;
         
         return new WhileStmt(cond, st, cond.posn);
+    }
+
+    private ForStmt parseForStatement() throws SyntaxError {
+
+
+        _looplevel++;
+    	
+        StatementList decllist = new StatementList();
+
+        SourcePosition start = _token.mark;
+    	
+        accept(TokenType.For);
+        accept(TokenType.LParen);
+
+        TypeDenoter decltype = parseType();
+
+        while (_token.type == TokenType.Ident) {
+            String name = _token.spelling;
+            SourcePosition posn = _token.mark;
+
+            acceptIt();
+            accept(TokenType.Equal);
+
+            Expression initexpr = parseExpression();
+
+            decllist.add(new VarDeclStmt(new VarDecl(decltype, name, null), initexpr, posn));
+
+            if (_token.type == TokenType.Comma) acceptIt();
+        }
+
+        accept(TokenType.Semicolon);
+        Expression cond = parseExpression();
+        accept(TokenType.Semicolon);
+
+        StatementList assnlist = new StatementList();
+
+        while (_token.type == TokenType.Ident) {
+
+            Identifier id = new Identifier(_token);
+            acceptIt();
+            accept(TokenType.Equal);
+        
+            AssignStmt as = new AssignStmt(new IdRef(id, id.posn), parseExpression(), id.posn);
+
+            assnlist.add(as);
+            if (_token.type == TokenType.Comma) acceptIt();
+        }
+
+        accept(TokenType.RParen);
+        Statement body = parseStatement();
+
+        _looplevel--;
+        
+        return new ForStmt(decllist, cond, body, assnlist, start);
     }
 
     private BlockStmt parseStatementBlock() throws SyntaxError {
@@ -1030,13 +1087,16 @@ public class Parser {
 
     	e = parseUnaryExpr();
 
+        /*
         if (_token.type == TokenType.QuestionMark) {
             e = parseTernaryExpr(e);
         }
 
         if (isBinaryOp(_token.type)) {
             e = parseDisjuncExpr(e);    // coding 
-        } 
+        } */
+
+        e = parseTernaryExpr(e);
 
         if (e == null) {
             throw new SyntaxError("Bad expression, idk why...", head);

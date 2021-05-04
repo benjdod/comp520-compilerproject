@@ -88,9 +88,9 @@ public class Compiler {
 		printGreen("--- completed ---");
 
 		
-		/*
+		
 		ASTDisplay adt = new ASTDisplay();
-		adt.showTree(tree);  */
+		adt.showTree(tree);  
 		
 
 		//System.out.println("--- identification ---");
@@ -180,7 +180,7 @@ public class Compiler {
 		
 		if (args.length < 1) {
 			//target = "../tests/pa4_tests/pass401.java";
-			//target = "./test/features/breakcont/fail102.java";
+			//target = "./test/features/string/pass106.java";
 			target = "./test/test.java";
 		} else {
 			target = args[0];

@@ -39,6 +39,7 @@ public class Scanner {
 		_keywordtree.insert("if", TokenType.If);
 		_keywordtree.insert("else", TokenType.Else);
 		_keywordtree.insert("while", TokenType.While);
+		_keywordtree.insert("for", TokenType.For);
 		_keywordtree.insert("this", TokenType.This);
 		_keywordtree.insert("new", TokenType.New);
 		_keywordtree.insert("true", TokenType.True);

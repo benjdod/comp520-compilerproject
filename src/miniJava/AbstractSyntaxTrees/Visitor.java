@@ -35,6 +35,7 @@ public interface Visitor<ArgType,ResultType> {
     public ResultType visitReturnStmt(ReturnStmt stmt, ArgType arg);
     public ResultType visitIfStmt(IfStmt stmt, ArgType arg);
     public ResultType visitWhileStmt(WhileStmt stmt, ArgType arg);
+    public ResultType visitForStmt(ForStmt stmt, ArgType arg);
     public ResultType visitBreakStmt(BreakStmt stmt, ArgType arg);
     public ResultType visitContinueStmt(ContinueStmt stmt, ArgType arg);
     

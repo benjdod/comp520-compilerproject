@@ -2,11 +2,12 @@ class Test {
 
     /**
      * Overloading System.out.println to support
-     * none and boolean args.
+     * void, boolean, and String args.
      * Boolean support is more hacky than anything, but
      * it can be implemented easily.
      */
     public static void main(String[] args) {
+        System.out.println("begin!");
         System.out.println();       //      \n
         System.out.println();       //      \n
         System.out.println();       //      \n
@@ -17,6 +18,6 @@ class Test {
         System.out.println();       //      \n  
         System.out.println();       //      \n
         System.out.println();       //      \n
-
+        System.out.println("end!");
     }
 }

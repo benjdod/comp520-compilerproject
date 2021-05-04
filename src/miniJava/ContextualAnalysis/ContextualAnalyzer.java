@@ -204,7 +204,7 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
         //System.out.println("assigning " + expt.typeKind + " to " + vdt.typeKind);
         
         if (! vdt.equals(expt)) {
-            _reporter.report(new TypeError("Cannot assign an expression of type " + expt.typeKind + " to a declaration of type " + vdt.toString(), stmt.posn));
+            _reporter.report(new TypeError("Cannot assign an expression of type " + expt.toString() + " to a declaration of type " + vdt.toString(), stmt.posn));
             return new BaseType(TypeKind.ERROR, stmt.posn);
         }
 
@@ -218,7 +218,7 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
         TypeDenoter vt = stmt.val.visit(this, null);
         TypeDenoter rt = stmt.ref.visit(this, null);
         if (! vt.equals(rt)) {
-            _reporter.report(new TypeError("Cannot assign expression of type " + vt.typeKind + " to reference of type " + rt.toString(), stmt.posn));
+            _reporter.report(new TypeError("Cannot assign expression of type " + vt.toString() + " to reference of type " + rt.toString(), stmt.posn));
             return new BaseType(TypeKind.ERROR, stmt.posn);
         }
 
@@ -303,6 +303,46 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
 
         stmt.body.visit(this, null);
 
+        
+        return null;
+    }
+
+    public TypeDenoter visitForStmt(ForStmt stmt, Object arg) {
+
+        /* we have to shift the loop variable declarations into local scope so that
+         * identification is valid 
+         * */
+
+        if (stmt.body instanceof VarDeclStmt) {
+            throw new IdError("variable declaration cannot be the only statement in a for loop", stmt.body.posn);
+        }
+
+        // simulate a block statement with loop vars in scope
+        _idtable.openScope();
+
+        for (Statement s : stmt.declList) {
+            s.visit(this, null);
+        }
+        stmt.cond.visit(this, null);
+
+        if (stmt.body instanceof BlockStmt) {
+            BlockStmt bodyblock = (BlockStmt) stmt.body;
+            for (Statement s : bodyblock.sl) {
+                s.visit(this,null);
+            }
+        } else {
+            stmt.body.visit(this, null);
+        }
+
+        for (Statement s : stmt.inc) {
+            s.visit(this, null);
+        }
+
+        _idtable.closeScope();
+
+        if (! stmt.cond.type.equals(new BaseType(TypeKind.BOOLEAN, stmt.posn))) {
+            _reporter.report(new TypeError("for loop condition must be boolean type (saw "+ stmt.cond.type.toString() +")", stmt.cond.posn));
+        }
         
         return null;
     }

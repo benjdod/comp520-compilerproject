@@ -36,13 +36,13 @@ child   =>   parent
 
 #### Strings
 
-Strings can be used as described in the PA5 specification. 
+Strings can be used as described in the PA5 specification. Escape characters are supported.
 
 #### Method Overloading
 
-Methods can be loaded as in Java. 
+Methods can be loaded as in Java. The predefined method `System.out.println` has been overloaded to accept `int`, `boolean`, `String`, and void arguments.
 
-
+---
 
 ## AST Changes
 
@@ -64,3 +64,13 @@ The following changes were made to aid in contextual analysis and code generatio
  - overrode Object methods `equals` and `hashCode` in TypeDenoter and all its subclasses to enable comparison and hashing by content rather than reference. This was used in identification.
  - added public Patchkey 'patchkey' to the MethodDecl class. The Patchkey class is used to short circuit method code generation and insert patch code in its place. This field is set to `Patchkey.NONE` in the class constructor.
  - added public boolean 'matchSignature' to the MethodDecl class. It takes a DeclSignature as an argument and determines whether or not they match. Note: the DeclSignature class is essentially a tuple of a method name (String) and a series of argument types (TypeDenoter[]).
+
+---
+
+## Tests
+
+Tests are included for the extensions. They are divided into four groups:
+ - loop control
+ - operators
+ - overloading
+ - string
