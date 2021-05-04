@@ -8,21 +8,24 @@
 
 This compiler implements all functionality in the PA4 specification as well as the following features:
 
-#### Operators
+### Operators
 
 Additional operators have been added. These include:
 
  - Modulo (%)
- - Short assignment arithetical operators (+=, -=, etc)
- - Ternary operator
+ - Short assignment arithetical operators (+=, -=, etc.)
+ - Ternary operator ( ? : )
 
 
-#### Loop control (break, continue)
+### Loop control (break, continue)
 
-The `break` and `continue` keywords are implemented and function as in normal Java to control program flow in while loops. 
+The `break` and `continue` keywords are implemented and function as in normal Java to control program flow in loops. 
 
+### For Loop
 
-#### Improved short circuit evaluation
+For loops are supported just as in Java. Loop variables are properly scoped, multiple variable declarations and increment statements can be given, and loop control statements work.
+
+### Improved Short Circuiting Evaluation
 
 Code generation for chained boolean expressions is optimized using a simple algorithm. If a binary boolean expression has a binary boolean expression as a left child with the same operator, the short circuit jump in the child will jump to the jump target of the parent. For example:
 
@@ -34,13 +37,13 @@ child   =>   parent
 ```
 
 
-#### Strings
+### Strings
 
 Strings can be used as described in the PA5 specification. Escape characters are supported.
 
-#### Method Overloading
+### Method Overloading
 
-Methods can be loaded as in Java. The predefined method `System.out.println` has been overloaded to accept `int`, `boolean`, `String`, and void arguments.
+Methods can be overloaded as in Java. The predefined method `System.out.println` has been overloaded to accept `int`, `boolean`, `String`, and void arguments.
 
 ---
 
@@ -54,6 +57,7 @@ The following classes were added. Note that all concrete classes were added to t
   - LoopControlStmt (abstract)
     - BreakStmt
     - ContinueStmt
+  - ForStmt
 
 The following changes were made to aid in contextual analysis and code generation:
 
@@ -69,7 +73,7 @@ The following changes were made to aid in contextual analysis and code generatio
 
 ## Tests
 
-Tests are included for the extensions. They are divided into four groups:
+Test sets are included for each of the extension groups. They are divided into four groups:
  - loop control
  - operators
  - overloading
