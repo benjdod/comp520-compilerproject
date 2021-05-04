@@ -68,28 +68,20 @@
  67         STORE        4[LB]
  68         JUMP         L17
  69  L16:   LOAD         3[LB]
- 70         LOADL        2
+ 70         LOADL        1
  71         CALL         add     
  72         STORE        3[LB]
- 73         LOAD         4[LB]
- 74         LOADL        1
- 75         CALL         add     
- 76         STORE        4[LB]
- 77  L17:   LOAD         3[LB]
- 78         LOAD         4[LB]
- 79         CALL         lt      
- 80         JUMPIF (0)   L19
- 81         LOAD         3[LB]
- 82         LOADL        20
- 83         CALL         gt      
- 84         JUMPIF (0)   L18
- 85         JUMP         L16
- 86  L18:   LOAD         3[LB]
- 87         CALL         L10
- 88         LOAD         3[LB]
- 89         LOADL        2
- 90         CALL         add     
- 91         STORE        3[LB]
- 92         JUMP         L16
- 93  L19:   POP          2
- 94         RETURN (0)   1
+ 73  L17:   LOAD         3[LB]
+ 74         LOAD         4[LB]
+ 75         CALL         lt      
+ 76         JUMPIF (0)   L19
+ 77         LOAD         3[LB]
+ 78         LOADL        20
+ 79         CALL         gt      
+ 80         JUMPIF (0)   L18
+ 81         JUMP         L16
+ 82  L18:   LOAD         3[LB]
+ 83         CALL         L10
+ 84         JUMP         L16
+ 85  L19:   POP          2
+ 86         RETURN (0)   1

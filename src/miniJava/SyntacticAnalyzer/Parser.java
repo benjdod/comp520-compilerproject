@@ -684,10 +684,45 @@ public class Parser {
         while (_token.type == TokenType.Ident) {
 
             Identifier id = new Identifier(_token);
+            IdRef idref = new IdRef(id, id.posn);
             acceptIt();
-            accept(TokenType.Equal);
+
+            AssignStmt as = null;
+
+            if (isShortAssnOp(_token.type)) {
+
+                System.out.println("short assignment");
+
+                // expand to simple assignment
+                // e.g. 
+                // x *= 3 + 2    -> x = x * (3+2)
+
+                BinaryExpr e = new BinaryExpr(null, new RefExpr(idref, id.posn), null, _token.mark);
+                as = new AssignStmt(idref, e, idref.posn);
+
+                switch (_token.type) {
+                    case PlusEqual:
+                        e.operator = new Operator(new Token(TokenType.Plus, _token.mark)); break;
+                    case MinusEqual:
+                        e.operator = new Operator(new Token(TokenType.Minus, _token.mark)); break;
+                    case StarEqual:
+                        e.operator = new Operator(new Token(TokenType.Star, _token.mark));  break;
+                    case SlashEqual:
+                        e.operator = new Operator(new Token(TokenType.FSlash, _token.mark)); break;
+                    case ModEqual:
+                        e.operator = new Operator(new Token(TokenType.Modulo, _token.mark));    break;
+                }
+
+                acceptIt();
+
+                Expression right = parseExpression();
+                e.right = right;
+
+            } else {
+                accept(TokenType.Equal);
+                as = new AssignStmt(new IdRef(id, id.posn), parseExpression(), id.posn);
+            }
         
-            AssignStmt as = new AssignStmt(new IdRef(id, id.posn), parseExpression(), id.posn);
 
             assnlist.add(as);
             if (_token.type == TokenType.Comma) acceptIt();
