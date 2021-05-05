@@ -62,8 +62,6 @@ The `putarr` primitive was added to the mJAM Machine class and implemented in th
 
 > A note on semantics: This primitive is named `putarr` rather than `putarrc` or `putcarr` or some variation thereof because the character-printing primitive is not deliniated in the same way. Given this, I opted to name this primitive `putarr`. 
 
----
-
 ## AST Changes
 
 The following classes were added. Note that all concrete classes were added to the `Visitor` interface, and methods were added in all classes implementing `Visitor`.
@@ -85,8 +83,6 @@ The following changes were made to aid in contextual analysis and code generatio
  - overrode Object methods `equals` and `hashCode` in TypeDenoter and all its subclasses to enable comparison and hashing by content rather than reference. This was used in identification.
  - added public Patchkey 'patchkey' to the MethodDecl class. The Patchkey class is used to short circuit method code generation and insert patch code in its place. This field is set to `Patchkey.NONE` in the class constructor.
  - added public boolean 'matchSignature' to the MethodDecl class. It takes a DeclSignature as an argument and determines whether or not they match. Note: the DeclSignature class is essentially a tuple of a method name (String) and a series of argument types (TypeDenoter[]).
-
----
 
 ## Tests
 

@@ -528,7 +528,7 @@ public class CodeGenerator implements Visitor<Object, Object> {
 	@Override
 	public Object visitContinueStmt(ContinueStmt stmt, Object arg) {
 		int while_begin = _breakpatches.peek().startAddr;
-		System.out.println(while_begin);
+		//System.out.println(while_begin);
 		Machine.emit(Op.JUMP,0,Reg.CB, while_begin);
 		return null;
 	}

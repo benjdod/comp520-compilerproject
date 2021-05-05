@@ -30,7 +30,8 @@ public class BaseType extends TypeDenoter
 
     @Override
     public String toString() {
-        return typeKind.toString();
+        String s = typeKind.toString();
+        return s.charAt(0) + s.substring(1).toLowerCase();
     }
     
     public <A,R> R visit(Visitor<A,R> v, A o) {

@@ -757,7 +757,7 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
             QualRef qr = (QualRef) methodRef;
             ClassDecl cd;
 
-            System.out.println(qr.ref.decl.type);
+            //System.out.println(qr.ref.decl.type);
 
             if (qr.ref.decl instanceof ClassDecl) {
                 cd = getClassDecl(qr.ref.decl);
@@ -838,7 +838,7 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
             case Minus:
             case FSlash:
             case Modulo:
-            System.out.println(expr.left.type + "\t" + expr.right.type);
+            //System.out.println(expr.left.type + "\t" + expr.right.type);
                 if ( 
                     (expr.left.type.typeKind != TypeKind.INT && expr.right.type.typeKind != TypeKind.INT)
                 ) {
@@ -870,8 +870,8 @@ public class ContextualAnalyzer implements Visitor<Object, TypeDenoter> {
 
     private TypeDenoter checkTernaryExpr(TernaryExpr expr) {
 
-        System.out.println(expr.trueExpr.type + "\t" + expr.falseExpr.type);
-        System.out.println(expr.cond.type);
+        //System.out.println(expr.trueExpr.type + "\t" + expr.falseExpr.type);
+        //System.out.println(expr.cond.type);
 
         if (! expr.trueExpr.type.equals(expr.falseExpr.type)) {
             _reporter.report(new TypeError("Both subexpressions in a ternary expression must be the same type", "Saw " + expr.trueExpr.type.toString() + " and " + expr.falseExpr.type.toString(),expr.posn));
