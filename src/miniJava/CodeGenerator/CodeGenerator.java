@@ -890,6 +890,8 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			
 			Machine.emit(Op.LOAD, Reg.LB, -1);
 			Machine.emit(Prim.putarr);
+			Machine.emit(Prim.puteol);
+			Machine.emit(Op.RETURN,1);		// pop the arg
 			/*
 			Machine.emit(Op.PUSH,1);			// arr_len (LB[3]),    
 			Machine.emit(Op.LOADL,0); 			// i (LB[4]) = 0
@@ -919,11 +921,13 @@ public class CodeGenerator implements Visitor<Object, Object> {
 			// note that if we enter the while loop, this code is never
 			// executed
 			Machine.patch(patch_to_nullprint, Machine.nextInstrAddr());
-			emitPrintString("null");
 
 			// WHILE END 
 			Machine.patch(patch_to_end, Machine.nextInstrAddr());
 			*/
+
+			Machine.patch(patch_to_nullprint, Machine.nextInstrAddr());
+			emitPrintString("null");
 
 			Machine.emit(Prim.puteol);
 			Machine.emit(Op.RETURN,1);		// pop the arg

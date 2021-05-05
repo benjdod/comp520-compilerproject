@@ -1,0 +1,202 @@
+  0         PUSH         1
+  1         LOADL        0
+  2         CALL         newarr  
+  3         CALL         L13
+  4         HALT   (0)   
+  5         LOAD         -1[LB]
+  6         CALL         putintnl
+  7         RETURN (0)   1
+  8         CALL         puteol  
+  9         RETURN (0)   0
+ 10         LOAD         -1[LB]
+ 11         JUMPIF (0)   L10
+ 12         LOADL        116
+ 13         CALL         put     
+ 14         LOADL        114
+ 15         CALL         put     
+ 16         LOADL        117
+ 17         CALL         put     
+ 18         LOADL        101
+ 19         CALL         put     
+ 20         RETURN (0)   1
+ 21  L10:   LOADL        102
+ 22         CALL         put     
+ 23         LOADL        97
+ 24         CALL         put     
+ 25         LOADL        108
+ 26         CALL         put     
+ 27         LOADL        115
+ 28         CALL         put     
+ 29         LOADL        101
+ 30         CALL         put     
+ 31         CALL         puteol  
+ 32         RETURN (0)   1
+ 33  L11:   LOAD         -1[LB]
+ 34         JUMPIF (0)   L12
+ 35         LOAD         -1[LB]
+ 36         CALL         putarr  
+ 37         CALL         puteol  
+ 38         RETURN (0)   1
+ 39  L12:   LOADL        110
+ 40         CALL         put     
+ 41         LOADL        117
+ 42         CALL         put     
+ 43         LOADL        108
+ 44         CALL         put     
+ 45         LOADL        108
+ 46         CALL         put     
+ 47         CALL         puteol  
+ 48         RETURN (0)   1
+ 49  L13:   PUSH         1
+ 50         LOADL        13
+ 51         CALL         newarr  
+ 52         LOAD         -1[ST]
+ 53         LOADL        0
+ 54         LOADL        104
+ 55         CALL         arrayupd
+ 56         LOAD         -1[ST]
+ 57         LOADL        1
+ 58         LOADL        101
+ 59         CALL         arrayupd
+ 60         LOAD         -1[ST]
+ 61         LOADL        2
+ 62         LOADL        108
+ 63         CALL         arrayupd
+ 64         LOAD         -1[ST]
+ 65         LOADL        3
+ 66         LOADL        108
+ 67         CALL         arrayupd
+ 68         LOAD         -1[ST]
+ 69         LOADL        4
+ 70         LOADL        111
+ 71         CALL         arrayupd
+ 72         LOAD         -1[ST]
+ 73         LOADL        5
+ 74         LOADL        10
+ 75         CALL         arrayupd
+ 76         LOAD         -1[ST]
+ 77         LOADL        6
+ 78         LOADL        10
+ 79         CALL         arrayupd
+ 80         LOAD         -1[ST]
+ 81         LOADL        7
+ 82         LOADL        116
+ 83         CALL         arrayupd
+ 84         LOAD         -1[ST]
+ 85         LOADL        8
+ 86         LOADL        104
+ 87         CALL         arrayupd
+ 88         LOAD         -1[ST]
+ 89         LOADL        9
+ 90         LOADL        101
+ 91         CALL         arrayupd
+ 92         LOAD         -1[ST]
+ 93         LOADL        10
+ 94         LOADL        114
+ 95         CALL         arrayupd
+ 96         LOAD         -1[ST]
+ 97         LOADL        11
+ 98         LOADL        101
+ 99         CALL         arrayupd
+100         LOAD         -1[ST]
+101         LOADL        12
+102         LOADL        33
+103         CALL         arrayupd
+104         STORE        3[LB]
+105         PUSH         1
+106         LOADL        22
+107         CALL         newarr  
+108         LOAD         -1[ST]
+109         LOADL        0
+110         LOADL        9
+111         CALL         arrayupd
+112         LOAD         -1[ST]
+113         LOADL        1
+114         LOADL        110
+115         CALL         arrayupd
+116         LOAD         -1[ST]
+117         LOADL        2
+118         LOADL        105
+119         CALL         arrayupd
+120         LOAD         -1[ST]
+121         LOADL        3
+122         LOADL        99
+123         CALL         arrayupd
+124         LOAD         -1[ST]
+125         LOADL        4
+126         LOADL        101
+127         CALL         arrayupd
+128         LOAD         -1[ST]
+129         LOADL        5
+130         LOADL        32
+131         CALL         arrayupd
+132         LOAD         -1[ST]
+133         LOADL        6
+134         LOADL        92
+135         CALL         arrayupd
+136         LOAD         -1[ST]
+137         LOADL        7
+138         LOADL        32
+139         CALL         arrayupd
+140         LOAD         -1[ST]
+141         LOADL        8
+142         LOADL        116
+143         CALL         arrayupd
+144         LOAD         -1[ST]
+145         LOADL        9
+146         LOADL        111
+147         CALL         arrayupd
+148         LOAD         -1[ST]
+149         LOADL        10
+150         LOADL        32
+151         CALL         arrayupd
+152         LOAD         -1[ST]
+153         LOADL        11
+154         LOADL        109
+155         CALL         arrayupd
+156         LOAD         -1[ST]
+157         LOADL        12
+158         LOADL        101
+159         CALL         arrayupd
+160         LOAD         -1[ST]
+161         LOADL        13
+162         LOADL        101
+163         CALL         arrayupd
+164         LOAD         -1[ST]
+165         LOADL        14
+166         LOADL        116
+167         CALL         arrayupd
+168         LOAD         -1[ST]
+169         LOADL        15
+170         LOADL        32
+171         CALL         arrayupd
+172         LOAD         -1[ST]
+173         LOADL        16
+174         LOADL        34
+175         CALL         arrayupd
+176         LOAD         -1[ST]
+177         LOADL        17
+178         LOADL        121
+179         CALL         arrayupd
+180         LOAD         -1[ST]
+181         LOADL        18
+182         LOADL        111
+183         CALL         arrayupd
+184         LOAD         -1[ST]
+185         LOADL        19
+186         LOADL        117
+187         CALL         arrayupd
+188         LOAD         -1[ST]
+189         LOADL        20
+190         LOADL        33
+191         CALL         arrayupd
+192         LOAD         -1[ST]
+193         LOADL        21
+194         LOADL        34
+195         CALL         arrayupd
+196         STORE        4[LB]
+197         LOAD         3[LB]
+198         CALL         L11
+199         LOAD         4[LB]
+200         CALL         L11
+201         RETURN (0)   1

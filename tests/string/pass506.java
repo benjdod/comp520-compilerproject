@@ -11,13 +11,13 @@ class Test {
 
     public static void main(String[] args) {
 
-        String s1 = "...";
+        String s5 = "...";
         String s2 = null;
         
-        isEqual(s1, s2);
+        isEqual(s5, s2);
 
-        s2 = s1;
+        s2 = s5;
 
-        isEqual(s1, s2);
+        isEqual(s5, s2);
     }
 }
