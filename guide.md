@@ -86,7 +86,7 @@ The following changes were made to aid in contextual analysis and code generatio
 
 ## Tests
 
-Test sets are included for each of the extension groups. Each test file has a short description of what it is intended to test. They are divided into five groups by directory:
+Test sets are included for each of the extension groups. Each test file has a short description of what it is intended to test. They are divided into five directories corresponding to the five groups:
  - loop control
  - operators
  - overloading

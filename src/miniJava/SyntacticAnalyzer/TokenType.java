@@ -1,7 +1,5 @@
 package miniJava.SyntacticAnalyzer;
 
-import jdk.internal.module.IllegalAccessLogger.Mode;
-
 public enum TokenType {
 	
 	/* text and file things */
