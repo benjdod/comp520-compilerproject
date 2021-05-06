@@ -185,7 +185,7 @@ public class Parser {
         // class String { }
         ClassDecl string_decl = new ClassDecl("String", new FieldDeclList(), new MethodDeclList(), oos);
 
-        /*
+        
         MethodDecl string_length = new MethodDecl(
             new FieldDecl(false, false, new BaseType(TypeKind.INT, oos), "length", oos), 
             new ParameterDeclList(), 
@@ -209,7 +209,8 @@ public class Parser {
 
         string_decl.methodDeclList.add(string_equals);
         string_decl.methodDeclList.add(string_length);
-        */
+        
+        
 
         // class _PrintStream { public void println(int n){} }
         ClassDecl pstream_decl = new ClassDecl("_PrintStream", new FieldDeclList(), new MethodDeclList(), oos);

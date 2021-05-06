@@ -12,7 +12,7 @@ class Test {
 
         System.out.println(s);
 
-        s = "not null anymore";
+        s = "three";
 
         System.out.println(s);
 

@@ -12,11 +12,12 @@ class Test {
     }
 
     public static int go() {
-        return yes() ? 5 : -5;
+        return yes() ? 2 : -5;
     }
 
     public static void main(String[] args) {
-        System.out.println(go());        // >>> 5
+        go();
+        go();
         System.out.println(go());        // >>> -5
     }
 }

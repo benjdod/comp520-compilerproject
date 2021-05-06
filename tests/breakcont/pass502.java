@@ -1,32 +1,18 @@
+
 class Test {
     /**
-     * Nested loop control
+     * simple continue
      */
 
     public static void main(String[] args) {
         int x = 0;
-        int y = 0;
 
-        while (true) {
-            y = 0;
-            
-            while (true) {
-                if (y > 3) {
-                    break;
-                } else {
-                    y += 1;
-                }
-            }
-
-            System.out.println(x);      // >>> [0,9]
-            System.out.println(y);      // >>> 4 (every time)
-
-            if (x > y) break;
-
-            x += 1;
+        for (int i = 0; i < 20;i+=1) {
+            if (x >= 2) continue;
+            else x += 1;
         }
 
-        System.out.println();           // \n
-        System.out.println(x);          // 5 
+        System.out.println(x);
+        
     }
 }

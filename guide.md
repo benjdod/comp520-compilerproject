@@ -39,7 +39,7 @@ child   =>   parent
 
 #### Strings
 
-Strings can be used as described in the PA5 specification. All valid [Java escape characters](https://docs.oracle.com/javase/tutorial/java/data/characters.html) except `\u` are supported. The `length()` and `equals()` methods are supported on String instances as well.
+Strings can be used as described in the PA5 specification. All valid [Java escape characters](https://docs.oracle.com/javase/tutorial/java/data/characters.html) except `\u` are supported. 
 
 #### Method Overloading
 

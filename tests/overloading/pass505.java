@@ -8,6 +8,6 @@ class Test {
     }
 
     public static void main() {
-        System.out.println("I'm the real main method!");
+        System.out.println(5);
     }
 }

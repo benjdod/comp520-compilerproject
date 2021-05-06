@@ -13,7 +13,7 @@ class Test {
         int x = (n < 8)         // true
             ? (n > 4)           // true
                 ? (n <= 6)      // true 
-                    ?   n+1     // x = 7
+                    ?   n-3     // x 3
                     :   10
                 : 0
             : (n < -5) 
@@ -21,7 +21,7 @@ class Test {
                 : 2700;
 
 
-        System.out.println(x);  // >>> 7
+        System.out.println(x);  
 
     }
 }

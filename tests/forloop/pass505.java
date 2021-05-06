@@ -8,16 +8,19 @@ class Test {
 
         boolean b = false;
 
-        for (;;) {
+        int x = 0;
+
+        for (;x != 5;) {
 
             if (b) {
-                System.out.println("exiting");
+                
                 break;
             } else {
-                System.out.println("setting b");
-                b = true;
+                x += 1;
             }
         }
+
+        System.out.println(x);
 
     }
 }

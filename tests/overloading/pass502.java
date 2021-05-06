@@ -7,7 +7,7 @@ class Test {
         A.doStuff();
         A.doStuff(true, 15);
         A.doStuff(2);
-        System.out.println(A.doStuff(true, 1));     // >>> -1
+        System.out.println(A.doStuff(false, 1));   
     }
 }
 

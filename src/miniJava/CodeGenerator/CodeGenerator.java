@@ -682,6 +682,11 @@ public class CodeGenerator implements Visitor<Object, Object> {
 		
 		MethodEntity me = (MethodEntity) expr.functionRef.decl.entity;
 		boolean patch = me.address.offset == PATCHME;
+
+		if (patchExists(((MethodDecl) expr.functionRef.decl).patchkey)) {
+			Machine.emit(Op.CALL,Reg.CB,me.address.offset);
+			return null;
+		}
 		
 		if (is_static) {
 			if (patch) me.callers.add(Machine.nextInstrAddr());

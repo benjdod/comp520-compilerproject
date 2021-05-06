@@ -13,10 +13,17 @@ class Test {
 
         String s5 = "...";
         String s2 = null;
+
+        System.out.println(s5);
+        System.out.println(s2);
         
         isEqual(s5, s2);
 
         s2 = s5;
+
+        System.out.println();
+        System.out.println(s5);
+        System.out.println(s2);
 
         isEqual(s5, s2);
     }

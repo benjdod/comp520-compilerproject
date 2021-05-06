@@ -9,12 +9,12 @@ class Test {
         A a = new A();
         B b = new B();
 
-        b.s = "string in class b";
+        b.s = "two";
         a.b = b;
 
         System.out.println(a.b.s);
 
-        X.setSecret("sshhhh...");
+        X.setSecret("two");
         System.out.println(X.getSecret());
     }
 }

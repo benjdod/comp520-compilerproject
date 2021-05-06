@@ -11,7 +11,7 @@ class Test {
     public static void main(String[] args) {
         Test t = new Test();
 
-        t.setMessage("-_-");
+        t.setMessage("five");
         t.setNumber(10);
         t.print();
     }

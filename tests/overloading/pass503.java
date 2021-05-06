@@ -19,6 +19,6 @@ class Test {
 
         t.x = 5;
 
-        System.out.println(t.x() + t.x(-5));        // >>> 5
+        System.out.println(t.x() + t.x(-7));        // >>> 5
     }
 }

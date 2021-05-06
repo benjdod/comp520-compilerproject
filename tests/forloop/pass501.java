@@ -10,8 +10,11 @@ class Test {
 
         for (int i = 1; i < 6; i += 1) {
             geometric += i;
-            System.out.println(geometric);      // 1, 3, 6, 10, 15
         }
+
+        geometric -= 2 + 3 + 4 +5;
+
+        System.out.println(geometric);
 
     }
 }

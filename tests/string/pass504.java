@@ -6,8 +6,8 @@ class Test {
      */
 
     public static void main(String[] args) {
-        String s5 = "hello\n\nthere!";
-        String s2 = "\tnice \\ to meet \"you!\"";
+        String s5 = "string\n\nwith";
+        String s2 = "\tnumber \\ of \"four!\"";
 
         System.out.println(s5);
         System.out.println(s2);
